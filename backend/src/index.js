@@ -37,6 +37,13 @@ if (!isProd) {
   );
 }
 
+// Whether the session cookie is marked Secure. Defaults to on in production,
+// but set COOKIE_SECURE=false when serving over plain HTTP (otherwise the
+// browser drops the cookie and admin login silently fails). Flip it back to
+// true once TLS is in front of the app.
+const cookieSecure =
+  process.env.COOKIE_SECURE != null ? process.env.COOKIE_SECURE === 'true' : isProd;
+
 const PgSession = connectPgSimple(session);
 app.use(
   session({
@@ -47,7 +54,7 @@ app.use(
     cookie: {
       httpOnly: true,
       sameSite: 'lax',
-      secure: isProd,
+      secure: cookieSecure,
       maxAge: 1000 * 60 * 60 * 12, // 12h
     },
   })
