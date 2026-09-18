@@ -5,6 +5,7 @@ const STATUS_OPTIONS = [
   { value: 'not_invited', label: 'טרם הוזמן' },
   { value: 'invited', label: 'הוזמן' },
   { value: 'confirmed', label: 'אישר' },
+  { value: 'maybe', label: 'אולי' },
   { value: 'waitlist', label: 'רשימת המתנה' },
   { value: 'declined', label: 'סירב' },
   { value: 'no_response', label: 'ללא מענה' },
@@ -95,6 +96,7 @@ export default function Invitees() {
           <Counter cls="" num={s.not_invited} lbl="טרם הוזמנו" />
           <Counter cls="" num={s.invited} lbl="הוזמנו" />
           <Counter cls="confirmed" num={s.confirmed} lbl="אישרו" />
+          <Counter cls="" num={s.maybe} lbl="אולי" />
           <Counter cls="waitlist" num={s.waitlist} lbl="רשימת המתנה" />
           <Counter cls="declined" num={s.declined} lbl="סירבו" />
           <Counter cls="" num={s.no_response} lbl="ללא מענה" />
@@ -139,6 +141,9 @@ export default function Invitees() {
         />
         <a className="btn btn-sm btn-primary" href="/api/invitees/export">
           ייצוא XLSX
+        </a>
+        <a className="btn btn-sm btn-ghost" href="/api/invitees/survey-export">
+          ייצוא סקר
         </a>
       </div>
 

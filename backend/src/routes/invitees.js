@@ -8,7 +8,7 @@ import { asyncHandler } from '../middleware.js';
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
 
-const VALID_STATUSES = ['not_invited', 'invited', 'confirmed', 'declined', 'waitlist', 'no_response'];
+const VALID_STATUSES = ['not_invited', 'invited', 'confirmed', 'maybe', 'declined', 'waitlist', 'no_response'];
 
 // GET /api/invitees — list + filter + search + summary counters
 router.get(
@@ -63,6 +63,38 @@ router.get(
     const buf = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.setHeader('Content-Disposition', 'attachment; filename="invitees.xlsx"');
+    res.send(buf);
+  })
+);
+
+// GET /api/invitees/survey-export — download survey responses as XLSX
+router.get(
+  '/survey-export',
+  asyncHandler(async (req, res) => {
+    const rows = await query(
+      "SELECT submitted_at, full_name, organization, email, phone, attendance, survey FROM rsvp_submissions WHERE survey IS NOT NULL ORDER BY submitted_at DESC"
+    );
+    const attLabel = { yes: 'מגיע/ה', no: 'לא מגיע/ה', maybe: 'אולי' };
+    const data = rows.rows.map((r) => {
+      const s = r.survey || {};
+      return {
+        'תאריך': r.submitted_at ? new Date(r.submitted_at).toLocaleString('he-IL') : '',
+        'שם': r.full_name || '',
+        'ארגון': r.organization || '',
+        'מייל': r.email || '',
+        'טלפון': r.phone || '',
+        'הגעה': attLabel[r.attendance] || r.attendance || '',
+        'שאלה 1 — שלב השימוש': s.q1 || '',
+        'שאלה 2 — היגדים': Array.isArray(s.q2) ? s.q2.join(', ') : '',
+        'שאלה 3 — תקציב ICT': s.q3 || '',
+      };
+    });
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'survey');
+    const buf = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', 'attachment; filename="survey-responses.xlsx"');
     res.send(buf);
   })
 );
@@ -257,6 +289,7 @@ async function getSummary() {
     not_invited: byStatus.not_invited ? byStatus.not_invited.count : 0,
     invited: byStatus.invited ? byStatus.invited.count : 0,
     confirmed: byStatus.confirmed ? byStatus.confirmed.count : 0,
+    maybe: byStatus.maybe ? byStatus.maybe.count : 0,
     declined: byStatus.declined ? byStatus.declined.count : 0,
     waitlist: byStatus.waitlist ? byStatus.waitlist.count : 0,
     no_response: byStatus.no_response ? byStatus.no_response.count : 0,

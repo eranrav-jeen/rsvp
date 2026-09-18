@@ -188,10 +188,83 @@ button {
   border-color: var(--color-coral);
   color: #fff;
 }
+.attend-toggle button.active-maybe {
+  background: var(--color-amber);
+  border-color: var(--color-amber);
+  color: var(--color-maroon);
+}
 .attend-toggle button.active-no {
   background: var(--color-maroon);
   border-color: var(--color-maroon);
   color: #fff;
+}
+
+/* Survey opt-in + questions */
+.survey-block {
+  margin-top: 4px;
+}
+.survey-optin {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  color: var(--color-maroon);
+  cursor: pointer;
+  font-size: 15px;
+  margin: 0;
+}
+.survey-optin input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--color-coral);
+  cursor: pointer;
+  flex: 0 0 auto;
+}
+.survey-intro {
+  font-size: 14px;
+  color: var(--color-text);
+  margin: 14px 0 4px;
+  line-height: 1.5;
+}
+.survey-intro a {
+  color: var(--color-coral);
+  font-weight: 600;
+}
+.survey-q {
+  margin-top: 16px;
+}
+.survey-q-title {
+  font-weight: 700;
+  color: var(--color-maroon);
+  font-size: 14.5px;
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+.survey-opt {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  background: #fff;
+  margin-bottom: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1.4;
+}
+.survey-opt:hover {
+  background: #fff8fc;
+}
+.survey-opt input {
+  margin-top: 3px;
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-coral);
+  cursor: pointer;
+  flex: 0 0 auto;
+}
+.survey-opt b {
+  color: var(--color-coral);
 }
 .soft-block {
   background: var(--color-pink);
