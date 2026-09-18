@@ -1,0 +1,114 @@
+[
+  {
+    "owner": "מיטל",
+    "title": "תיאום מול ערן דהן",
+    "status": "done",
+    "due_date": null,
+    "due_date_text": "הושלם",
+    "notes": "אישר הגעה"
+  },
+  {
+    "owner": "מתן",
+    "title": "תיאום מול קובי",
+    "status": "done",
+    "due_date": null,
+    "due_date_text": "הושלם",
+    "notes": "אישר הגעה, ממתין ללו״ז"
+  },
+  {
+    "owner": "ערן",
+    "title": "בדיקה מול אלבי והחלטה אם ישתתף בפאנל או יציג סיפור לקוח",
+    "status": "open",
+    "due_date": "2026-09-17",
+    "due_date_text": "עד 17.09",
+    "notes": "פתוח"
+  },
+  {
+    "owner": "ערן מול מיטל",
+    "title": "סגירת הפרס ופורמט ההגרלה",
+    "status": "open",
+    "due_date": "2026-10-20",
+    "due_date_text": "עד 20.10",
+    "notes": "פתוח"
+  },
+  {
+    "owner": "מתן",
+    "title": "בדיקת השתתפותה של חנה מחברת החשמל בפאנל",
+    "status": "in_progress",
+    "due_date": "2026-09-17",
+    "due_date_text": "עד 17.09",
+    "notes": "בבדיקה"
+  },
+  {
+    "owner": "אייל כהן",
+    "title": "בדיקה מול נתי כהן (ברכה+השתתפות בפאנל), ארז אסקל ויוסי קארדי",
+    "status": "open",
+    "due_date": "2026-09-17",
+    "due_date_text": "עד 17.09",
+    "notes": "פתוח"
+  },
+  {
+    "owner": "ערן",
+    "title": "בדיקה מול רותם כהן ועקיבא",
+    "status": "open",
+    "due_date": "2026-09-17",
+    "due_date_text": "עד 17.09",
+    "notes": "פתוח"
+  },
+  {
+    "owner": "עודד",
+    "title": "בדיקה מול ששון לגבי הרצאה",
+    "status": "open",
+    "due_date": "2026-09-17",
+    "due_date_text": "עד 17.09",
+    "notes": "פתוח"
+  },
+  {
+    "owner": "עודד",
+    "title": "בדיקה מול ניר מקובר",
+    "status": "open",
+    "due_date": "2026-09-17",
+    "due_date_text": "עד 17.09",
+    "notes": "פתוח"
+  },
+  {
+    "owner": "דן",
+    "title": "דיוק מבנה הכנס ובניית הלו״ז המפורט",
+    "status": "open",
+    "due_date": "2026-09-17",
+    "due_date_text": "עד 17.09",
+    "notes": "פתוח"
+  },
+  {
+    "owner": "מיטל",
+    "title": "תיאום עם ציפי ודן לגבי ההזמנה, דף הנחיתה והסקר הקצר",
+    "status": "open",
+    "due_date": "2026-09-17",
+    "due_date_text": "עד 17.09",
+    "notes": "פתוח"
+  },
+  {
+    "owner": "מיטל+יעלי",
+    "title": "הזמנת כיבוד",
+    "status": "open",
+    "due_date": "2026-10-20",
+    "due_date_text": "עבור הכנס 20.10",
+    "notes": "פתוח"
+  },
+  {
+    "owner": "דן",
+    "title": "הכנת ההזמנה, דף ההרשמה ותוכנית ההפצה, כולל LinkedIn",
+    "status": "open",
+    "due_date": "2026-09-21",
+    "due_date_text": "מוכנות עד 21.09; הפצה ב־22.09",
+    "notes": "פתוח"
+  },
+  {
+    "owner": "לי",
+    "title": "הכנת וריכוז רשימת המוזמנים",
+    "status": "open",
+    "due_date": "2026-09-17",
+    "due_date_text": "עד 17.09",
+    "notes": "פתוח"
+  }
+]

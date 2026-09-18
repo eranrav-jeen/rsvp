@@ -1,0 +1,47 @@
+# Example nginx server block for the Jeen event platform.
+# Adjust server_name, TLS cert paths, and the repo path, then symlink into
+# /etc/nginx/sites-enabled/ and `nginx -t && systemctl reload nginx`.
+
+server {
+    listen 80;
+    server_name event.jeen.ai;
+    # Redirect all HTTP to HTTPS.
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    server_name event.jeen.ai;
+
+    ssl_certificate     /etc/letsencrypt/live/event.jeen.ai/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/event.jeen.ai/privkey.pem;
+
+    client_max_body_size 12M;  # allow marketing image uploads
+
+    # Built Vite frontend.
+    root /var/www/jeen-event/frontend/dist;
+    index index.html;
+
+    # API -> pm2 Node app on :3001
+    location /api/ {
+        proxy_pass http://127.0.0.1:3001;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # Uploaded marketing images (served by the Node app; could also be served
+    # directly from disk here if preferred).
+    location /uploads/ {
+        proxy_pass http://127.0.0.1:3001;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # SPA fallback for client-side routing (/rsvp, /admin/*).
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}
