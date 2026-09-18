@@ -1,5 +1,6 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { api } from '../../api.js';
+import JeenLogo from '../../components/JeenLogo.jsx';
 
 export default function AdminLayout({ onLogout }) {
   const navigate = useNavigate();
@@ -17,7 +18,11 @@ export default function AdminLayout({ onLogout }) {
   return (
     <div className="admin-shell">
       <div className="admin-topbar">
-        <span className="logo">RSVP Jeen.AI</span>
+        <span className="app-name on-dark">
+          <JeenLogo height={26} showWordmark={false} />
+          <span className="an-rsvp">RSVP</span>
+          <span className="an-jeen">Jeen.AI</span>
+        </span>
         <nav className="admin-nav">
           <NavLink to="/admin/invitees" className={({ isActive }) => (isActive ? 'active' : '')}>
             מוזמנים

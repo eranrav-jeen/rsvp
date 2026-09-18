@@ -6,6 +6,22 @@ const STATUS = [
   { value: 'in_progress', label: 'בביצוע' },
   { value: 'done', label: 'הושלם' },
 ];
+
+// Predefined people responsible for tasks; "אחר" lets the admin type a new name.
+const OWNERS = [
+  'ערן רביב',
+  'אייל כהן',
+  'עודד טהורי',
+  'דן שקרק',
+  'ענבר הרבסט',
+  'דור לוי',
+  'לי איתן ברק',
+  'יעל',
+  'מתן ניצן',
+  'מיטל נועם',
+];
+const OTHER = '__other__';
+
 const todayStr = () => new Date().toISOString().slice(0, 10);
 
 function isOverdue(t) {
@@ -133,7 +149,7 @@ export default function Tasks() {
           <table className="grid">
             <thead>
               <tr>
-                <th>אחראי/ת</th>
+                <th>אחריות לביצוע</th>
                 <th>משימה</th>
                 <th>סטטוס</th>
                 <th>מועד</th>
@@ -192,23 +208,29 @@ export default function Tasks() {
 function TaskModal({ task, onClose, onSaved }) {
   const isNew = !task.id;
   const [form, setForm] = useState({
-    owner: task.owner || '',
     title: task.title || '',
     status: task.status || 'open',
     due_date: task.due_date ? task.due_date.slice(0, 10) : '',
     due_date_text: task.due_date_text || '',
     notes: task.notes || '',
   });
+  // Owner: a value from OWNERS, or OTHER with a free-text name.
+  const ownerInList = task.owner && OWNERS.includes(task.owner);
+  const [ownerSelect, setOwnerSelect] = useState(
+    task.owner ? (ownerInList ? task.owner : OTHER) : ''
+  );
+  const [customOwner, setCustomOwner] = useState(ownerInList ? '' : task.owner || '');
   const [err, setErr] = useState('');
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
 
   async function save() {
-    if (!form.owner.trim() || !form.title.trim()) {
-      setErr('יש למלא אחראי/ת ומשימה');
+    const owner = ownerSelect === OTHER ? customOwner.trim() : ownerSelect;
+    if (!owner || !form.title.trim()) {
+      setErr('יש למלא אחריות לביצוע ומשימה');
       return;
     }
     const payload = {
-      owner: form.owner,
+      owner,
       title: form.title,
       status: form.status,
       due_date: form.due_date || null,
@@ -230,8 +252,26 @@ function TaskModal({ task, onClose, onSaved }) {
         <h3>{isNew ? 'משימה חדשה' : 'עריכת משימה'}</h3>
         {err && <div className="form-error">{err}</div>}
         <div className="field">
-          <label>אחראי/ת *</label>
-          <input type="text" value={form.owner} onChange={set('owner')} />
+          <label>אחריות לביצוע *</label>
+          <select value={ownerSelect} onChange={(e) => setOwnerSelect(e.target.value)}>
+            <option value="">בחר/י אחראי/ת…</option>
+            {OWNERS.map((o) => (
+              <option key={o} value={o}>
+                {o}
+              </option>
+            ))}
+            <option value={OTHER}>אחר…</option>
+          </select>
+          {ownerSelect === OTHER && (
+            <input
+              type="text"
+              style={{ marginTop: 8 }}
+              placeholder="שם האחראי/ת"
+              value={customOwner}
+              onChange={(e) => setCustomOwner(e.target.value)}
+              autoFocus
+            />
+          )}
         </div>
         <div className="field">
           <label>משימה *</label>

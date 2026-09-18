@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { api } from '../api.js';
+import JeenLogo from '../components/JeenLogo.jsx';
 
 const EVENT = {
   title: 'ככה עושים AI בממשלה',
@@ -72,7 +73,9 @@ export default function RsvpForm() {
     <div className="rsvp-wrap">
       <div className="rsvp-card">
         <div className="rsvp-hero">
-          <div className="brand">JEEN.AI</div>
+          <div className="hero-logo">
+            <JeenLogo height={34} wordmarkColor="var(--color-cream)" />
+          </div>
           <h1>{EVENT.title}</h1>
           <div className="meta">{EVENT.dateLabel}</div>
           <div className="meta">{EVENT.place}</div>

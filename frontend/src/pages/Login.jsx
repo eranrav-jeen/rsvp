@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api.js';
+import JeenLogo from '../components/JeenLogo.jsx';
 
 export default function Login({ onLoggedIn }) {
   const [password, setPassword] = useState('');
@@ -27,9 +28,11 @@ export default function Login({ onLoggedIn }) {
   return (
     <div className="login-wrap">
       <div className="login-card">
-        <div className="brand" style={{ color: 'var(--color-coral)', fontWeight: 800 }}>
-          RSVP Jeen.AI
-        </div>
+        <span className="app-name" style={{ justifyContent: 'center', fontSize: 22 }}>
+          <JeenLogo height={28} showWordmark={false} />
+          <span className="an-rsvp">RSVP</span>
+          <span className="an-jeen">Jeen.AI</span>
+        </span>
         <h1>אזור ניהול</h1>
         <div className="sub">כנס "ככה עושים AI בממשלה"</div>
         <form onSubmit={submit}>

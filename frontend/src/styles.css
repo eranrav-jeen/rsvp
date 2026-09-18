@@ -1,10 +1,15 @@
 :root {
-  --color-coral: #ef5b2b; /* primary accent — headlines, buttons, CTAs */
-  --color-amber: #f5a93c; /* secondary accent — highlights, hover states */
-  --color-pink: #f3c6de; /* soft background blocks, section backgrounds */
-  --color-maroon: #3b0e2c; /* dark headline text, high-contrast elements */
-  --color-cream: #fbf3ea; /* page background */
+  --color-coral: #f05a28; /* primary accent — headlines, buttons, CTAs */
+  --color-amber: #f6a93c; /* secondary accent — highlights, hover states */
+  --color-pink: #f2c6e0; /* soft background blocks, section backgrounds */
+  --color-maroon: #3d0f2e; /* dark headline text, high-contrast elements */
+  --color-cream: #fbf3ec; /* page background */
   --color-text: #221018; /* body text, near-black with a warm tint */
+
+  /* Jeen logo mark colors (fixed brand colors, from the logo artwork) */
+  --logo-pink: #efbad7;
+  --logo-coral: #e85c4e;
+  --logo-amber: #f4a84c;
 
   --radius: 14px;
   --radius-sm: 9px;
@@ -639,6 +644,39 @@ table.grid input {
   color: #6b5b64;
   font-size: 14px;
   margin-bottom: 22px;
+}
+
+/* Jeen logo + app name */
+.jeen-logo {
+  display: inline-flex;
+  align-items: center;
+  direction: ltr; /* Latin brand: mark on the left, wordmark on the right */
+}
+.jeen-wordmark {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+.app-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-weight: 800;
+  direction: ltr; /* render "▮ RSVP Jeen.AI" left-to-right */
+}
+.app-name .an-rsvp {
+  color: var(--color-coral);
+}
+.app-name .an-jeen {
+  color: var(--color-maroon);
+}
+.app-name.on-dark .an-jeen {
+  color: var(--color-cream);
+}
+.hero-logo {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 12px;
 }
 
 .remember-row {

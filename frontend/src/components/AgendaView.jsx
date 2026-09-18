@@ -1,3 +1,5 @@
+import JeenLogo from './JeenLogo.jsx';
+
 // Shared, presentational agenda used by both the public /agenda page and the
 // admin preview. Content mirrors the event brief up to (and excluding) the
 // closing raffle ("הגרלה") item. Internal planning markers from the brief
@@ -69,7 +71,9 @@ export default function AgendaView() {
   return (
     <>
       <div className="agenda-hero">
-        <div className="brand">{EVENT.brand}</div>
+        <div className="hero-logo">
+          <JeenLogo height={32} wordmarkColor="var(--color-cream)" />
+        </div>
         <h1>{EVENT.title}</h1>
         <div className="agenda-sub">{EVENT.subtitle}</div>
         <div className="meta">{EVENT.dateLabel}</div>
