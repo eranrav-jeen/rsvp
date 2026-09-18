@@ -2,11 +2,13 @@ import { useEffect, useState } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { api } from './api.js';
 import RsvpForm from './pages/RsvpForm.jsx';
+import Agenda from './pages/Agenda.jsx';
 import Login from './pages/Login.jsx';
 import AdminLayout from './pages/admin/AdminLayout.jsx';
 import Invitees from './pages/admin/Invitees.jsx';
 import Tasks from './pages/admin/Tasks.jsx';
 import Marketing from './pages/admin/Marketing.jsx';
+import AdminAgenda from './pages/admin/Agenda.jsx';
 
 function useAuth() {
   const [state, setState] = useState({ loading: true, isAdmin: false });
@@ -33,6 +35,7 @@ export default function App() {
       {/* Public */}
       <Route path="/" element={<Navigate to="/rsvp" replace />} />
       <Route path="/rsvp" element={<RsvpForm />} />
+      <Route path="/agenda" element={<Agenda />} />
 
       {/* Admin login */}
       <Route
@@ -54,6 +57,7 @@ export default function App() {
         <Route index element={<Navigate to="/admin/invitees" replace />} />
         <Route path="invitees" element={<Invitees />} />
         <Route path="tasks" element={<Tasks />} />
+        <Route path="agenda" element={<AdminAgenda />} />
         <Route path="marketing" element={<Marketing />} />
       </Route>
 

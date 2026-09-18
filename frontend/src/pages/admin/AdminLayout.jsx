@@ -25,6 +25,9 @@ export default function AdminLayout({ onLogout }) {
           <NavLink to="/admin/tasks" className={({ isActive }) => (isActive ? 'active' : '')}>
             משימות
           </NavLink>
+          <NavLink to="/admin/agenda" className={({ isActive }) => (isActive ? 'active' : '')}>
+            סדר יום
+          </NavLink>
           <NavLink to="/admin/marketing" className={({ isActive }) => (isActive ? 'active' : '')}>
             חומרי שיווק
           </NavLink>

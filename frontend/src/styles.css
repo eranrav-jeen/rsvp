@@ -229,6 +229,158 @@ button {
   margin-top: 18px;
 }
 
+/* ---------- Agenda (public + admin preview) ---------- */
+.agenda-page {
+  min-height: 100vh;
+  padding: 24px 16px 60px;
+  display: flex;
+  justify-content: center;
+}
+.agenda-card {
+  width: 100%;
+  max-width: 640px;
+}
+.agenda-hero {
+  background: var(--color-maroon);
+  color: var(--color-cream);
+  border-radius: var(--radius) var(--radius) 0 0;
+  padding: 30px 28px 26px;
+  text-align: center;
+}
+.agenda-hero .brand {
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: var(--color-amber);
+  font-size: 15px;
+  margin-bottom: 10px;
+}
+.agenda-hero h1 {
+  margin: 0 0 6px;
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1.15;
+}
+.agenda-hero .agenda-sub {
+  font-size: 14px;
+  color: var(--color-pink);
+  margin-bottom: 14px;
+}
+.agenda-hero .meta {
+  font-size: 15px;
+  opacity: 0.92;
+  margin: 3px 0;
+}
+.agenda-body {
+  background: #fff;
+  border-radius: 0 0 var(--radius) var(--radius);
+  padding: 22px 24px 28px;
+  box-shadow: var(--shadow);
+}
+/* When embedded in the admin panel, round all corners and keep the card look. */
+.agenda-preview .agenda-hero {
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+.agenda-preview {
+  max-width: 640px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+.agenda-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.agenda-item {
+  display: flex;
+  gap: 16px;
+  padding: 14px 14px;
+  border: 1px solid #eee4da;
+  border-right: 4px solid var(--color-rail, #d8cabd);
+  border-radius: var(--radius-sm);
+  margin-bottom: 10px;
+  background: #fff;
+}
+.agenda-item.anchor {
+  border-right-color: var(--color-coral);
+  background: #fff6f2;
+}
+.agenda-item.pause {
+  border-right-color: var(--color-amber);
+  border-style: dashed;
+  background: transparent;
+}
+.agenda-time {
+  flex: 0 0 72px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.agenda-time .ag-time {
+  font-weight: 800;
+  font-size: 17px;
+  color: var(--color-maroon);
+  font-variant-numeric: tabular-nums;
+}
+.agenda-time .ag-dur {
+  font-size: 12px;
+  color: #8a7a82;
+  margin-top: 2px;
+}
+.agenda-detail .ag-title {
+  font-weight: 700;
+  font-size: 15.5px;
+  color: var(--color-text);
+  line-height: 1.35;
+}
+.agenda-detail .ag-desc {
+  font-size: 13.5px;
+  color: #6b5b64;
+  margin-top: 4px;
+  line-height: 1.45;
+}
+.agenda-item.pause .ag-title {
+  font-weight: 600;
+  color: #6b5b64;
+}
+
+/* Admin share bar */
+.share-bar {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  background: #fff;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+  padding: 12px 14px;
+  margin-bottom: 8px;
+}
+.share-bar .share-label {
+  font-weight: 600;
+  color: var(--color-maroon);
+  font-size: 14px;
+}
+.share-bar .share-url {
+  flex: 1;
+  min-width: 220px;
+  padding: 9px 12px;
+  border: 1.5px solid #d8cabd;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-family: inherit;
+  background: var(--color-cream);
+  color: var(--color-text);
+  direction: ltr;
+  text-align: left;
+}
+
+@media (max-width: 640px) {
+  .agenda-hero h1 {
+    font-size: 24px;
+  }
+}
+
 /* ---------- Admin ---------- */
 .admin-shell {
   min-height: 100vh;
