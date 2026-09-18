@@ -24,6 +24,38 @@ const OTHER = '__other__';
 
 const todayStr = () => new Date().toISOString().slice(0, 10);
 
+// Inline owner combo used in the table and kanban cards. Shows the predefined
+// people plus "אחר…" (prompts for a custom name). If the current owner isn't in
+// the list, it's kept as a selectable option so it still displays.
+function OwnerSelect({ value, onChange }) {
+  const current = value || '';
+  const inList = OWNERS.includes(current);
+  const selectValue = current === '' ? '' : inList ? current : '__current__';
+  return (
+    <select
+      value={selectValue}
+      onChange={(e) => {
+        const v = e.target.value;
+        if (v === OTHER) {
+          const name = window.prompt('שם האחראי/ת:', inList ? '' : current);
+          if (name && name.trim() && name.trim() !== current) onChange(name.trim());
+        } else if (v !== '__current__' && v !== current) {
+          onChange(v);
+        }
+      }}
+    >
+      {current === '' && <option value="">בחר/י…</option>}
+      {!inList && current !== '' && <option value="__current__">{current}</option>}
+      {OWNERS.map((o) => (
+        <option key={o} value={o}>
+          {o}
+        </option>
+      ))}
+      <option value={OTHER}>אחר…</option>
+    </select>
+  );
+}
+
 function isOverdue(t) {
   return t.status !== 'done' && t.due_date && t.due_date.slice(0, 10) < todayStr();
 }
@@ -56,6 +88,11 @@ export default function Tasks() {
 
   async function setStatus(id, status) {
     await api.patch(`/api/tasks/${id}`, { status });
+    load();
+  }
+  async function setOwner(id, owner) {
+    await api.patch(`/api/tasks/${id}`, { owner });
+    showToast('נשמר');
     load();
   }
   async function remove(id) {
@@ -118,8 +155,10 @@ export default function Tasks() {
                 .filter((t) => t.status === col.value)
                 .map((t) => (
                   <div className="kanban-card" key={t.id}>
-                    <div className="owner">{t.owner}</div>
-                    <div style={{ margin: '6px 0' }}>{t.title}</div>
+                    <div className="owner-row">
+                      <OwnerSelect value={t.owner} onChange={(owner) => setOwner(t.id, owner)} />
+                    </div>
+                    <div style={{ margin: '8px 0 6px' }}>{t.title}</div>
                     <div className={`due ${isOverdue(t) ? 'overdue' : ''}`}>
                       {t.due_date_text || t.due_date || '—'}
                       {isOverdue(t) && ' ⚠'}
@@ -159,7 +198,9 @@ export default function Tasks() {
             <tbody>
               {visibleTasks.map((t) => (
                 <tr key={t.id}>
-                  <td>{t.owner}</td>
+                  <td>
+                    <OwnerSelect value={t.owner} onChange={(owner) => setOwner(t.id, owner)} />
+                  </td>
                   <td>{t.title}</td>
                   <td>
                     <select value={t.status} onChange={(e) => setStatus(t.id, e.target.value)}>

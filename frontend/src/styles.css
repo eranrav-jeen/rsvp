@@ -612,6 +612,16 @@ table.grid input {
   color: var(--color-coral);
   font-size: 13px;
 }
+.kanban-card .owner-row select {
+  font-weight: 700;
+  color: var(--color-coral);
+  border: 1px solid #e3d5c8;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-family: inherit;
+  font-size: 13px;
+  background: #fff;
+}
 .kanban-card .due {
   font-size: 12px;
   color: #6b5b64;
