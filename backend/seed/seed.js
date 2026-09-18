@@ -34,7 +34,7 @@ async function seedInvitees() {
         r.role,
         r.email,
         r.phone,
-        r.status || 'invited',
+        r.status || 'not_invited',
         r.plus_ones || 0,
         r.notes,
         r.source || 'import',

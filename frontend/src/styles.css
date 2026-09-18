@@ -489,6 +489,23 @@ table.grid input {
   margin-bottom: 22px;
 }
 
+.remember-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: flex-start;
+  margin: 0 2px 16px;
+  font-size: 14px;
+  color: var(--color-maroon);
+  cursor: pointer;
+}
+.remember-row input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-coral);
+  cursor: pointer;
+}
+
 /* Cards / templates */
 .card-grid {
   display: grid;

@@ -5,11 +5,15 @@ const router = express.Router();
 
 // POST /api/auth/login  (public) — shared admin password
 router.post('/login', (req, res) => {
-  const { password } = req.body || {};
+  const { password, remember } = req.body || {};
   if (!checkAdminPassword(password)) {
     return res.status(401).json({ error: 'invalid password' });
   }
   req.session.isAdmin = true;
+  // "Remember me": keep the session for 30 days; otherwise the default 12h.
+  if (remember) {
+    req.session.cookie.maxAge = 1000 * 60 * 60 * 24 * 30;
+  }
   res.json({ ok: true });
 });
 

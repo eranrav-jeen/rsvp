@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { api } from '../../api.js';
 
 const STATUS_OPTIONS = [
+  { value: 'not_invited', label: 'טרם הוזמן' },
   { value: 'invited', label: 'הוזמן' },
   { value: 'confirmed', label: 'אישר' },
   { value: 'waitlist', label: 'רשימת המתנה' },
@@ -91,6 +92,7 @@ export default function Invitees() {
       {s && (
         <div className="counters">
           <Counter cls="" num={s.total_invitees} lbl="סה״כ מוזמנים" />
+          <Counter cls="" num={s.not_invited} lbl="טרם הוזמנו" />
           <Counter cls="" num={s.invited} lbl="הוזמנו" />
           <Counter cls="confirmed" num={s.confirmed} lbl="אישרו" />
           <Counter cls="waitlist" num={s.waitlist} lbl="רשימת המתנה" />

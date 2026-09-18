@@ -4,6 +4,7 @@ import { api } from '../api.js';
 
 export default function Login({ onLoggedIn }) {
   const [password, setPassword] = useState('');
+  const [remember, setRemember] = useState(false);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const navigate = useNavigate();
@@ -13,7 +14,7 @@ export default function Login({ onLoggedIn }) {
     setError('');
     setBusy(true);
     try {
-      await api.post('/api/auth/login', { password });
+      await api.post('/api/auth/login', { password, remember });
       onLoggedIn && onLoggedIn();
       navigate('/admin/invitees', { replace: true });
     } catch {
@@ -27,7 +28,7 @@ export default function Login({ onLoggedIn }) {
     <div className="login-wrap">
       <div className="login-card">
         <div className="brand" style={{ color: 'var(--color-coral)', fontWeight: 800 }}>
-          JEEN.AI
+          RSVP Jeen.AI
         </div>
         <h1>אזור ניהול</h1>
         <div className="sub">כנס "ככה עושים AI בממשלה"</div>
@@ -42,6 +43,14 @@ export default function Login({ onLoggedIn }) {
               autoFocus
             />
           </div>
+          <label className="remember-row">
+            <input
+              type="checkbox"
+              checked={remember}
+              onChange={(e) => setRemember(e.target.checked)}
+            />
+            <span>זכור אותי</span>
+          </label>
           <button className="btn btn-primary" style={{ width: '100%' }} disabled={busy}>
             {busy ? 'מתחבר…' : 'כניסה'}
           </button>

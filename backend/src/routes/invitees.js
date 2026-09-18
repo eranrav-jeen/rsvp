@@ -8,7 +8,7 @@ import { asyncHandler } from '../middleware.js';
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
 
-const VALID_STATUSES = ['invited', 'confirmed', 'declined', 'waitlist', 'no_response'];
+const VALID_STATUSES = ['not_invited', 'invited', 'confirmed', 'declined', 'waitlist', 'no_response'];
 
 // GET /api/invitees — list + filter + search + summary counters
 router.get(
@@ -75,7 +75,7 @@ router.post(
     if (!organization || !String(organization).trim()) {
       return res.status(400).json({ error: 'organization is required' });
     }
-    const st = VALID_STATUSES.includes(status) ? status : 'invited';
+    const st = VALID_STATUSES.includes(status) ? status : 'not_invited';
     const result = await query(
       `INSERT INTO invitees (organization, full_name, role, email, phone, status, plus_ones, notes, source)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'manual') RETURNING *`,
@@ -233,7 +233,7 @@ router.post(
 
       await query(
         `INSERT INTO invitees (organization, full_name, role, email, phone, status, notes, source)
-         VALUES ($1,$2,$3,$4,$5,'invited',$6,'import')`,
+         VALUES ($1,$2,$3,$4,$5,'not_invited',$6,'import')`,
         [org || '—', derivedName, role || null, email, phone || null, notes]
       );
       imported += 1;
@@ -254,6 +254,7 @@ async function getSummary() {
   const maxAttendees = settings.rows[0] ? settings.rows[0].max_attendees : 120;
   const confirmedSeats = byStatus.confirmed ? byStatus.confirmed.seats : 0;
   return {
+    not_invited: byStatus.not_invited ? byStatus.not_invited.count : 0,
     invited: byStatus.invited ? byStatus.invited.count : 0,
     confirmed: byStatus.confirmed ? byStatus.confirmed.count : 0,
     declined: byStatus.declined ? byStatus.declined.count : 0,

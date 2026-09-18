@@ -16,6 +16,7 @@ export default function Tasks() {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState('kanban'); // kanban | table
+  const [ownerFilter, setOwnerFilter] = useState('');
   const [editing, setEditing] = useState(null); // task or {} for new
   const [toast, setToast] = useState('');
 
@@ -48,12 +49,25 @@ export default function Tasks() {
     load();
   }
 
-  const overdueCount = tasks.filter(isOverdue).length;
+  // Distinct responsible people (owner is free text, may combine names).
+  const owners = [...new Set(tasks.map((t) => t.owner).filter(Boolean))].sort((a, b) =>
+    a.localeCompare(b, 'he')
+  );
+  const visibleTasks = ownerFilter ? tasks.filter((t) => t.owner === ownerFilter) : tasks;
+  const overdueCount = visibleTasks.filter(isOverdue).length;
 
   return (
     <div>
       <h1>משימות</h1>
       <div className="toolbar">
+        <select value={ownerFilter} onChange={(e) => setOwnerFilter(e.target.value)}>
+          <option value="">כל האחראים</option>
+          {owners.map((o) => (
+            <option key={o} value={o}>
+              {o}
+            </option>
+          ))}
+        </select>
         {overdueCount > 0 && (
           <span className="overdue">⚠ {overdueCount} משימות באיחור</span>
         )}
@@ -82,9 +96,9 @@ export default function Tasks() {
           {STATUS.map((col) => (
             <div className="kanban-col" key={col.value}>
               <h3>
-                {col.label} · {tasks.filter((t) => t.status === col.value).length}
+                {col.label} · {visibleTasks.filter((t) => t.status === col.value).length}
               </h3>
-              {tasks
+              {visibleTasks
                 .filter((t) => t.status === col.value)
                 .map((t) => (
                   <div className="kanban-card" key={t.id}>
@@ -127,7 +141,7 @@ export default function Tasks() {
               </tr>
             </thead>
             <tbody>
-              {tasks.map((t) => (
+              {visibleTasks.map((t) => (
                 <tr key={t.id}>
                   <td>{t.owner}</td>
                   <td>{t.title}</td>

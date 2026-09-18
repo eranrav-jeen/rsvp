@@ -5,7 +5,7 @@
     "role": null,
     "email": "ofrap@mof.gov.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -16,7 +16,7 @@
     "role": null,
     "email": "linora@mof.gov.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -27,7 +27,7 @@
     "role": null,
     "email": "racheld@mof.gov.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -38,7 +38,7 @@
     "role": null,
     "email": "harelg@mof.gov.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -49,7 +49,7 @@
     "role": null,
     "email": "yochevedbt@mof.gov.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -60,7 +60,7 @@
     "role": null,
     "email": "Tehilam@most.gov.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -71,7 +71,7 @@
     "role": null,
     "email": "GilaW@most.gov.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -82,7 +82,7 @@
     "role": null,
     "email": "AvramP@most.gov.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -93,7 +93,7 @@
     "role": null,
     "email": "michaelb@most.gov.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -104,7 +104,7 @@
     "role": null,
     "email": "RachelD@most.gov.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -115,7 +115,7 @@
     "role": null,
     "email": "ChanaB@most.gov.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -126,7 +126,7 @@
     "role": null,
     "email": "alexanderbl@justice.gov.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -137,7 +137,7 @@
     "role": null,
     "email": "nirg@bmc.gov.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -148,7 +148,7 @@
     "role": null,
     "email": "israelf@wmc.gov.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -159,7 +159,7 @@
     "role": null,
     "email": "YaronK@digital.gov.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -170,7 +170,7 @@
     "role": null,
     "email": "SaharK@digital.gov.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -181,7 +181,7 @@
     "role": null,
     "email": "DudyP@digital.gov.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -192,7 +192,7 @@
     "role": null,
     "email": "ShaniW@digital.gov.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -203,7 +203,7 @@
     "role": null,
     "email": "RuthyR@digital.gov.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -214,7 +214,7 @@
     "role": null,
     "email": "hadas.eshel-geva@moh.gov.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -225,7 +225,7 @@
     "role": null,
     "email": "nir.makover@moh.gov.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -236,7 +236,7 @@
     "role": null,
     "email": "shirell.da-villa@moh.gov.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -247,7 +247,7 @@
     "role": null,
     "email": "chen.cohen2@moh.gov.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -258,7 +258,7 @@
     "role": null,
     "email": "opher.zylbertal@moh.gov.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -269,7 +269,7 @@
     "role": null,
     "email": "Amir@moag.gov.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -280,7 +280,7 @@
     "role": null,
     "email": "OmerYf@sviva.gov.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -291,7 +291,7 @@
     "role": null,
     "email": "EliP@tourism.gov.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -302,7 +302,7 @@
     "role": null,
     "email": "NiraF@tourism.gov.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -313,7 +313,7 @@
     "role": null,
     "email": "Lior@tourism.gov.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -324,7 +324,7 @@
     "role": null,
     "email": "IdoB@tourism.gov.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -335,7 +335,7 @@
     "role": null,
     "email": "KerenRabi@justice.gov.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -346,7 +346,7 @@
     "role": null,
     "email": "ElinorkA@justice.gov.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -357,7 +357,7 @@
     "role": null,
     "email": null,
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": "יש להשלים כתובת מייל",
     "source": "import"
@@ -368,7 +368,7 @@
     "role": null,
     "email": "AkivaC@justice.gov.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -379,7 +379,7 @@
     "role": null,
     "email": "SasonS@justice.gov.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -390,7 +390,7 @@
     "role": null,
     "email": "RavidRe@piba.gov.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -401,7 +401,7 @@
     "role": null,
     "email": "aviadi@nioi.gov.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -412,7 +412,7 @@
     "role": null,
     "email": "ofirc@knesset.gov.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -423,7 +423,7 @@
     "role": null,
     "email": "rivkal@knesset.gov.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -434,7 +434,7 @@
     "role": null,
     "email": "yanirs@knesset.gov.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -445,7 +445,7 @@
     "role": null,
     "email": "rubis@knesset.gov.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -456,7 +456,7 @@
     "role": null,
     "email": "nivama@taxes.gov.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -467,7 +467,7 @@
     "role": null,
     "email": "natanel.zo@mevaker.gov.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -478,7 +478,7 @@
     "role": null,
     "email": "tamirt@mevaker.gov.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -489,7 +489,7 @@
     "role": null,
     "email": "yaron.ei@mevaker.gov.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -500,7 +500,7 @@
     "role": null,
     "email": "shirg@moia.gov.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -511,7 +511,7 @@
     "role": null,
     "email": "rotemc@moia.gov.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -522,7 +522,7 @@
     "role": null,
     "email": "rahelh@moia.gov.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -533,7 +533,7 @@
     "role": null,
     "email": "shimic@moia.gov.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -544,7 +544,7 @@
     "role": null,
     "email": "yaakovr@israntique.org.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -555,7 +555,7 @@
     "role": null,
     "email": "alby@atikot.org.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -566,7 +566,7 @@
     "role": null,
     "email": "urielm@israntique.org.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -577,7 +577,7 @@
     "role": null,
     "email": "Adam@Atikot.org.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -588,7 +588,7 @@
     "role": null,
     "email": "alonc@moch.gov.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -599,7 +599,7 @@
     "role": null,
     "email": "odelyas@moch.gov.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -610,7 +610,7 @@
     "role": null,
     "email": "Miri.Shalev@mfa.gov.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -621,7 +621,7 @@
     "role": null,
     "email": "Rina.Soltanovich@mfa.gov.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -632,7 +632,7 @@
     "role": null,
     "email": "yossiw@mfa.gov.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -643,7 +643,7 @@
     "role": null,
     "email": "Gad.Alon@mfa.gov.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -654,7 +654,7 @@
     "role": null,
     "email": "Moshe.Ben-Lulu@mfa.gov.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -665,7 +665,7 @@
     "role": null,
     "email": "Sivansa@digital.gov.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -676,7 +676,7 @@
     "role": null,
     "email": "MosheU@digital.gov.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -687,7 +687,7 @@
     "role": null,
     "email": "liliashw@matrixdna.ai",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -698,7 +698,7 @@
     "role": null,
     "email": "ElodieZ@digital.gov.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -709,7 +709,7 @@
     "role": null,
     "email": "Davidta@digital.gov.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -720,7 +720,7 @@
     "role": null,
     "email": "avolfovich@kpmg.com",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -731,7 +731,7 @@
     "role": null,
     "email": "Elyasafa@digital.gov.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -742,7 +742,7 @@
     "role": null,
     "email": "Yoell@digital.gov.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -753,7 +753,7 @@
     "role": null,
     "email": "iditamar@gmail.com",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -764,7 +764,7 @@
     "role": null,
     "email": "mayaag@education.gov.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -775,7 +775,7 @@
     "role": null,
     "email": "naamameroz@gmail.com",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -786,7 +786,7 @@
     "role": null,
     "email": "maya.agmon@gmail.com",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -797,7 +797,7 @@
     "role": null,
     "email": "michallester@gmail.com",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"
@@ -808,7 +808,7 @@
     "role": null,
     "email": null,
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": "יש להשלים כתובת מייל",
     "source": "import"
@@ -819,7 +819,7 @@
     "role": null,
     "email": null,
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": "יש להשלים כתובת מייל",
     "source": "import"
@@ -830,7 +830,7 @@
     "role": null,
     "email": null,
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": "יש להשלים כתובת מייל",
     "source": "import"
@@ -841,7 +841,7 @@
     "role": null,
     "email": null,
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": "יש להשלים כתובת מייל",
     "source": "import"
@@ -852,7 +852,7 @@
     "role": null,
     "email": null,
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": "יש להשלים כתובת מייל",
     "source": "import"
@@ -863,7 +863,7 @@
     "role": null,
     "email": null,
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": "יש להשלים כתובת מייל",
     "source": "import"
@@ -874,7 +874,7 @@
     "role": null,
     "email": null,
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": "יש להשלים כתובת מייל",
     "source": "import"
@@ -885,7 +885,7 @@
     "role": null,
     "email": null,
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": "יש להשלים כתובת מייל",
     "source": "import"
@@ -896,7 +896,7 @@
     "role": null,
     "email": null,
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": "יש להשלים כתובת מייל",
     "source": "import"
@@ -907,7 +907,7 @@
     "role": null,
     "email": "israeluz@moin.gov.il",
     "phone": null,
-    "status": "invited",
+    "status": "not_invited",
     "plus_ones": 0,
     "notes": null,
     "source": "import"

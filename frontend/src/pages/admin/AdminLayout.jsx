@@ -17,7 +17,7 @@ export default function AdminLayout({ onLogout }) {
   return (
     <div className="admin-shell">
       <div className="admin-topbar">
-        <span className="logo">JEEN.AI</span>
+        <span className="logo">RSVP Jeen.AI</span>
         <nav className="admin-nav">
           <NavLink to="/admin/invitees" className={({ isActive }) => (isActive ? 'active' : '')}>
             מוזמנים
