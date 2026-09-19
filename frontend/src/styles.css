@@ -842,6 +842,81 @@ table.grid input {
   color: #8a7a82;
 }
 
+/* By-organization chart */
+.byorg-legend {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 14px;
+  font-size: 13px;
+  color: var(--color-text);
+}
+.byorg-legend .sw {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  margin-left: 6px;
+  vertical-align: -1px;
+}
+.byorg-legend .sw-confirmed {
+  background: var(--color-coral);
+}
+.byorg-legend .sw-potential {
+  background: #f6d3c4;
+}
+.byorg-rows {
+  max-height: 460px;
+  overflow-y: auto;
+}
+.byorg-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 3px 0;
+}
+.byorg-name {
+  flex: 0 0 150px;
+  font-size: 13px;
+  color: var(--color-maroon);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: left;
+}
+.byorg-track {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  height: 16px;
+  background: #f4eef1;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.byorg-bar {
+  height: 100%;
+}
+.byorg-bar.confirmed {
+  background: var(--color-coral);
+  border-radius: 4px;
+}
+.byorg-bar.remainder {
+  background: #f6d3c4;
+  border-radius: 4px;
+  margin-right: 2px; /* 2px surface gap between segments (RTL) */
+}
+.byorg-val {
+  flex: 0 0 58px;
+  font-size: 12.5px;
+  color: #6b5b64;
+  font-variant-numeric: tabular-nums;
+  direction: ltr;
+  text-align: right;
+}
+.byorg-val b {
+  color: var(--color-coral);
+}
+
 /* Modal */
 .modal-backdrop {
   position: fixed;

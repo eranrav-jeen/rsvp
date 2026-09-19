@@ -54,6 +54,7 @@ router.get(
       'טלפון': r.phone || '',
       'סטטוס': r.status,
       'מלווים': r.plus_ones,
+      'אחראי/ת הזמנה': r.invited_by || '',
       'מקור': r.source || '',
       'הערות': r.notes || '',
     }));
@@ -103,14 +104,15 @@ router.get(
 router.post(
   '/',
   asyncHandler(async (req, res) => {
-    const { organization, full_name, role, email, phone, status, plus_ones, notes } = req.body || {};
+    const { organization, full_name, role, email, phone, status, plus_ones, notes, invited_by } =
+      req.body || {};
     if (!organization || !String(organization).trim()) {
       return res.status(400).json({ error: 'organization is required' });
     }
     const st = VALID_STATUSES.includes(status) ? status : 'not_invited';
     const result = await query(
-      `INSERT INTO invitees (organization, full_name, role, email, phone, status, plus_ones, notes, source)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'manual') RETURNING *`,
+      `INSERT INTO invitees (organization, full_name, role, email, phone, status, plus_ones, notes, invited_by, source)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,'manual') RETURNING *`,
       [
         String(organization).trim(),
         full_name || null,
@@ -120,6 +122,7 @@ router.post(
         st,
         Number.parseInt(plus_ones, 10) || 0,
         notes || null,
+        invited_by || null,
       ]
     );
     res.status(201).json({ invitee: result.rows[0] });
@@ -178,8 +181,9 @@ router.patch(
                email = COALESCE($6, email),
                phone = COALESCE($7, phone),
                organization = COALESCE($8, organization),
+               invited_by = COALESCE($9, invited_by),
                updated_at = now()
-         WHERE id = $9
+         WHERE id = $10
          RETURNING *`,
         [
           nextStatus,
@@ -190,6 +194,7 @@ router.patch(
           body.email ?? null,
           body.phone ?? null,
           body.organization ?? null,
+          body.invited_by ?? null,
           id,
         ]
       );
@@ -272,6 +277,99 @@ router.post(
     }
 
     res.json({ imported, flagged });
+  })
+);
+
+// Derive an organization label from an email domain, dropping common suffixes
+// e.g. digital.gov.il -> digital, jeen.ai -> jeen, moia.gov.il -> moia.
+function orgFromEmail(email) {
+  const at = email.indexOf('@');
+  if (at < 0) return '—';
+  let domain = email.slice(at + 1).toLowerCase().trim();
+  const suffixes = ['.gov.il', '.muni.il', '.org.il', '.co.il', '.ac.il', '.ai', '.com', '.co', '.net', '.org', '.il'];
+  for (const suf of suffixes) {
+    if (domain.endsWith(suf)) {
+      domain = domain.slice(0, -suf.length);
+      break;
+    }
+  }
+  // If anything is left with dots, keep the last label (closest to the org name).
+  const parts = domain.split('.').filter(Boolean);
+  return parts.length ? parts[parts.length - 1] : '—';
+}
+
+// POST /api/invitees/import-maillist — parse a pasted mailing-list string like
+//   "Name" <email>; "Name2" <email2>; bare@email.com
+// into invitees (name + email + org derived from the domain). Skips duplicates.
+router.post(
+  '/import-maillist',
+  asyncHandler(async (req, res) => {
+    const raw = (req.body && req.body.text) || '';
+    if (!String(raw).trim()) return res.status(400).json({ error: 'text is required' });
+
+    // Split on ; , newlines (but not inside <...>).
+    const chunks = String(raw)
+      .split(/[;,\n\r]+/)
+      .map((s) => s.trim())
+      .filter(Boolean);
+
+    const emailRe = /[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}/;
+    let imported = 0;
+    let skipped = 0;
+    let invalid = 0;
+
+    for (const chunk of chunks) {
+      const m = chunk.match(emailRe);
+      if (!m) {
+        invalid += 1;
+        continue;
+      }
+      const email = m[0];
+      // Name is the part before <...>, stripped of quotes; ignore if it's the email itself.
+      let name = null;
+      const angle = chunk.match(/^(.*?)<\s*[^>]+>/);
+      if (angle && angle[1].trim()) {
+        const candidate = angle[1].replace(/["]/g, '').trim();
+        if (candidate && candidate.toLowerCase() !== email.toLowerCase() && !emailRe.test(candidate)) {
+          name = candidate;
+        }
+      }
+      const org = orgFromEmail(email);
+
+      // Skip if this email already exists (case-insensitive).
+      const existing = await query('SELECT id FROM invitees WHERE LOWER(email) = LOWER($1) LIMIT 1', [
+        email,
+      ]);
+      if (existing.rows.length) {
+        skipped += 1;
+        continue;
+      }
+
+      await query(
+        `INSERT INTO invitees (organization, full_name, email, status, source)
+         VALUES ($1,$2,$3,'not_invited','import')`,
+        [org, name, email]
+      );
+      imported += 1;
+    }
+
+    res.json({ imported, skipped, invalid });
+  })
+);
+
+// GET /api/invitees/stats/by-org — per-organization potential vs confirmed
+router.get(
+  '/stats/by-org',
+  asyncHandler(async (req, res) => {
+    const rows = await query(
+      `SELECT organization,
+              COUNT(*)::int AS total,
+              COUNT(*) FILTER (WHERE status = 'confirmed')::int AS confirmed
+       FROM invitees
+       GROUP BY organization
+       ORDER BY total DESC, organization`
+    );
+    res.json({ orgs: rows.rows });
   })
 );
 

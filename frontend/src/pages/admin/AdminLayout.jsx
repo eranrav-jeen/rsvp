@@ -25,7 +25,7 @@ export default function AdminLayout({ onLogout }) {
         </span>
         <nav className="admin-nav">
           <NavLink to="/admin/invitees" className={({ isActive }) => (isActive ? 'active' : '')}>
-            מוזמנים
+            ניהול הזמנות
           </NavLink>
           <NavLink to="/admin/tasks" className={({ isActive }) => (isActive ? 'active' : '')}>
             משימות

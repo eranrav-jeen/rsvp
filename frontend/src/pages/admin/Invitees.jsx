@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { api } from '../../api.js';
+import OwnerSelect from '../../components/OwnerSelect.jsx';
+import ByOrgChart from '../../components/ByOrgChart.jsx';
 
 const STATUS_OPTIONS = [
   { value: 'not_invited', label: 'טרם הוזמן' },
@@ -10,18 +12,26 @@ const STATUS_OPTIONS = [
   { value: 'declined', label: 'סירב' },
   { value: 'no_response', label: 'ללא מענה' },
 ];
+
+const FILE_IMPORT_HELP =
+  'מבנה נדרש: קובץ CSV/XLSX עם עמודות "משרד" ו-"כתובת מייל" (אופציונלי: שם, תפקיד, טלפון). שורה עם שם במקום מייל תיובא עם מייל ריק ותסומן להשלמה.';
+const MAILLIST_IMPORT_HELP =
+  'הדביקו רשימת תפוצה מהמייל בפורמט: "שם" <email>; "שם" <email> (מופרד בפסיק־נקודה, פסיק או שורות). הארגון יזוהה אוטומטית מהדומיין (למשל digital.gov.il → digital).';
+
 export default function Invitees() {
   const [data, setData] = useState({ invitees: [], summary: null });
+  const [byOrg, setByOrg] = useState([]);
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState('');
   const [q, setQ] = useState('');
   const [toast, setToast] = useState('');
   const [showAdd, setShowAdd] = useState(false);
+  const [showMaillist, setShowMaillist] = useState(false);
   const fileRef = useRef();
 
   const showToast = (m) => {
     setToast(m);
-    setTimeout(() => setToast(''), 2600);
+    setTimeout(() => setToast(''), 2800);
   };
 
   async function load() {
@@ -30,8 +40,12 @@ export default function Invitees() {
     if (status) params.set('status', status);
     if (q.trim()) params.set('q', q.trim());
     try {
-      const res = await api.get(`/api/invitees?${params.toString()}`);
+      const [res, stats] = await Promise.all([
+        api.get(`/api/invitees?${params.toString()}`),
+        api.get('/api/invitees/stats/by-org'),
+      ]);
       setData(res);
+      setByOrg(stats.orgs || []);
     } finally {
       setLoading(false);
     }
@@ -42,14 +56,13 @@ export default function Invitees() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status]);
 
-  // debounce search
   useEffect(() => {
     const t = setTimeout(load, 300);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [q]);
 
-  async function updateInvitee(id, patch, opts = {}) {
+  async function updateInvitee(id, patch) {
     try {
       await api.patch(`/api/invitees/${id}`, patch);
       showToast('נשמר');
@@ -88,7 +101,7 @@ export default function Invitees() {
 
   return (
     <div>
-      <h1>מוזמנים</h1>
+      <h1>ניהול הזמנות</h1>
 
       {s && (
         <div className="counters">
@@ -115,7 +128,7 @@ export default function Invitees() {
           placeholder="חיפוש לפי ארגון / שם / מייל / תפקיד"
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          style={{ minWidth: 260 }}
+          style={{ minWidth: 240 }}
         />
         <select value={status} onChange={(e) => setStatus(e.target.value)}>
           <option value="">כל הסטטוסים</option>
@@ -129,7 +142,18 @@ export default function Invitees() {
         <button className="btn btn-sm btn-ghost" onClick={() => setShowAdd(true)}>
           + הוספת מוזמן
         </button>
-        <button className="btn btn-sm btn-ghost" onClick={() => fileRef.current?.click()}>
+        <button
+          className="btn btn-sm btn-ghost"
+          onClick={() => setShowMaillist(true)}
+          title={MAILLIST_IMPORT_HELP}
+        >
+          ייבוא מרשימת תפוצה
+        </button>
+        <button
+          className="btn btn-sm btn-ghost"
+          onClick={() => fileRef.current?.click()}
+          title={FILE_IMPORT_HELP}
+        >
           ייבוא CSV/XLSX
         </button>
         <input
@@ -161,6 +185,7 @@ export default function Invitees() {
                 <th>טלפון</th>
                 <th>סטטוס</th>
                 <th>מלווים</th>
+                <th>אחראי/ת הזמנה</th>
                 <th>מקור</th>
                 <th>הערות</th>
               </tr>
@@ -171,7 +196,7 @@ export default function Invitees() {
               ))}
               {data.invitees.length === 0 && (
                 <tr>
-                  <td colSpan={9} className="center muted" style={{ padding: 30 }}>
+                  <td colSpan={10} className="center muted" style={{ padding: 30 }}>
                     לא נמצאו מוזמנים
                   </td>
                 </tr>
@@ -181,12 +206,28 @@ export default function Invitees() {
         </div>
       )}
 
+      <div className="section-title">צפי הגעה לפי ארגון</div>
+      <div className="table-wrap" style={{ padding: '16px 18px' }}>
+        <ByOrgChart orgs={byOrg} />
+      </div>
+
       {showAdd && (
         <AddInviteeModal
           onClose={() => setShowAdd(false)}
           onSaved={() => {
             setShowAdd(false);
             showToast('מוזמן נוסף');
+            load();
+          }}
+        />
+      )}
+      {showMaillist && (
+        <MaillistModal
+          helpText={MAILLIST_IMPORT_HELP}
+          onClose={() => setShowMaillist(false)}
+          onImported={(res) => {
+            setShowMaillist(false);
+            showToast(`יובאו ${res.imported} · דילוג ${res.skipped} כפולים · ${res.invalid} לא תקינים`);
             load();
           }}
         />
@@ -244,12 +285,19 @@ function InviteeRow({ inv, onUpdate }) {
         />
       </td>
       <td>
+        <OwnerSelect
+          value={inv.invited_by}
+          onChange={(invited_by) => onUpdate(inv.id, { invited_by })}
+          placeholder="—"
+        />
+      </td>
+      <td>
         <span className="muted" style={{ fontSize: 12 }}>{inv.source}</span>
       </td>
       <td>
         <input
           type="text"
-          style={{ width: 160 }}
+          style={{ width: 150 }}
           value={notes}
           placeholder={needsEmail ? 'חסר מייל' : ''}
           onChange={(e) => setNotes(e.target.value)}
@@ -269,8 +317,8 @@ function AddInviteeModal({ onClose, onSaved }) {
     role: '',
     email: '',
     phone: '',
-    status: 'invited',
-    plus_ones: 0,
+    status: 'not_invited',
+    invited_by: '',
   });
   const [err, setErr] = useState('');
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
@@ -281,7 +329,7 @@ function AddInviteeModal({ onClose, onSaved }) {
       return;
     }
     try {
-      await api.post('/api/invitees', { ...form, plus_ones: Number(form.plus_ones) || 0 });
+      await api.post('/api/invitees', form);
       onSaved();
     } catch {
       setErr('שגיאה בשמירה');
@@ -323,9 +371,66 @@ function AddInviteeModal({ onClose, onSaved }) {
             ))}
           </select>
         </div>
+        <div className="field">
+          <label>אחראי/ת הזמנה</label>
+          <OwnerSelect
+            value={form.invited_by}
+            onChange={(v) => setForm((f) => ({ ...f, invited_by: v }))}
+            placeholder="בחר/י…"
+          />
+        </div>
         <div className="actions">
           <button className="btn btn-primary" onClick={save}>
             שמירה
+          </button>
+          <button className="btn btn-ghost" onClick={onClose}>
+            ביטול
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MaillistModal({ onClose, onImported, helpText }) {
+  const [text, setText] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState('');
+
+  async function submit() {
+    if (!text.trim()) {
+      setErr('נא להדביק רשימת תפוצה');
+      return;
+    }
+    setBusy(true);
+    try {
+      const res = await api.post('/api/invitees/import-maillist', { text });
+      onImported(res);
+    } catch {
+      setErr('שגיאה בייבוא');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <h3>ייבוא מרשימת תפוצה</h3>
+        {err && <div className="form-error">{err}</div>}
+        <p className="muted" style={{ fontSize: 13, marginTop: 0 }}>{helpText}</p>
+        <div className="field">
+          <textarea
+            dir="ltr"
+            style={{ minHeight: 150, textAlign: 'left' }}
+            placeholder={'"Yaron Klaiman" <YaronK@digital.gov.il>; "Dana Magnezi" <dana@jeen.ai>; ...'}
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+          />
+        </div>
+        <div className="actions">
+          <button className="btn btn-primary" onClick={submit} disabled={busy}>
+            {busy ? 'מייבא…' : 'ייבוא'}
           </button>
           <button className="btn btn-ghost" onClick={onClose}>
             ביטול

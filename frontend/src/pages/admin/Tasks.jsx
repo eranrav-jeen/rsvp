@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { api } from '../../api.js';
+import { OWNERS, OTHER } from '../../owners.js';
+import OwnerSelect from '../../components/OwnerSelect.jsx';
 
 const STATUS = [
   { value: 'open', label: 'פתוח' },
@@ -7,54 +9,7 @@ const STATUS = [
   { value: 'done', label: 'הושלם' },
 ];
 
-// Predefined people responsible for tasks; "אחר" lets the admin type a new name.
-const OWNERS = [
-  'ערן רביב',
-  'אייל כהן',
-  'עודד טהורי',
-  'דן שקרק',
-  'ענבר הרבסט',
-  'דור לוי',
-  'לי איתן ברק',
-  'יעל',
-  'מתן ניצן',
-  'מיטל נועם',
-];
-const OTHER = '__other__';
-
 const todayStr = () => new Date().toISOString().slice(0, 10);
-
-// Inline owner combo used in the table and kanban cards. Shows the predefined
-// people plus "אחר…" (prompts for a custom name). If the current owner isn't in
-// the list, it's kept as a selectable option so it still displays.
-function OwnerSelect({ value, onChange }) {
-  const current = value || '';
-  const inList = OWNERS.includes(current);
-  const selectValue = current === '' ? '' : inList ? current : '__current__';
-  return (
-    <select
-      value={selectValue}
-      onChange={(e) => {
-        const v = e.target.value;
-        if (v === OTHER) {
-          const name = window.prompt('שם האחראי/ת:', inList ? '' : current);
-          if (name && name.trim() && name.trim() !== current) onChange(name.trim());
-        } else if (v !== '__current__' && v !== current) {
-          onChange(v);
-        }
-      }}
-    >
-      {current === '' && <option value="">בחר/י…</option>}
-      {!inList && current !== '' && <option value="__current__">{current}</option>}
-      {OWNERS.map((o) => (
-        <option key={o} value={o}>
-          {o}
-        </option>
-      ))}
-      <option value={OTHER}>אחר…</option>
-    </select>
-  );
-}
 
 function isOverdue(t) {
   return t.status !== 'done' && t.due_date && t.due_date.slice(0, 10) < todayStr();

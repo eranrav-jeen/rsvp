@@ -224,18 +224,24 @@ export default function RsvpForm() {
                     checked={surveyOptIn}
                     onChange={(e) => setSurveyOptIn(e.target.checked)}
                   />
-                  <span>אשמח לענות על סקר קצר (3 שאלות)</span>
+                  <span>
+                    ברוח{' '}
+                    <a
+                      href={MCKINSEY_URL}
+                      target="_blank"
+                      rel="noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      המחקר שפרסמה חברת מקינזי לאחרונה
+                    </a>{' '}
+                    — אשמח לענות על סקר קצר (3 שאלות)
+                  </span>
                 </label>
 
                 {surveyOptIn && (
                   <div className="survey-questions">
                     <p className="survey-intro">
-                      ברוח{' '}
-                      <a href={MCKINSEY_URL} target="_blank" rel="noreferrer">
-                        המחקר שפרסמה חברת מקינזי לאחרונה
-                      </a>{' '}
-                      — נשמח אם תשיב על 3 שאלות סקר קצרות (מתחייבים לא לפרסם את המידע הפרטני ביחס
-                      לארגונים המשיבים):
+                      מתחייבים לא לפרסם את המידע הפרטני ביחס לארגונים המשיבים.
                     </p>
 
                     {['q1', 'q2', 'q3'].map((q) => (
