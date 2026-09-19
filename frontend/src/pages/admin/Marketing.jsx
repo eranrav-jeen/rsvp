@@ -12,7 +12,7 @@ export default function Marketing() {
   const [assets, setAssets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState('');
-  const [showText, setShowText] = useState(false);
+  const [editingText, setEditingText] = useState(null); // null | {} (new) | asset (edit)
   const imgRef = useRef();
 
   const showToast = (m) => {
@@ -80,7 +80,7 @@ export default function Marketing() {
       <h1>חומרי שיווק</h1>
       <div className="toolbar">
         <span className="spacer" />
-        <button className="btn btn-sm btn-ghost" onClick={() => setShowText(true)}>
+        <button className="btn btn-sm btn-ghost" onClick={() => setEditingText({})}>
           + נוסח טקסט
         </button>
         <button className="btn btn-sm btn-primary" onClick={() => imgRef.current?.click()}>
@@ -139,6 +139,9 @@ export default function Marketing() {
                     <button className="btn btn-sm btn-primary" onClick={() => copy(a.body)}>
                       העתקה
                     </button>
+                    <button className="btn btn-sm btn-ghost" onClick={() => setEditingText(a)}>
+                      עריכה
+                    </button>
                     <button className="btn btn-sm btn-danger" onClick={() => remove(a.id)}>
                       מחיקה
                     </button>
@@ -150,11 +153,12 @@ export default function Marketing() {
         </>
       )}
 
-      {showText && (
+      {editingText && (
         <TextTemplateModal
-          onClose={() => setShowText(false)}
+          asset={editingText}
+          onClose={() => setEditingText(null)}
           onSaved={() => {
-            setShowText(false);
+            setEditingText(null);
             showToast('נשמר');
             load();
           }}
@@ -165,8 +169,13 @@ export default function Marketing() {
   );
 }
 
-function TextTemplateModal({ onClose, onSaved }) {
-  const [form, setForm] = useState({ type: 'email_text', title: '', body: '' });
+function TextTemplateModal({ asset, onClose, onSaved }) {
+  const isNew = !asset || !asset.id;
+  const [form, setForm] = useState({
+    type: asset?.type || 'email_text',
+    title: asset?.title || '',
+    body: asset?.body || '',
+  });
   const [err, setErr] = useState('');
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
 
@@ -176,7 +185,8 @@ function TextTemplateModal({ onClose, onSaved }) {
       return;
     }
     try {
-      await api.post('/api/marketing', form);
+      if (isNew) await api.post('/api/marketing', form);
+      else await api.patch(`/api/marketing/${asset.id}`, form);
       onSaved();
     } catch {
       setErr('שגיאה בשמירה');
@@ -186,7 +196,7 @@ function TextTemplateModal({ onClose, onSaved }) {
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <h3>נוסח טקסט חדש</h3>
+        <h3>{isNew ? 'נוסח טקסט חדש' : 'עריכת נוסח טקסט'}</h3>
         {err && <div className="form-error">{err}</div>}
         <div className="field">
           <label>סוג</label>

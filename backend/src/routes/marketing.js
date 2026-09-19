@@ -63,6 +63,35 @@ router.post(
   })
 );
 
+// PATCH /api/marketing/:id — edit a text template (title/body/type/language)
+router.patch(
+  '/:id',
+  asyncHandler(async (req, res) => {
+    const id = Number.parseInt(req.params.id, 10);
+    if (Number.isNaN(id)) return res.status(400).json({ error: 'invalid id' });
+    const { title, body, type, language } = req.body || {};
+    if (type && !VALID_TYPES.includes(type)) return res.status(400).json({ error: 'invalid type' });
+
+    const rows = await query(
+      `UPDATE marketing_assets SET
+         title = COALESCE($1, title),
+         body = COALESCE($2, body),
+         type = COALESCE($3, type),
+         language = COALESCE($4, language)
+       WHERE id = $5 RETURNING *`,
+      [
+        title != null ? String(title).trim() : null,
+        body != null ? body : null,
+        type || null,
+        language || null,
+        id,
+      ]
+    );
+    if (rows.rows.length === 0) return res.status(404).json({ error: 'not found' });
+    res.json({ asset: rows.rows[0] });
+  })
+);
+
 // DELETE /api/marketing/:id
 router.delete(
   '/:id',
