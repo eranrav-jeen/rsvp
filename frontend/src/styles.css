@@ -422,6 +422,21 @@ button {
   color: #6b5b64;
 }
 
+/* Registration form preview */
+.form-preview {
+  display: flex;
+  justify-content: center;
+}
+.form-preview iframe {
+  width: 100%;
+  max-width: 620px;
+  height: 1180px;
+  border: 1px solid #e3d5c8;
+  border-radius: var(--radius);
+  background: var(--color-cream);
+  box-shadow: var(--shadow-sm);
+}
+
 /* Admin share bar */
 .share-bar {
   display: flex;
