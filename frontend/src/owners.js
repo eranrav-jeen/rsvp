@@ -10,5 +10,6 @@ export const OWNERS = [
   'יעל',
   'מתן ניצן',
   'מיטל נועם',
+  'תומר דולב',
 ];
 export const OTHER = '__other__';
