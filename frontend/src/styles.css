@@ -604,6 +604,36 @@ table.grid input {
   font-family: inherit;
   font-size: 13px;
   background: #fff;
+  max-width: 100%;
+}
+table.grid input.qty {
+  width: 52px;
+}
+.cell-notes {
+  display: inline-block;
+  max-width: 170px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+  font-size: 13px;
+}
+/* Pin the actions (edit) column to the left edge so it stays reachable when the
+   wide table scrolls horizontally. */
+table.grid td:last-child,
+table.grid th:last-child {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: #fff;
+  box-shadow: 3px 0 6px -4px rgba(59, 14, 44, 0.25);
+}
+table.grid th:last-child {
+  background: #faf6f2;
+  z-index: 2;
+}
+table.grid tr:hover td:last-child {
+  background: #fcf9f6;
 }
 
 .badge {

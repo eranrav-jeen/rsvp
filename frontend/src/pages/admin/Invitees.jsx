@@ -25,7 +25,7 @@ export default function Invitees() {
   const [status, setStatus] = useState('');
   const [q, setQ] = useState('');
   const [toast, setToast] = useState('');
-  const [showAdd, setShowAdd] = useState(false);
+  const [editInvitee, setEditInvitee] = useState(null); // null | {} (new) | invitee (edit)
   const [showMaillist, setShowMaillist] = useState(false);
   const fileRef = useRef();
 
@@ -139,7 +139,7 @@ export default function Invitees() {
           ))}
         </select>
         <span className="spacer" />
-        <button className="btn btn-sm btn-ghost" onClick={() => setShowAdd(true)}>
+        <button className="btn btn-sm btn-ghost" onClick={() => setEditInvitee({})}>
           + הוספת מוזמן
         </button>
         <button
@@ -188,15 +188,21 @@ export default function Invitees() {
                 <th>אחראי/ת הזמנה</th>
                 <th>מקור</th>
                 <th>הערות</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
               {data.invitees.map((inv) => (
-                <InviteeRow key={inv.id} inv={inv} onUpdate={updateInvitee} />
+                <InviteeRow
+                  key={inv.id}
+                  inv={inv}
+                  onUpdate={updateInvitee}
+                  onEdit={(row) => setEditInvitee(row)}
+                />
               ))}
               {data.invitees.length === 0 && (
                 <tr>
-                  <td colSpan={10} className="center muted" style={{ padding: 30 }}>
+                  <td colSpan={11} className="center muted" style={{ padding: 30 }}>
                     לא נמצאו מוזמנים
                   </td>
                 </tr>
@@ -211,12 +217,13 @@ export default function Invitees() {
         <ByOrgChart orgs={byOrg} />
       </div>
 
-      {showAdd && (
-        <AddInviteeModal
-          onClose={() => setShowAdd(false)}
-          onSaved={() => {
-            setShowAdd(false);
-            showToast('מוזמן נוסף');
+      {editInvitee && (
+        <InviteeModal
+          invitee={editInvitee}
+          onClose={() => setEditInvitee(null)}
+          onSaved={(msg) => {
+            setEditInvitee(null);
+            showToast(msg);
             load();
           }}
         />
@@ -246,10 +253,8 @@ function Counter({ cls, num, lbl }) {
   );
 }
 
-function InviteeRow({ inv, onUpdate }) {
-  const [notes, setNotes] = useState(inv.notes || '');
+function InviteeRow({ inv, onUpdate, onEdit }) {
   const [plusOnes, setPlusOnes] = useState(inv.plus_ones);
-  const needsEmail = !inv.email;
 
   return (
     <tr>
@@ -274,7 +279,7 @@ function InviteeRow({ inv, onUpdate }) {
           type="number"
           min="0"
           max="20"
-          style={{ width: 56 }}
+          className="qty"
           value={plusOnes}
           onChange={(e) => setPlusOnes(e.target.value)}
           onBlur={() => {
@@ -295,32 +300,38 @@ function InviteeRow({ inv, onUpdate }) {
         <span className="muted" style={{ fontSize: 12 }}>{inv.source}</span>
       </td>
       <td>
-        <input
-          type="text"
-          style={{ width: 150 }}
-          value={notes}
-          placeholder={needsEmail ? 'חסר מייל' : ''}
-          onChange={(e) => setNotes(e.target.value)}
-          onBlur={() => {
-            if ((notes || '') !== (inv.notes || '')) onUpdate(inv.id, { notes });
-          }}
-        />
+        {inv.notes ? (
+          <span className="cell-notes" title={inv.notes}>
+            {inv.notes}
+          </span>
+        ) : (
+          <span className="muted">—</span>
+        )}
+      </td>
+      <td>
+        <button className="btn btn-sm btn-ghost" onClick={() => onEdit(inv)}>
+          עריכה
+        </button>
       </td>
     </tr>
   );
 }
 
-function AddInviteeModal({ onClose, onSaved }) {
+function InviteeModal({ invitee, onClose, onSaved }) {
+  const isNew = !invitee || !invitee.id;
   const [form, setForm] = useState({
-    organization: '',
-    full_name: '',
-    role: '',
-    email: '',
-    phone: '',
-    status: 'not_invited',
-    invited_by: '',
+    organization: invitee?.organization || '',
+    full_name: invitee?.full_name || '',
+    role: invitee?.role || '',
+    email: invitee?.email || '',
+    phone: invitee?.phone || '',
+    status: invitee?.status || 'not_invited',
+    plus_ones: invitee?.plus_ones ?? 0,
+    invited_by: invitee?.invited_by || '',
+    notes: invitee?.notes || '',
   });
   const [err, setErr] = useState('');
+  const [busy, setBusy] = useState(false);
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
 
   async function save() {
@@ -328,18 +339,38 @@ function AddInviteeModal({ onClose, onSaved }) {
       setErr('ארגון הוא שדה חובה');
       return;
     }
+    const payload = { ...form, plus_ones: Number(form.plus_ones) || 0 };
+    setBusy(true);
     try {
-      await api.post('/api/invitees', form);
-      onSaved();
+      if (isNew) {
+        await api.post('/api/invitees', payload);
+        onSaved('מוזמן נוסף');
+      } else {
+        try {
+          await api.patch(`/api/invitees/${invitee.id}`, payload);
+          onSaved('נשמר');
+        } catch (e) {
+          if (e.status === 409 && e.data?.error === 'over_capacity') {
+            if (window.confirm(`${e.data.message}\n\nלהמשיך בכל זאת?`)) {
+              await api.patch(`/api/invitees/${invitee.id}`, { ...payload, force: true });
+              onSaved('נשמר (מעל המכסה)');
+            }
+          } else {
+            throw e;
+          }
+        }
+      }
     } catch {
       setErr('שגיאה בשמירה');
+    } finally {
+      setBusy(false);
     }
   }
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <h3>הוספת מוזמן</h3>
+        <h3>{isNew ? 'הוספת מוזמן' : 'עריכת מוזמן'}</h3>
         {err && <div className="form-error">{err}</div>}
         <div className="field">
           <label>ארגון *</label>
@@ -372,6 +403,10 @@ function AddInviteeModal({ onClose, onSaved }) {
           </select>
         </div>
         <div className="field">
+          <label>מלווים</label>
+          <input type="number" min="0" max="20" value={form.plus_ones} onChange={set('plus_ones')} />
+        </div>
+        <div className="field">
           <label>אחראי/ת הזמנה</label>
           <OwnerSelect
             value={form.invited_by}
@@ -379,9 +414,13 @@ function AddInviteeModal({ onClose, onSaved }) {
             placeholder="בחר/י…"
           />
         </div>
+        <div className="field">
+          <label>הערות</label>
+          <textarea value={form.notes} onChange={set('notes')} />
+        </div>
         <div className="actions">
-          <button className="btn btn-primary" onClick={save}>
-            שמירה
+          <button className="btn btn-primary" onClick={save} disabled={busy}>
+            {busy ? 'שומר…' : 'שמירה'}
           </button>
           <button className="btn btn-ghost" onClick={onClose}>
             ביטול
