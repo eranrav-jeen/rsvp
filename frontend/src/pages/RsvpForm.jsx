@@ -65,7 +65,6 @@ const empty = {
   email: '',
   phone: '',
   plus_ones: 0,
-  dietary_notes: '',
 };
 
 export default function RsvpForm() {
@@ -208,10 +207,6 @@ export default function RsvpForm() {
                       value={form.plus_ones}
                       onChange={set('plus_ones')}
                     />
-                  </div>
-                  <div className="field">
-                    <label>הערות תזונה / העדפות</label>
-                    <input type="text" value={form.dietary_notes} onChange={set('dietary_notes')} />
                   </div>
                 </>
               )}
