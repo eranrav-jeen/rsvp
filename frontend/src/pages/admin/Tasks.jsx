@@ -18,7 +18,7 @@ function isOverdue(t) {
 export default function Tasks() {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [view, setView] = useState('kanban'); // kanban | table
+  const [view, setView] = useState('table'); // kanban | table
   const [ownerFilter, setOwnerFilter] = useState('');
   const [editing, setEditing] = useState(null); // task or {} for new
   const [toast, setToast] = useState('');

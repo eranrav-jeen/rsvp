@@ -105,7 +105,7 @@ export default function Invitees() {
 
       {s && (
         <div className="counters">
-          <Counter cls="" num={s.total_invitees} lbl="סה״כ מוזמנים" />
+          <Counter cls="" num={s.total_invitees} lbl="מספר מוזמנים פוטנציאלי" />
           <Counter cls="" num={s.not_invited} lbl="טרם הוזמנו" />
           <Counter cls="" num={s.invited} lbl="הוזמנו" />
           <Counter cls="confirmed" num={s.confirmed} lbl="אישרו" />
