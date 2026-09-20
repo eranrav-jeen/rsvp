@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { api } from '../../api.js';
 import OwnerSelect from '../../components/OwnerSelect.jsx';
-import ByOrgChart from '../../components/ByOrgChart.jsx';
+import ByOrgSection from '../../components/ByOrgSection.jsx';
 
 const STATUS_OPTIONS = [
   { value: 'not_invited', label: 'טרם הוזמן' },
@@ -171,6 +171,8 @@ export default function Invitees() {
         </a>
       </div>
 
+      <ByOrgSection orgs={byOrg} />
+
       {loading ? (
         <div className="loading">טוען…</div>
       ) : (
@@ -211,11 +213,6 @@ export default function Invitees() {
           </table>
         </div>
       )}
-
-      <div className="section-title">צפי הגעה לפי ארגון</div>
-      <div className="table-wrap" style={{ padding: '16px 18px' }}>
-        <ByOrgChart orgs={byOrg} />
-      </div>
 
       {editInvitee && (
         <InviteeModal

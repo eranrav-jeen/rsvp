@@ -962,6 +962,122 @@ table.grid tr:hover td:last-child {
   color: var(--color-coral);
 }
 
+/* By-org collapsible section */
+.byorg-section {
+  margin: 8px 0 18px;
+}
+.byorg-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  text-align: right;
+  background: #fff;
+  border: 1px solid #eee4da;
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-maroon);
+  box-shadow: var(--shadow-sm);
+}
+.byorg-toggle:hover {
+  background: #fdfaf7;
+}
+.byorg-toggle .chev {
+  color: var(--color-coral);
+  transition: transform 0.15s ease;
+  display: inline-block;
+}
+.byorg-toggle .chev.open {
+  transform: rotate(90deg);
+}
+.byorg-panel {
+  padding: 14px 18px;
+  margin-top: 8px;
+}
+.byorg-viewtoggle {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+/* Pie / donut */
+.pie-wrap {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  align-items: center;
+}
+.pie-svg {
+  width: 220px;
+  height: 220px;
+  flex: 0 0 auto;
+}
+.pie-center-num {
+  font-size: 30px;
+  font-weight: 800;
+  fill: var(--color-maroon);
+}
+.pie-center-lbl {
+  font-size: 13px;
+  fill: #8a7a82;
+}
+.pie-legend {
+  flex: 1;
+  min-width: 220px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 2px 16px;
+}
+.pie-leg-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 6px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: default;
+}
+.pie-leg-item.active {
+  background: #faf3f7;
+}
+.pie-leg-item i {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  flex: 0 0 auto;
+}
+.pie-leg-name {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--color-text);
+}
+.pie-leg-val {
+  font-weight: 700;
+  color: var(--color-maroon);
+  font-variant-numeric: tabular-nums;
+}
+.pie-tip {
+  position: absolute;
+  z-index: 5;
+  background: var(--color-maroon);
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  pointer-events: none;
+  box-shadow: var(--shadow);
+  max-width: 240px;
+}
+.pie-tip b {
+  color: var(--color-amber);
+}
+
 /* Modal */
 .modal-backdrop {
   position: fixed;
