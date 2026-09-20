@@ -111,7 +111,7 @@ export default function Invitees() {
           <Counter cls="confirmed" num={s.confirmed} lbl="אישרו" />
           <Counter cls="" num={s.maybe} lbl="אולי" />
           <Counter cls="waitlist" num={s.waitlist} lbl="רשימת המתנה" />
-          <Counter cls="declined" num={s.declined} lbl="סירבו" />
+          <Counter cls="declined" num={s.declined} lbl="סימנו שלא יגיעו" />
           <Counter cls="" num={s.no_response} lbl="ללא מענה" />
           <div className={`counter cap ${s.confirmed_seats >= s.max_attendees ? 'full' : ''}`}>
             <div className="num">
