@@ -9,7 +9,7 @@ const STATUS_OPTIONS = [
   { value: 'confirmed', label: 'אישר' },
   { value: 'maybe', label: 'אולי' },
   { value: 'waitlist', label: 'רשימת המתנה' },
-  { value: 'declined', label: 'סירב' },
+  { value: 'declined', label: 'לא יגיע' },
   { value: 'no_response', label: 'ללא מענה' },
 ];
 
