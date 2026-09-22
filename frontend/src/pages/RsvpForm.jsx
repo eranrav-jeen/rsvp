@@ -212,6 +212,10 @@ export default function RsvpForm() {
 
               {/* Optional McKinsey-style survey */}
               <div className="soft-block survey-block">
+                <div className="survey-header">
+                  <div className="survey-title">מצפן הבינה למגזר הציבורי:</div>
+                  <div className="survey-subtitle">מהבטחה ליישום בסקייל</div>
+                </div>
                 <label className="survey-optin">
                   <input
                     type="checkbox"
@@ -234,10 +238,6 @@ export default function RsvpForm() {
 
                 {surveyOptIn && (
                   <div className="survey-questions">
-                    <div className="survey-header">
-                      <div className="survey-title">מצפן הבינה למגזר הציבורי:</div>
-                      <div className="survey-subtitle">מהבטחה ליישום בסקייל</div>
-                    </div>
                     <p className="survey-intro">
                       מתחייבים לא לפרסם את המידע הפרטני ביחס לארגונים המשיבים.
                     </p>
