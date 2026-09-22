@@ -10,7 +10,7 @@ router.get(
   asyncHandler(async (req, res) => {
     const settings = await query('SELECT * FROM event_settings ORDER BY id LIMIT 1');
     const count = await query(
-      "SELECT COALESCE(SUM(plus_ones + 1),0)::int AS confirmed_seats FROM invitees WHERE status = 'confirmed'"
+      "SELECT COALESCE(SUM(plus_ones + 1),0)::int AS confirmed_seats FROM invitees WHERE status IN ('confirmed','speaker')"
     );
     res.json({
       max_attendees: settings.rows[0] ? settings.rows[0].max_attendees : 120,

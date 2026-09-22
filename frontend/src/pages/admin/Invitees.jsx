@@ -8,6 +8,7 @@ const STATUS_OPTIONS = [
   { value: 'invited', label: 'הוזמן' },
   { value: 'pending', label: 'ממתין לאישור' },
   { value: 'confirmed', label: 'אישר' },
+  { value: 'speaker', label: 'מרצה/ת' },
   { value: 'maybe', label: 'אולי' },
   { value: 'waitlist', label: 'רשימת המתנה' },
   { value: 'declined', label: 'לא יגיע' },
@@ -124,6 +125,7 @@ export default function Invitees() {
           <Counter cls="" num={s.invited} lbl="הוזמנו" />
           <Counter cls="pending" num={s.pending} lbl="ממתינים לאישור" />
           <Counter cls="confirmed" num={s.confirmed} lbl="אישרו" />
+          <Counter cls="confirmed" num={s.speaker} lbl="מרצים/ות" />
           <Counter cls="" num={s.maybe} lbl="אולי" />
           <Counter cls="waitlist" num={s.waitlist} lbl="רשימת המתנה" />
           <Counter cls="declined" num={s.declined} lbl="סימנו שלא יגיעו" />
@@ -285,6 +287,7 @@ function Counter({ cls, num, lbl }) {
 
 function InviteeRow({ inv, onUpdate, onEdit }) {
   const [plusOnes, setPlusOnes] = useState(inv.plus_ones);
+  const [phone, setPhone] = useState(inv.phone || '');
 
   return (
     <tr>
@@ -294,7 +297,19 @@ function InviteeRow({ inv, onUpdate, onEdit }) {
       <td dir="ltr" style={{ textAlign: 'left' }}>
         {inv.email || <span className="flag">⚑ חסר מייל</span>}
       </td>
-      <td dir="ltr" style={{ textAlign: 'left' }}>{inv.phone || ''}</td>
+      <td dir="ltr" style={{ textAlign: 'left' }}>
+        <input
+          type="tel"
+          dir="ltr"
+          className="phone-cell"
+          placeholder="—"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          onBlur={() => {
+            if ((phone || '') !== (inv.phone || '')) onUpdate(inv.id, { phone });
+          }}
+        />
+      </td>
       <td>
         <select value={inv.status} onChange={(e) => onUpdate(inv.id, { status: e.target.value })}>
           {STATUS_OPTIONS.map((o) => (

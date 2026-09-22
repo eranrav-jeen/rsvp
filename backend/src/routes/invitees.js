@@ -8,7 +8,7 @@ import { asyncHandler } from '../middleware.js';
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
 
-const VALID_STATUSES = ['not_invited', 'invited', 'pending', 'confirmed', 'maybe', 'declined', 'waitlist', 'no_response'];
+const VALID_STATUSES = ['not_invited', 'invited', 'pending', 'confirmed', 'speaker', 'maybe', 'declined', 'waitlist', 'no_response'];
 
 // GET /api/invitees — list + filter + search + summary counters
 router.get(
@@ -151,9 +151,10 @@ router.patch(
       const nextPlusOnes =
         body.plus_ones != null ? Math.max(0, Number.parseInt(body.plus_ones, 10) || 0) : inv.plus_ones;
 
-      // Capacity warning when the change results in a confirmed attendee.
+      // Capacity check only when transitioning INTO confirmed (not on unrelated
+      // edits to someone who's already confirmed).
       let overCapacity = false;
-      if (nextStatus === 'confirmed') {
+      if (nextStatus === 'confirmed' && inv.status !== 'confirmed') {
         const { maxAttendees, confirmedSeats } = await lockAndCount(client, { excludeInviteeId: id });
         const requestedSeats = 1 + nextPlusOnes;
         if (confirmedSeats + requestedSeats > maxAttendees) {
@@ -364,7 +365,7 @@ router.get(
     const rows = await query(
       `SELECT organization,
               COUNT(*)::int AS total,
-              COUNT(*) FILTER (WHERE status = 'confirmed')::int AS confirmed
+              COUNT(*) FILTER (WHERE status IN ('confirmed','speaker'))::int AS confirmed
        FROM invitees
        GROUP BY organization
        ORDER BY total DESC, organization`
@@ -382,12 +383,15 @@ async function getSummary() {
   for (const r of rows.rows) byStatus[r.status] = { count: r.count, seats: r.seats };
   const settings = await query('SELECT max_attendees FROM event_settings ORDER BY id LIMIT 1');
   const maxAttendees = settings.rows[0] ? settings.rows[0].max_attendees : 120;
-  const confirmedSeats = byStatus.confirmed ? byStatus.confirmed.seats : 0;
+  // Approved seats = confirmed + speakers.
+  const confirmedSeats =
+    (byStatus.confirmed ? byStatus.confirmed.seats : 0) + (byStatus.speaker ? byStatus.speaker.seats : 0);
   return {
     not_invited: byStatus.not_invited ? byStatus.not_invited.count : 0,
     invited: byStatus.invited ? byStatus.invited.count : 0,
     pending: byStatus.pending ? byStatus.pending.count : 0,
     confirmed: byStatus.confirmed ? byStatus.confirmed.count : 0,
+    speaker: byStatus.speaker ? byStatus.speaker.count : 0,
     maybe: byStatus.maybe ? byStatus.maybe.count : 0,
     declined: byStatus.declined ? byStatus.declined.count : 0,
     waitlist: byStatus.waitlist ? byStatus.waitlist.count : 0,

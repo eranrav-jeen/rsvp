@@ -16,7 +16,8 @@ export async function lockAndCount(client, { excludeInviteeId = null } = {}) {
   const approvalRequired = settings.rows[0] ? settings.rows[0].approval_required : false;
 
   const params = [];
-  let where = "status = 'confirmed'";
+  // Speakers count as approved attendees too.
+  let where = "status IN ('confirmed','speaker')";
   if (excludeInviteeId != null) {
     params.push(excludeInviteeId);
     where += ` AND id <> $${params.length}`;

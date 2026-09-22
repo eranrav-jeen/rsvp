@@ -660,6 +660,9 @@ table.grid input {
 table.grid input.qty {
   width: 52px;
 }
+table.grid input.phone-cell {
+  width: 120px;
+}
 .cell-notes {
   display: inline-block;
   max-width: 170px;
