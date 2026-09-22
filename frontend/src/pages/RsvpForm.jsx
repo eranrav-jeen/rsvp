@@ -306,7 +306,6 @@ function Confirmation({ status }) {
         <div className="confirm-emoji">⏳</div>
         <h2>נרשמתם לרשימת ההמתנה</h2>
         <p>הכנס מלא כרגע — אם יתפנה מקום, ניצור אתכם קשר בהקדם.</p>
-        <p className="muted">תודה על ההתעניינות!</p>
       </div>
     );
   }
@@ -316,7 +315,6 @@ function Confirmation({ status }) {
         <div className="confirm-emoji">📝</div>
         <h2>הבקשה שלכם התקבלה!</h2>
         <p>ההשתתפות בכנס מותנית באישור. נבדוק את הבקשה ונעדכן אתכם במייל בהקדם.</p>
-        <p className="muted">תודה על ההתעניינות!</p>
       </div>
     );
   }
