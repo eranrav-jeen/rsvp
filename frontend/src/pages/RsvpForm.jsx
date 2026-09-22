@@ -309,6 +309,16 @@ function Confirmation({ status }) {
       </div>
     );
   }
+  if (status === 'pending') {
+    return (
+      <div className="confirm-screen">
+        <div className="confirm-emoji">📝</div>
+        <h2>הבקשה שלכם התקבלה!</h2>
+        <p>ההשתתפות בכנס מותנית באישור. נבדוק את הבקשה ונעדכן אתכם במייל בהקדם.</p>
+        <p className="muted">תודה על ההתעניינות!</p>
+      </div>
+    );
+  }
   if (status === 'maybe') {
     return (
       <div className="confirm-screen">

@@ -8,7 +8,7 @@ import { asyncHandler } from '../middleware.js';
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
 
-const VALID_STATUSES = ['not_invited', 'invited', 'confirmed', 'maybe', 'declined', 'waitlist', 'no_response'];
+const VALID_STATUSES = ['not_invited', 'invited', 'pending', 'confirmed', 'maybe', 'declined', 'waitlist', 'no_response'];
 
 // GET /api/invitees — list + filter + search + summary counters
 router.get(
@@ -386,6 +386,7 @@ async function getSummary() {
   return {
     not_invited: byStatus.not_invited ? byStatus.not_invited.count : 0,
     invited: byStatus.invited ? byStatus.invited.count : 0,
+    pending: byStatus.pending ? byStatus.pending.count : 0,
     confirmed: byStatus.confirmed ? byStatus.confirmed.count : 0,
     maybe: byStatus.maybe ? byStatus.maybe.count : 0,
     declined: byStatus.declined ? byStatus.declined.count : 0,

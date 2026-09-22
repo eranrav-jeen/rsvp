@@ -10,9 +10,10 @@
 // their current confirmed seats.
 export async function lockAndCount(client, { excludeInviteeId = null } = {}) {
   const settings = await client.query(
-    'SELECT id, max_attendees FROM event_settings ORDER BY id LIMIT 1 FOR UPDATE'
+    'SELECT id, max_attendees, approval_required FROM event_settings ORDER BY id LIMIT 1 FOR UPDATE'
   );
   const maxAttendees = settings.rows[0] ? settings.rows[0].max_attendees : 120;
+  const approvalRequired = settings.rows[0] ? settings.rows[0].approval_required : false;
 
   const params = [];
   let where = "status = 'confirmed'";
@@ -26,6 +27,7 @@ export async function lockAndCount(client, { excludeInviteeId = null } = {}) {
   );
   return {
     maxAttendees,
+    approvalRequired,
     confirmedSeats: countRes.rows[0].confirmed_seats,
   };
 }

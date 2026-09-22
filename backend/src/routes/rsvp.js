@@ -71,13 +71,18 @@ router.post(
     const result = await withTransaction(async (client) => {
       let resultingStatus;
       if (att === 'yes') {
-        const { maxAttendees, confirmedSeats } = await lockAndCount(client);
-        resultingStatus = decideStatus({
-          attending: true,
-          requestedSeats,
-          confirmedSeats,
-          maxAttendees,
-        });
+        const { maxAttendees, confirmedSeats, approvalRequired } = await lockAndCount(client);
+        if (approvalRequired) {
+          // Application mode: needs an admin to approve → confirmed.
+          resultingStatus = 'pending';
+        } else {
+          resultingStatus = decideStatus({
+            attending: true,
+            requestedSeats,
+            confirmedSeats,
+            maxAttendees,
+          });
+        }
       } else if (att === 'no') {
         resultingStatus = 'declined';
       } else {

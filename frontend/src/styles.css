@@ -556,8 +556,44 @@ button {
 .counter.confirmed {
   border-top-color: #2e8b57;
 }
+.counter.pending {
+  border-top-color: var(--color-coral);
+}
 .counter.waitlist {
   border-top-color: var(--color-amber);
+}
+
+.settings-bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  background: #fff;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+  padding: 10px 16px;
+  margin-bottom: 14px;
+}
+.switch-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-weight: 700;
+  color: var(--color-maroon);
+  cursor: pointer;
+  font-size: 15px;
+}
+.switch-row input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--color-coral);
+  cursor: pointer;
+}
+.row-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: nowrap;
 }
 .counter.declined {
   border-top-color: #b21e2f;

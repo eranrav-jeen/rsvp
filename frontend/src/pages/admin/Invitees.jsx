@@ -6,6 +6,7 @@ import ByOrgSection from '../../components/ByOrgSection.jsx';
 const STATUS_OPTIONS = [
   { value: 'not_invited', label: 'טרם הוזמן' },
   { value: 'invited', label: 'הוזמן' },
+  { value: 'pending', label: 'ממתין לאישור' },
   { value: 'confirmed', label: 'אישר' },
   { value: 'maybe', label: 'אולי' },
   { value: 'waitlist', label: 'רשימת המתנה' },
@@ -21,6 +22,7 @@ const MAILLIST_IMPORT_HELP =
 export default function Invitees() {
   const [data, setData] = useState({ invitees: [], summary: null });
   const [byOrg, setByOrg] = useState([]);
+  const [settings, setSettings] = useState(null);
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState('');
   const [q, setQ] = useState('');
@@ -40,12 +42,14 @@ export default function Invitees() {
     if (status) params.set('status', status);
     if (q.trim()) params.set('q', q.trim());
     try {
-      const [res, stats] = await Promise.all([
+      const [res, stats, evt] = await Promise.all([
         api.get(`/api/invitees?${params.toString()}`),
         api.get('/api/invitees/stats/by-org'),
+        api.get('/api/event-settings'),
       ]);
       setData(res);
       setByOrg(stats.orgs || []);
+      setSettings(evt);
     } finally {
       setLoading(false);
     }
@@ -81,6 +85,16 @@ export default function Invitees() {
     }
   }
 
+  async function toggleApproval(val) {
+    try {
+      const res = await api.patch('/api/event-settings', { approval_required: val });
+      setSettings((s) => ({ ...(s || {}), ...res }));
+      showToast(val ? 'הרשמות ידרשו אישור מנהל' : 'הרשמות יאושרו אוטומטית');
+    } catch {
+      showToast('שגיאה בעדכון ההגדרה');
+    }
+  }
+
   async function handleImport(e) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -108,6 +122,7 @@ export default function Invitees() {
           <Counter cls="" num={s.total_invitees} lbl="מספר מוזמנים פוטנציאלי" />
           <Counter cls="" num={s.not_invited} lbl="טרם הוזמנו" />
           <Counter cls="" num={s.invited} lbl="הוזמנו" />
+          <Counter cls="pending" num={s.pending} lbl="ממתינים לאישור" />
           <Counter cls="confirmed" num={s.confirmed} lbl="אישרו" />
           <Counter cls="" num={s.maybe} lbl="אולי" />
           <Counter cls="waitlist" num={s.waitlist} lbl="רשימת המתנה" />
@@ -119,6 +134,24 @@ export default function Invitees() {
             </div>
             <div className="lbl">משתתפים צפויים מול המכסה</div>
           </div>
+        </div>
+      )}
+
+      {settings && (
+        <div className="settings-bar">
+          <label className="switch-row">
+            <input
+              type="checkbox"
+              checked={!!settings.approval_required}
+              onChange={(e) => toggleApproval(e.target.checked)}
+            />
+            <span>הרשמות דורשות אישור מנהל</span>
+          </label>
+          <span className="muted" style={{ fontSize: 13 }}>
+            {settings.approval_required
+              ? 'הרשמה "כן" נכנסת כ"ממתין לאישור" עד לאישורכם.'
+              : 'הרשמה "כן" מאושרת אוטומטית (עד למכסה).'}
+          </span>
         </div>
       )}
 
@@ -306,9 +339,29 @@ function InviteeRow({ inv, onUpdate, onEdit }) {
         )}
       </td>
       <td>
-        <button className="btn btn-sm btn-ghost" onClick={() => onEdit(inv)}>
-          עריכה
-        </button>
+        <div className="row-actions">
+          {inv.status === 'pending' && (
+            <>
+              <button
+                className="btn btn-sm btn-primary"
+                title="אישור הבקשה"
+                onClick={() => onUpdate(inv.id, { status: 'confirmed' })}
+              >
+                אשר
+              </button>
+              <button
+                className="btn btn-sm btn-danger"
+                title="דחיית הבקשה"
+                onClick={() => onUpdate(inv.id, { status: 'declined' })}
+              >
+                דחה
+              </button>
+            </>
+          )}
+          <button className="btn btn-sm btn-ghost" onClick={() => onEdit(inv)}>
+            עריכה
+          </button>
+        </div>
       </td>
     </tr>
   );
