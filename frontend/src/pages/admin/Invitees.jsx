@@ -27,6 +27,8 @@ export default function Invitees() {
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState('');
   const [q, setQ] = useState('');
+  const [excludeJeen, setExcludeJeen] = useState(false);
+  const [excludeSpeakers, setExcludeSpeakers] = useState(false);
   const [toast, setToast] = useState('');
   const [editInvitee, setEditInvitee] = useState(null); // null | {} (new) | invitee (edit)
   const [showMaillist, setShowMaillist] = useState(false);
@@ -42,6 +44,8 @@ export default function Invitees() {
     const params = new URLSearchParams();
     if (status) params.set('status', status);
     if (q.trim()) params.set('q', q.trim());
+    if (excludeJeen) params.set('exclude_jeen', '1');
+    if (excludeSpeakers) params.set('exclude_speakers', '1');
     try {
       const [res, stats, evt] = await Promise.all([
         api.get(`/api/invitees?${params.toString()}`),
@@ -59,7 +63,7 @@ export default function Invitees() {
   useEffect(() => {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status]);
+  }, [status, excludeJeen, excludeSpeakers]);
 
   useEffect(() => {
     const t = setTimeout(load, 300);
@@ -138,6 +142,26 @@ export default function Invitees() {
           </div>
         </div>
       )}
+
+      <div className="exclude-bar">
+        <span className="exclude-label">אל תכלול בספירה:</span>
+        <label className="exclude-opt">
+          <input
+            type="checkbox"
+            checked={excludeJeen}
+            onChange={(e) => setExcludeJeen(e.target.checked)}
+          />
+          <span>עובדי Jeen</span>
+        </label>
+        <label className="exclude-opt">
+          <input
+            type="checkbox"
+            checked={excludeSpeakers}
+            onChange={(e) => setExcludeSpeakers(e.target.checked)}
+          />
+          <span>מרצים/ות</span>
+        </label>
+      </div>
 
       {settings && (
         <div className="settings-bar">

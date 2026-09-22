@@ -10,11 +10,18 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 *
 
 const VALID_STATUSES = ['not_invited', 'invited', 'pending', 'confirmed', 'speaker', 'maybe', 'declined', 'waitlist', 'no_response'];
 
+// SQL fragments to identify Jeen employees (email @jeen.ai or org "jeen") and
+// the group we de-emphasise (speakers + Jeen employees) at the bottom of the list.
+const IS_JEEN = "(LOWER(COALESCE(email,'')) LIKE '%@jeen.ai' OR LOWER(organization) = 'jeen')";
+const IS_DEEMPHASIZED = `(status = 'speaker' OR ${IS_JEEN})`;
+
 // GET /api/invitees — list + filter + search + summary counters
 router.get(
   '/',
   asyncHandler(async (req, res) => {
     const { status, q } = req.query;
+    const excludeJeen = req.query.exclude_jeen === '1' || req.query.exclude_jeen === 'true';
+    const excludeSpeakers = req.query.exclude_speakers === '1' || req.query.exclude_speakers === 'true';
     const params = [];
     const clauses = [];
 
@@ -31,12 +38,14 @@ router.get(
     }
 
     const where = clauses.length ? `WHERE ${clauses.join(' AND ')}` : '';
+    // Push speakers and Jeen employees to the bottom of the list.
     const rows = await query(
-      `SELECT * FROM invitees ${where} ORDER BY organization, id`,
+      `SELECT * FROM invitees ${where}
+       ORDER BY (CASE WHEN ${IS_DEEMPHASIZED} THEN 1 ELSE 0 END), organization, id`,
       params
     );
 
-    const summary = await getSummary();
+    const summary = await getSummary({ excludeJeen, excludeSpeakers });
     res.json({ invitees: rows.rows, summary });
   })
 );
@@ -374,10 +383,14 @@ router.get(
   })
 );
 
-async function getSummary() {
+async function getSummary({ excludeJeen = false, excludeSpeakers = false } = {}) {
+  const conds = [];
+  if (excludeSpeakers) conds.push("status <> 'speaker'");
+  if (excludeJeen) conds.push(`NOT ${IS_JEEN}`);
+  const where = conds.length ? `WHERE ${conds.join(' AND ')}` : '';
   const rows = await query(
     `SELECT status, COUNT(*)::int AS count, COALESCE(SUM(plus_ones + 1),0)::int AS seats
-     FROM invitees GROUP BY status`
+     FROM invitees ${where} GROUP BY status`
   );
   const byStatus = {};
   for (const r of rows.rows) byStatus[r.status] = { count: r.count, seats: r.seats };

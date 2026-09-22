@@ -563,6 +563,34 @@ button {
   border-top-color: var(--color-amber);
 }
 
+.exclude-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin: -6px 0 16px;
+  padding: 2px 4px;
+  font-size: 14px;
+}
+.exclude-label {
+  color: #6b5b64;
+  font-weight: 600;
+}
+.exclude-opt {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--color-maroon);
+  font-weight: 600;
+  cursor: pointer;
+}
+.exclude-opt input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-coral);
+  cursor: pointer;
+}
+
 .settings-bar {
   display: flex;
   align-items: center;
