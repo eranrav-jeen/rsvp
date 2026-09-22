@@ -2,6 +2,8 @@ import express from 'express';
 import { withTransaction } from '../db.js';
 import { lockAndCount, decideStatus } from '../capacity.js';
 import { asyncHandler } from '../middleware.js';
+import { sendMail } from '../mailer.js';
+import { registrationReceived } from '../emails.js';
 
 const router = express.Router();
 
@@ -169,8 +171,23 @@ router.post(
         ]
       );
 
-      return { resultingStatus };
+      return { resultingStatus, inviteeId };
     });
+
+    // Send the acknowledgement email (fire-and-forget; never blocks or fails the
+    // RSVP response). Content is tailored to the resulting status.
+    const msg = registrationReceived({
+      name: String(full_name).trim(),
+      status: result.resultingStatus,
+    });
+    sendMail({
+      to: emailNorm,
+      subject: msg.subject,
+      html: msg.html,
+      text: msg.text,
+      kind: msg.kind,
+      inviteeId: result.inviteeId,
+    }).catch((e) => console.error('[rsvp] ack email error:', e.message));
 
     return res.json({ status: result.resultingStatus });
   })

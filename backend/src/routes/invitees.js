@@ -4,6 +4,8 @@ import * as XLSX from 'xlsx';
 import { query, withTransaction } from '../db.js';
 import { lockAndCount, decideStatus } from '../capacity.js';
 import { asyncHandler } from '../middleware.js';
+import { sendMail } from '../mailer.js';
+import { participationApproved, participationDeclined } from '../emails.js';
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
@@ -141,6 +143,29 @@ router.post(
   })
 );
 
+// Send an approval/decline email when an admin moves an invitee into a new
+// status. Only fires on a genuine transition, and only to invitees with an
+// email. Fire-and-forget — errors are logged, never surfaced to the admin.
+function maybeSendStatusEmail(prevStatus, invitee) {
+  if (!invitee || !invitee.email) return;
+  const next = invitee.status;
+  let msg = null;
+  if (next === 'confirmed' && prevStatus !== 'confirmed') {
+    msg = participationApproved({ name: invitee.full_name });
+  } else if (next === 'declined' && prevStatus !== 'declined') {
+    msg = participationDeclined({ name: invitee.full_name });
+  }
+  if (!msg) return;
+  sendMail({
+    to: invitee.email,
+    subject: msg.subject,
+    html: msg.html,
+    text: msg.text,
+    kind: msg.kind,
+    inviteeId: invitee.id,
+  }).catch((e) => console.error('[invitees] status email error:', e.message));
+}
+
 // PATCH /api/invitees/:id — update status/notes/fields, re-running capacity check
 // when moving someone into 'confirmed'.
 router.patch(
@@ -217,7 +242,7 @@ router.patch(
           id,
         ]
       );
-      return { invitee: updated.rows[0], overCapacity };
+      return { invitee: updated.rows[0], overCapacity, prevStatus: inv.status };
     });
 
     if (result.notFound) return res.status(404).json({ error: 'not found' });
@@ -228,6 +253,11 @@ router.patch(
         ...result,
       });
     }
+
+    // Notify the invitee on a real status transition (approve / decline).
+    // Fire-and-forget: never blocks or fails the admin action.
+    maybeSendStatusEmail(result.prevStatus, result.invitee);
+
     res.json({ invitee: result.invitee, overCapacity: result.overCapacity });
   })
 );
