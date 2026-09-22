@@ -691,6 +691,27 @@ table.grid input.qty {
 table.grid input.phone-cell {
   width: 120px;
 }
+.phone-edit {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.phone-ok {
+  border: none;
+  background: #2e8b57;
+  color: #fff;
+  border-radius: 6px;
+  width: 24px;
+  height: 24px;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  flex: 0 0 auto;
+  padding: 0;
+}
+.phone-ok:hover {
+  background: #257048;
+}
 .cell-notes {
   display: inline-block;
   max-width: 170px;

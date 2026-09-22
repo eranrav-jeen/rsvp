@@ -322,17 +322,31 @@ function InviteeRow({ inv, onUpdate, onEdit }) {
         {inv.email || <span className="flag">⚑ חסר מייל</span>}
       </td>
       <td dir="ltr" style={{ textAlign: 'left' }}>
-        <input
-          type="tel"
-          dir="ltr"
-          className="phone-cell"
-          placeholder="—"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-          onBlur={() => {
-            if ((phone || '') !== (inv.phone || '')) onUpdate(inv.id, { phone });
-          }}
-        />
+        <div className="phone-edit">
+          <input
+            type="tel"
+            dir="ltr"
+            className="phone-cell"
+            placeholder="—"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && (phone || '') !== (inv.phone || '')) {
+                onUpdate(inv.id, { phone });
+              }
+            }}
+          />
+          {(phone || '') !== (inv.phone || '') && (
+            <button
+              type="button"
+              className="phone-ok"
+              title="שמירת הטלפון"
+              onClick={() => onUpdate(inv.id, { phone })}
+            >
+              ✓
+            </button>
+          )}
+        </div>
       </td>
       <td>
         <select value={inv.status} onChange={(e) => onUpdate(inv.id, { status: e.target.value })}>
