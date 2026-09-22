@@ -278,6 +278,10 @@ export default function RsvpForm() {
               >
                 {submitting ? 'שולח…' : 'שליחת בקשת הרשמה'}
               </button>
+              <p className="submit-disclaimer">
+                שליחת הבקשה אינה מהווה אישור השתתפות. ההשתתפות מותנית באישור מראש
+                בשל מספר המקומות המוגבל, ותאושר בהודעה נפרדת במייל.
+              </p>
             </form>
           )}
         </div>
