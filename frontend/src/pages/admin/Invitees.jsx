@@ -245,7 +245,6 @@ export default function Invitees() {
                 <th>מייל</th>
                 <th>טלפון</th>
                 <th>סטטוס</th>
-                <th>מלווים</th>
                 <th>אחראי/ת הזמנה</th>
                 <th>פניות</th>
                 <th>מקור</th>
@@ -263,7 +262,7 @@ export default function Invitees() {
               ))}
               {data.invitees.length === 0 && (
                 <tr>
-                  <td colSpan={11} className="center muted" style={{ padding: 30 }}>
+                  <td colSpan={10} className="center muted" style={{ padding: 30 }}>
                     לא נמצאו מוזמנים
                   </td>
                 </tr>
@@ -310,15 +309,18 @@ function Counter({ cls, num, lbl }) {
 }
 
 function InviteeRow({ inv, onUpdate, onEdit }) {
-  const [plusOnes, setPlusOnes] = useState(inv.plus_ones);
   const [phone, setPhone] = useState(inv.phone || '');
 
   return (
     <tr>
-      <td>{inv.organization}</td>
-      <td>{inv.full_name || <span className="muted">—</span>}</td>
-      <td>{inv.role || <span className="muted">—</span>}</td>
-      <td dir="ltr" style={{ textAlign: 'left' }}>
+      <td className="col-org" title={inv.organization}>{inv.organization}</td>
+      <td className="col-name" title={inv.full_name || ''}>
+        {inv.full_name || <span className="muted">—</span>}
+      </td>
+      <td className="col-role" title={inv.role || ''}>
+        {inv.role || <span className="muted">—</span>}
+      </td>
+      <td className="col-email" dir="ltr" style={{ textAlign: 'left' }} title={inv.email || ''}>
         {inv.email || <span className="flag">⚑ חסר מייל</span>}
       </td>
       <td dir="ltr" style={{ textAlign: 'left' }}>
@@ -356,21 +358,6 @@ function InviteeRow({ inv, onUpdate, onEdit }) {
             </option>
           ))}
         </select>
-      </td>
-      <td>
-        <input
-          type="number"
-          min="0"
-          max="20"
-          className="qty"
-          value={plusOnes}
-          onChange={(e) => setPlusOnes(e.target.value)}
-          onBlur={() => {
-            if (String(plusOnes) !== String(inv.plus_ones)) {
-              onUpdate(inv.id, { plus_ones: Number(plusOnes) || 0 });
-            }
-          }}
-        />
       </td>
       <td>
         <OwnerSelect

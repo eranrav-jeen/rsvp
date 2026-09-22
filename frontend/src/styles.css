@@ -514,7 +514,7 @@ button {
 }
 .admin-main {
   padding: 22px 20px 60px;
-  max-width: 1200px;
+  max-width: 1600px;
   margin: 0 auto;
 }
 .admin-main h1 {
@@ -683,10 +683,37 @@ table.grid {
 }
 table.grid th,
 table.grid td {
-  padding: 10px 12px;
+  padding: 9px 8px;
   text-align: right;
   border-bottom: 1px solid #eee;
   vertical-align: middle;
+}
+
+/* Truncate the free-text columns so the table fits without horizontal scroll.
+   Full value shows on hover (title attribute). */
+.col-org {
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.col-name {
+  max-width: 110px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.col-role {
+  max-width: 85px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.col-email {
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 table.grid th {
   background: #faf6f2;
