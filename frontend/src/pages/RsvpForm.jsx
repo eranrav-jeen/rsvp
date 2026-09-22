@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { api } from '../api.js';
 
 const EVENT = {
-  title: 'ככה עושים AI בממשלה',
+  title: 'מצפן הבינה למגזר הציבורי:',
+  subtitle: 'מהבטחה ליישום בסקייל',
   dateLabel: 'יום שלישי, 20.10.2026 · 09:00–13:00',
   place: 'משרדי Jeen.ai · בגין 121, מגדלי עזריאלי שרונה, קומה 34, תל אביב',
   startUtc: '20261020T060000Z',
@@ -125,6 +126,7 @@ export default function RsvpForm() {
             <img src="/jeen-logo-white.png" alt="Jeen.ai" className="hero-logo-img" />
           </div>
           <h1>{EVENT.title}</h1>
+          <div className="hero-subtitle">{EVENT.subtitle}</div>
           <div className="meta">{EVENT.dateLabel}</div>
           <div className="meta">{EVENT.place}</div>
         </div>
@@ -212,10 +214,6 @@ export default function RsvpForm() {
 
               {/* Optional McKinsey-style survey */}
               <div className="soft-block survey-block">
-                <div className="survey-header">
-                  <div className="survey-title">מצפן הבינה למגזר הציבורי:</div>
-                  <div className="survey-subtitle">מהבטחה ליישום בסקייל</div>
-                </div>
                 <label className="survey-optin">
                   <input
                     type="checkbox"

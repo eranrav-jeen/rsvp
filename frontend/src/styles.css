@@ -116,10 +116,17 @@ button {
   margin-bottom: 10px;
 }
 .rsvp-hero h1 {
-  margin: 0 0 14px;
+  margin: 0 0 6px;
   font-size: 30px;
   font-weight: 800;
   line-height: 1.15;
+}
+.rsvp-hero .hero-subtitle {
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--color-amber);
+  margin: 0 0 14px;
+  line-height: 1.2;
 }
 .rsvp-hero .meta {
   font-size: 15px;
