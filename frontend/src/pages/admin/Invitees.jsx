@@ -249,7 +249,6 @@ export default function Invitees() {
                 <th>אחראי/ת הזמנה</th>
                 <th>פניות</th>
                 <th>מקור</th>
-                <th>הערות</th>
                 <th></th>
               </tr>
             </thead>
@@ -264,7 +263,7 @@ export default function Invitees() {
               ))}
               {data.invitees.length === 0 && (
                 <tr>
-                  <td colSpan={12} className="center muted" style={{ padding: 30 }}>
+                  <td colSpan={11} className="center muted" style={{ padding: 30 }}>
                     לא נמצאו מוזמנים
                   </td>
                 </tr>
@@ -410,15 +409,6 @@ function InviteeRow({ inv, onUpdate, onEdit }) {
       </td>
       <td>
         <span className="muted" style={{ fontSize: 12 }}>{inv.source}</span>
-      </td>
-      <td>
-        {inv.notes ? (
-          <span className="cell-notes" title={inv.notes}>
-            {inv.notes}
-          </span>
-        ) : (
-          <span className="muted">—</span>
-        )}
       </td>
       <td>
         <div className="row-actions">
