@@ -1,11 +1,10 @@
 import { useState } from 'react';
 import { api } from '../api.js';
-import JeenLogo from '../components/JeenLogo.jsx';
 
 const EVENT = {
   title: 'ככה עושים AI בממשלה',
   dateLabel: 'יום שלישי, 20.10.2026 · 09:00–13:00',
-  place: 'משרדי Jeen.AI · בגין 121, מגדלי עזריאלי שרונה, קומה 34, תל אביב',
+  place: 'משרדי Jeen.ai · בגין 121, מגדלי עזריאלי שרונה, קומה 34, תל אביב',
   startUtc: '20261020T060000Z',
   endUtc: '20261020T100000Z',
 };
@@ -123,7 +122,7 @@ export default function RsvpForm() {
       <div className="rsvp-card">
         <div className="rsvp-hero">
           <div className="hero-logo">
-            <JeenLogo height={34} wordmarkColor="var(--color-cream)" />
+            <img src="/jeen-logo-white.png" alt="Jeen.ai" className="hero-logo-img" />
           </div>
           <h1>{EVENT.title}</h1>
           <div className="meta">{EVENT.dateLabel}</div>
@@ -139,7 +138,7 @@ export default function RsvpForm() {
               <div className="soft-block">
                 <div className="field" style={{ marginBottom: 0 }}>
                   <label>
-                    האם תגיעו לכנס? <span className="required-star">*</span>
+                    האם תרצ/י להגיע לכנס? <span className="required-star">*</span>
                   </label>
                   <div className="attend-toggle">
                     <button
@@ -147,7 +146,7 @@ export default function RsvpForm() {
                       className={attendance === 'yes' ? 'active-yes' : ''}
                       onClick={() => setAttendance('yes')}
                     >
-                      כן, אגיע 🎉
+                      כן, אשמח
                     </button>
                     <button
                       type="button"
@@ -275,7 +274,7 @@ export default function RsvpForm() {
                 style={{ width: '100%' }}
                 disabled={submitting}
               >
-                {submitting ? 'שולח…' : 'שליחת הרשמה'}
+                {submitting ? 'שולח…' : 'שליחת בקשת הרשמה'}
               </button>
             </form>
           )}
