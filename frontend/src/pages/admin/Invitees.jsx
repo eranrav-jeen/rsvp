@@ -71,18 +71,44 @@ export default function Invitees() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [q]);
 
-  async function updateInvitee(id, patch) {
+  // Replace one row in place (keeps scroll position / no spinner).
+  function applyRow(invitee) {
+    setData((d) => ({ ...d, invitees: d.invitees.map((r) => (r.id === invitee.id ? invitee : r)) }));
+  }
+
+  // Silently refresh the summary counters + org chart without reloading the list.
+  async function refreshStats() {
     try {
-      await api.patch(`/api/invitees/${id}`, patch);
+      const params = new URLSearchParams();
+      if (excludeJeen) params.set('exclude_jeen', '1');
+      if (excludeSpeakers) params.set('exclude_speakers', '1');
+      const [inv, stats] = await Promise.all([
+        api.get(`/api/invitees?${params.toString()}`),
+        api.get('/api/invitees/stats/by-org'),
+      ]);
+      setData((d) => ({ ...d, summary: inv.summary }));
+      setByOrg(stats.orgs || []);
+    } catch {
+      /* leave existing stats */
+    }
+  }
+
+  async function updateInvitee(id, patch) {
+    // Whether this change can move the dashboard numbers.
+    const affectsCounts = 'status' in patch || 'plus_ones' in patch;
+    try {
+      const res = await api.patch(`/api/invitees/${id}`, patch);
+      if (res && res.invitee) applyRow(res.invitee);
+      if (affectsCounts) refreshStats();
       showToast('נשמר');
-      load();
     } catch (err) {
       if (err.status === 409 && err.data?.error === 'over_capacity') {
         const ok = window.confirm(`${err.data.message}\n\nלהמשיך בכל זאת?`);
         if (ok) {
-          await api.patch(`/api/invitees/${id}`, { ...patch, force: true });
+          const res = await api.patch(`/api/invitees/${id}`, { ...patch, force: true });
+          if (res && res.invitee) applyRow(res.invitee);
+          refreshStats();
           showToast('אושר (מעל המכסה)');
-          load();
         }
       } else {
         showToast('שגיאה בשמירה');
