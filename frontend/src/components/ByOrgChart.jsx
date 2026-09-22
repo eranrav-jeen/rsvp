@@ -13,7 +13,7 @@ export default function ByOrgChart({ orgs }) {
     <div className="byorg">
       <div className="byorg-legend">
         <span>
-          <i className="sw sw-confirmed" /> אישרו ({totalConfirmed})
+          <i className="sw sw-confirmed" /> אושרו ({totalConfirmed})
         </span>
         <span>
           <i className="sw sw-potential" /> פוטנציאל ({totalPotential})
@@ -27,7 +27,7 @@ export default function ByOrgChart({ orgs }) {
             <div
               className="byorg-row"
               key={o.organization}
-              title={`${o.organization}: אישרו ${o.confirmed} מתוך ${o.total}`}
+              title={`${o.organization}: אושרו ${o.confirmed} מתוך ${o.total}`}
             >
               <div className="byorg-name" title={o.organization}>
                 {o.organization}

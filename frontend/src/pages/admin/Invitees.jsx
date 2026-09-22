@@ -7,7 +7,7 @@ const STATUS_OPTIONS = [
   { value: 'not_invited', label: 'טרם הוזמן' },
   { value: 'invited', label: 'הוזמן' },
   { value: 'pending', label: 'ממתין לאישור' },
-  { value: 'confirmed', label: 'אישר' },
+  { value: 'confirmed', label: 'אושר' },
   { value: 'speaker', label: 'מרצה/ת' },
   { value: 'maybe', label: 'אולי' },
   { value: 'waitlist', label: 'רשימת המתנה' },
@@ -128,7 +128,7 @@ export default function Invitees() {
           <Counter cls="" num={s.not_invited} lbl="טרם הוזמנו" />
           <Counter cls="" num={s.invited} lbl="הוזמנו" />
           <Counter cls="pending" num={s.pending} lbl="ממתינים לאישור" />
-          <Counter cls="confirmed" num={s.confirmed} lbl="אישרו" />
+          <Counter cls="confirmed" num={s.confirmed} lbl="אושרו" />
           <Counter cls="confirmed" num={s.speaker} lbl="מרצים/ות" />
           <Counter cls="" num={s.maybe} lbl="אולי" />
           <Counter cls="waitlist" num={s.waitlist} lbl="רשימת המתנה" />
@@ -247,6 +247,7 @@ export default function Invitees() {
                 <th>סטטוס</th>
                 <th>מלווים</th>
                 <th>אחראי/ת הזמנה</th>
+                <th>פניות</th>
                 <th>מקור</th>
                 <th>הערות</th>
                 <th></th>
@@ -263,7 +264,7 @@ export default function Invitees() {
               ))}
               {data.invitees.length === 0 && (
                 <tr>
-                  <td colSpan={11} className="center muted" style={{ padding: 30 }}>
+                  <td colSpan={12} className="center muted" style={{ padding: 30 }}>
                     לא נמצאו מוזמנים
                   </td>
                 </tr>
@@ -378,6 +379,34 @@ function InviteeRow({ inv, onUpdate, onEdit }) {
           onChange={(invited_by) => onUpdate(inv.id, { invited_by })}
           placeholder="—"
         />
+      </td>
+      <td>
+        <div className="outreach">
+          <button
+            type="button"
+            className={`ob ${inv.outreach_email ? 'on' : ''}`}
+            title="פנייה במייל"
+            onClick={() => onUpdate(inv.id, { outreach_email: !inv.outreach_email })}
+          >
+            📧
+          </button>
+          <button
+            type="button"
+            className={`ob ${inv.outreach_whatsapp ? 'on' : ''}`}
+            title="פנייה בוואטסאפ"
+            onClick={() => onUpdate(inv.id, { outreach_whatsapp: !inv.outreach_whatsapp })}
+          >
+            💬
+          </button>
+          <button
+            type="button"
+            className={`ob ${inv.outreach_call ? 'on' : ''}`}
+            title="פנייה בטלפון"
+            onClick={() => onUpdate(inv.id, { outreach_call: !inv.outreach_call })}
+          >
+            📞
+          </button>
+        </div>
       </td>
       <td>
         <span className="muted" style={{ fontSize: 12 }}>{inv.source}</span>

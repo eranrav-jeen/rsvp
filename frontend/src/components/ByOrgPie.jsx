@@ -109,7 +109,7 @@ export default function ByOrgPie({ orgs }) {
         <div className="pie-tip" style={{ left: pos.x + 14, top: pos.y + 14 }}>
           <b>{arcs[hover].label}</b>
           <div>
-            {arcs[hover].total} מוזמנים · {arcs[hover].confirmed} אישרו
+            {arcs[hover].total} מוזמנים · {arcs[hover].confirmed} אושרו
           </div>
         </div>
       )}

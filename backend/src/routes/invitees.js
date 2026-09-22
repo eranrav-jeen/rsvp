@@ -64,6 +64,9 @@ router.get(
       'סטטוס': r.status,
       'מלווים': r.plus_ones,
       'אחראי/ת הזמנה': r.invited_by || '',
+      'פנייה במייל': r.outreach_email ? 'כן' : '',
+      'פנייה בוואטסאפ': r.outreach_whatsapp ? 'כן' : '',
+      'פנייה בטלפון': r.outreach_call ? 'כן' : '',
       'מקור': r.source || '',
       'הערות': r.notes || '',
     }));
@@ -192,8 +195,11 @@ router.patch(
                phone = COALESCE($7, phone),
                organization = COALESCE($8, organization),
                invited_by = COALESCE($9, invited_by),
+               outreach_email = COALESCE($10, outreach_email),
+               outreach_whatsapp = COALESCE($11, outreach_whatsapp),
+               outreach_call = COALESCE($12, outreach_call),
                updated_at = now()
-         WHERE id = $10
+         WHERE id = $13
          RETURNING *`,
         [
           nextStatus,
@@ -205,6 +211,9 @@ router.patch(
           body.phone ?? null,
           body.organization ?? null,
           body.invited_by ?? null,
+          typeof body.outreach_email === 'boolean' ? body.outreach_email : null,
+          typeof body.outreach_whatsapp === 'boolean' ? body.outreach_whatsapp : null,
+          typeof body.outreach_call === 'boolean' ? body.outreach_call : null,
           id,
         ]
       );
