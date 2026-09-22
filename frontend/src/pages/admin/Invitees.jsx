@@ -128,7 +128,7 @@ export default function Invitees() {
           <Counter cls="" num={s.not_invited} lbl="טרם הוזמנו" />
           <Counter cls="" num={s.invited} lbl="הוזמנו" />
           <Counter cls="pending" num={s.pending} lbl="ממתינים לאישור" />
-          <Counter cls="confirmed" num={s.confirmed} lbl="אושרו" />
+          <Counter cls="confirmed" num={s.confirmed} lbl="אושרה השתתפות" />
           <Counter cls="confirmed" num={s.speaker} lbl="מרצים/ות" />
           <Counter cls="" num={s.maybe} lbl="אולי" />
           <Counter cls="waitlist" num={s.waitlist} lbl="רשימת המתנה" />
