@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { api } from '../api.js';
 
 const EVENT = {
-  title: 'מצפן הבינה למגזר הציבורי:',
+  title: 'ככה עושים AI בממשלה',
   subtitle: 'מהבטחה ליישום בסקייל',
   dateLabel: 'יום שלישי, 20.10.2026 · 09:00–13:00',
   place: 'משרדי Jeen.ai · בגין 121, מגדלי עזריאלי שרונה, קומה 34, תל אביב',

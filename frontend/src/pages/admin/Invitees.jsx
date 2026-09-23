@@ -20,7 +20,7 @@ const FILE_IMPORT_HELP =
 const MAILLIST_IMPORT_HELP =
   'הדביקו רשימת תפוצה מהמייל בפורמט: "שם" <email>; "שם" <email> (מופרד בפסיק־נקודה, פסיק או שורות). הארגון יזוהה אוטומטית מהדומיין (למשל digital.gov.il → digital).';
 const VCARD_IMPORT_HELP =
-  'הדביקו כרטיס קשר (vCard) ששותף בוואטסאפ — טקסט שמתחיל ב-BEGIN:VCARD. ניתן להדביק כמה כרטיסים יחד. שם, ארגון, מייל וטלפון יזוהו אוטומטית; כפילויות (לפי מייל/טלפון) ידולגו.';
+  'בחרו קובץ vCard (.vcf) ששותף בוואטסאפ (שיתוף איש קשר → שמירה/שיתוף כקובץ), או הדביקו את תוכנו. ניתן לבחור כמה קבצים יחד. שם, ארגון, מייל וטלפון יזוהו אוטומטית; כפילויות (לפי מייל/טלפון) ידולגו.';
 
 export default function Invitees() {
   const [data, setData] = useState({ invitees: [], summary: null });
@@ -640,10 +640,29 @@ function VcardModal({ onClose, onImported, helpText }) {
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
+  const [fileNames, setFileNames] = useState([]);
+  const vcfRef = useRef();
+
+  async function handleFiles(e) {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+    setErr('');
+    try {
+      const texts = await Promise.all(files.map((f) => f.text()));
+      const combined = texts.join('\n');
+      // Append to whatever is already in the box (so multiple picks accumulate).
+      setText((t) => (t.trim() ? `${t}\n${combined}` : combined));
+      setFileNames((n) => [...n, ...files.map((f) => f.name)]);
+    } catch {
+      setErr('לא ניתן לקרוא את הקובץ');
+    } finally {
+      if (vcfRef.current) vcfRef.current.value = '';
+    }
+  }
 
   async function submit() {
     if (!/BEGIN:VCARD/i.test(text)) {
-      setErr('נא להדביק כרטיס קשר תקין (טקסט שמתחיל ב-BEGIN:VCARD)');
+      setErr('נא לבחור קובץ vCard (.vcf) או להדביק כרטיס קשר שמתחיל ב-BEGIN:VCARD');
       return;
     }
     setBusy(true);
@@ -663,10 +682,38 @@ function VcardModal({ onClose, onImported, helpText }) {
         <h3>ייבוא איש קשר מוואטסאפ</h3>
         {err && <div className="form-error">{err}</div>}
         <p className="muted" style={{ fontSize: 13, marginTop: 0 }}>{helpText}</p>
+
+        <div className="field">
+          <button
+            type="button"
+            className="btn btn-ghost"
+            onClick={() => vcfRef.current?.click()}
+            style={{ width: '100%' }}
+          >
+            📇 בחירת קובץ vCard (.vcf)
+          </button>
+          <input
+            ref={vcfRef}
+            type="file"
+            accept=".vcf,text/vcard,text/x-vcard"
+            multiple
+            style={{ display: 'none' }}
+            onChange={handleFiles}
+          />
+          {fileNames.length > 0 && (
+            <p className="muted" style={{ fontSize: 12, marginTop: 6 }}>
+              נבחרו: {fileNames.join(', ')}
+            </p>
+          )}
+        </div>
+
+        <p className="muted" style={{ fontSize: 12, margin: '4px 0' }}>
+          או הדביקו את תוכן הכרטיס ידנית:
+        </p>
         <div className="field">
           <textarea
             dir="ltr"
-            style={{ minHeight: 180, textAlign: 'left', fontFamily: 'monospace', fontSize: 12 }}
+            style={{ minHeight: 140, textAlign: 'left', fontFamily: 'monospace', fontSize: 12 }}
             placeholder={'BEGIN:VCARD\nVERSION:3.0\nFN:משה ליבוביץ\nORG:נתיבי ישראל\nitem1.TEL;waid=972504400485:+972 50-440-0485\nitem2.EMAIL:moshel@iroads.co.il\nEND:VCARD'}
             value={text}
             onChange={(e) => setText(e.target.value)}
