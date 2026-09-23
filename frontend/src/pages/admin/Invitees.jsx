@@ -116,6 +116,19 @@ export default function Invitees() {
     }
   }
 
+  async function deleteInvitee(inv) {
+    const who = inv.full_name || inv.email || inv.organization || 'המוזמן/ת';
+    if (!window.confirm(`למחוק את "${who}" לצמיתות?\n\nלא ניתן לשחזר פעולה זו.`)) return;
+    try {
+      await api.del(`/api/invitees/${inv.id}`);
+      setData((d) => ({ ...d, invitees: d.invitees.filter((r) => r.id !== inv.id) }));
+      refreshStats();
+      showToast('נמחק');
+    } catch {
+      showToast('שגיאה במחיקה');
+    }
+  }
+
   async function toggleApproval(val) {
     try {
       const res = await api.patch('/api/event-settings', { approval_required: val });
@@ -284,6 +297,7 @@ export default function Invitees() {
                   inv={inv}
                   onUpdate={updateInvitee}
                   onEdit={(row) => setEditInvitee(row)}
+                  onDelete={deleteInvitee}
                 />
               ))}
               {data.invitees.length === 0 && (
@@ -334,7 +348,7 @@ function Counter({ cls, num, lbl }) {
   );
 }
 
-function InviteeRow({ inv, onUpdate, onEdit }) {
+function InviteeRow({ inv, onUpdate, onEdit, onDelete }) {
   const [phone, setPhone] = useState(inv.phone || '');
 
   return (
@@ -445,6 +459,15 @@ function InviteeRow({ inv, onUpdate, onEdit }) {
           )}
           <button className="btn btn-sm btn-ghost" onClick={() => onEdit(inv)}>
             עריכה
+          </button>
+          <button
+            type="button"
+            className="row-del"
+            title="מחיקת המוזמן/ת"
+            aria-label="מחיקה"
+            onClick={() => onDelete(inv)}
+          >
+            🗑
           </button>
         </div>
       </td>

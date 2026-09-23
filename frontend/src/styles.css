@@ -677,6 +677,22 @@ button {
   align-items: center;
   flex-wrap: nowrap;
 }
+.row-del {
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  font-size: 15px;
+  line-height: 1;
+  padding: 4px 6px;
+  border-radius: 7px;
+  opacity: 0.55;
+  transition: opacity 0.12s, background 0.12s, border-color 0.12s;
+}
+.row-del:hover {
+  opacity: 1;
+  background: #fdecec;
+  border-color: #f3c2c2;
+}
 .counter.declined {
   border-top-color: #b21e2f;
 }

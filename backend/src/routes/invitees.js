@@ -262,6 +262,29 @@ router.patch(
   })
 );
 
+// DELETE /api/invitees/:id — permanently remove an invitee row. Child audit
+// rows (rsvp_submissions, email_log) keep their history but have their FK
+// nulled so the delete doesn't violate the reference constraint.
+router.delete(
+  '/:id',
+  asyncHandler(async (req, res) => {
+    const id = Number.parseInt(req.params.id, 10);
+    if (Number.isNaN(id)) return res.status(400).json({ error: 'invalid id' });
+
+    const result = await withTransaction(async (client) => {
+      const existing = await client.query('SELECT id FROM invitees WHERE id = $1', [id]);
+      if (existing.rows.length === 0) return { notFound: true };
+      await client.query('UPDATE rsvp_submissions SET invitee_id = NULL WHERE invitee_id = $1', [id]);
+      await client.query('UPDATE email_log SET invitee_id = NULL WHERE invitee_id = $1', [id]);
+      await client.query('DELETE FROM invitees WHERE id = $1', [id]);
+      return { deleted: true };
+    });
+
+    if (result.notFound) return res.status(404).json({ error: 'not found' });
+    res.json({ ok: true });
+  })
+);
+
 // POST /api/invitees/import — bulk import from CSV/XLSX
 router.post(
   '/import',
