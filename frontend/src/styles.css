@@ -368,6 +368,13 @@ button {
   font-size: 28px;
   font-weight: 800;
   line-height: 1.15;
+  color: var(--color-cream);
+}
+/* In the admin preview the agenda lives inside .admin-main, whose generic
+   `h1` color would otherwise repaint the hero title maroon-on-maroon. */
+.admin-main .agenda-hero h1,
+.agenda-preview .agenda-hero h1 {
+  color: var(--color-cream);
 }
 .agenda-hero .agenda-sub {
   font-size: 14px;
