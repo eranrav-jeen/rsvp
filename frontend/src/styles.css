@@ -448,6 +448,41 @@ button {
   margin-top: 4px;
   line-height: 1.45;
 }
+.agenda-detail .ag-people {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 7px;
+}
+.agenda-detail .ag-people li {
+  position: relative;
+  padding-inline-start: 14px;
+  line-height: 1.35;
+}
+.agenda-detail .ag-people li::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: 0;
+  top: 8px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-coral);
+}
+.agenda-detail .ag-person-name {
+  font-weight: 700;
+  font-size: 13.5px;
+  color: var(--color-maroon);
+}
+.agenda-detail .ag-person-role {
+  font-size: 12.5px;
+  color: #6b5b64;
+}
+.agenda-detail .ag-person-role::before {
+  content: ' · ';
+  color: #b9a7b0;
+}
 .agenda-item.pause .ag-title {
   font-weight: 600;
   color: #6b5b64;
