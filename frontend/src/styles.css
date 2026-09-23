@@ -594,6 +594,53 @@ button {
   border-top-color: var(--color-amber);
 }
 
+.outreach-stats {
+  background: #fff;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+  border-top: 3px solid var(--color-pink);
+  padding: 12px 16px 14px;
+  margin: -8px 0 22px;
+}
+.outreach-stats-head {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-maroon);
+  margin-bottom: 10px;
+}
+.outreach-stats-head .muted {
+  font-weight: 500;
+  font-size: 12px;
+}
+.outreach-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+}
+.ostat {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #faf6f9;
+  border: 1px solid #f0e2ec;
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+}
+.ostat-ico {
+  font-size: 18px;
+  line-height: 1;
+}
+.ostat-num {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--color-maroon);
+}
+.ostat-lbl {
+  font-size: 13px;
+  color: #6b5b64;
+  font-weight: 600;
+}
+
 .exclude-bar {
   display: flex;
   align-items: center;

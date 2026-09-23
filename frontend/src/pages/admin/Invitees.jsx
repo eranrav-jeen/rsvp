@@ -182,6 +182,32 @@ export default function Invitees() {
         </div>
       )}
 
+      {s && (
+        <div className="outreach-stats">
+          <div className="outreach-stats-head">
+            פניות שבוצעו
+            <span className="muted"> · ניתן לפנות ביותר מערוץ אחד, ולכן הסכום עשוי לעלות על מספר המוזמנים</span>
+          </div>
+          <div className="outreach-cards">
+            <div className="ostat">
+              <span className="ostat-ico">📧</span>
+              <span className="ostat-num">{s.outreach_email}</span>
+              <span className="ostat-lbl">הוזמנו במייל</span>
+            </div>
+            <div className="ostat">
+              <span className="ostat-ico">💬</span>
+              <span className="ostat-num">{s.outreach_whatsapp}</span>
+              <span className="ostat-lbl">הוזמנו בוואטסאפ</span>
+            </div>
+            <div className="ostat">
+              <span className="ostat-ico">📞</span>
+              <span className="ostat-num">{s.outreach_call}</span>
+              <span className="ostat-lbl">הוזמנו בשיחה טלפונית</span>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="exclude-bar">
         <span className="exclude-label">אל תכלול בספירה:</span>
         <label className="exclude-opt">

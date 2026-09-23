@@ -456,6 +456,18 @@ async function getSummary({ excludeJeen = false, excludeSpeakers = false } = {})
   );
   const byStatus = {};
   for (const r of rows.rows) byStatus[r.status] = { count: r.count, seats: r.seats };
+
+  // Outreach reach per channel (a person can be counted in more than one, so
+  // these can sum to more than the number of invitees). Same exclusion filters.
+  const outreach = await query(
+    `SELECT
+       COUNT(*) FILTER (WHERE outreach_email)::int    AS email,
+       COUNT(*) FILTER (WHERE outreach_whatsapp)::int AS whatsapp,
+       COUNT(*) FILTER (WHERE outreach_call)::int     AS call
+     FROM invitees ${where}`
+  );
+  const o = outreach.rows[0] || { email: 0, whatsapp: 0, call: 0 };
+
   const settings = await query('SELECT max_attendees FROM event_settings ORDER BY id LIMIT 1');
   const maxAttendees = settings.rows[0] ? settings.rows[0].max_attendees : 120;
   // Approved seats = confirmed + speakers.
@@ -472,6 +484,9 @@ async function getSummary({ excludeJeen = false, excludeSpeakers = false } = {})
     waitlist: byStatus.waitlist ? byStatus.waitlist.count : 0,
     no_response: byStatus.no_response ? byStatus.no_response.count : 0,
     total_invitees: Object.values(byStatus).reduce((a, b) => a + b.count, 0),
+    outreach_email: o.email,
+    outreach_whatsapp: o.whatsapp,
+    outreach_call: o.call,
     confirmed_seats: confirmedSeats,
     max_attendees: maxAttendees,
   };
