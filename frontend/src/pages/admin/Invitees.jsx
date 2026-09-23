@@ -19,6 +19,8 @@ const FILE_IMPORT_HELP =
   'מבנה נדרש: קובץ CSV/XLSX עם עמודות "משרד" ו-"כתובת מייל" (אופציונלי: שם, תפקיד, טלפון). שורה עם שם במקום מייל תיובא עם מייל ריק ותסומן להשלמה.';
 const MAILLIST_IMPORT_HELP =
   'הדביקו רשימת תפוצה מהמייל בפורמט: "שם" <email>; "שם" <email> (מופרד בפסיק־נקודה, פסיק או שורות). הארגון יזוהה אוטומטית מהדומיין (למשל digital.gov.il → digital).';
+const VCARD_IMPORT_HELP =
+  'הדביקו כרטיס קשר (vCard) ששותף בוואטסאפ — טקסט שמתחיל ב-BEGIN:VCARD. ניתן להדביק כמה כרטיסים יחד. שם, ארגון, מייל וטלפון יזוהו אוטומטית; כפילויות (לפי מייל/טלפון) ידולגו.';
 
 export default function Invitees() {
   const [data, setData] = useState({ invitees: [], summary: null });
@@ -32,6 +34,7 @@ export default function Invitees() {
   const [toast, setToast] = useState('');
   const [editInvitee, setEditInvitee] = useState(null); // null | {} (new) | invitee (edit)
   const [showMaillist, setShowMaillist] = useState(false);
+  const [showVcard, setShowVcard] = useState(false);
   const fileRef = useRef();
 
   const showToast = (m) => {
@@ -275,6 +278,13 @@ export default function Invitees() {
         </button>
         <button
           className="btn btn-sm btn-ghost"
+          onClick={() => setShowVcard(true)}
+          title={VCARD_IMPORT_HELP}
+        >
+          ייבוא איש קשר (WhatsApp)
+        </button>
+        <button
+          className="btn btn-sm btn-ghost"
           onClick={() => fileRef.current?.click()}
           title={FILE_IMPORT_HELP}
         >
@@ -356,6 +366,17 @@ export default function Invitees() {
           onImported={(res) => {
             setShowMaillist(false);
             showToast(`יובאו ${res.imported} · דילוג ${res.skipped} כפולים · ${res.invalid} לא תקינים`);
+            load();
+          }}
+        />
+      )}
+      {showVcard && (
+        <VcardModal
+          helpText={VCARD_IMPORT_HELP}
+          onClose={() => setShowVcard(false)}
+          onImported={(res) => {
+            setShowVcard(false);
+            showToast(`יובאו ${res.imported} מתוך ${res.found} · דילוג ${res.skipped} כפולים`);
             load();
           }}
         />
@@ -605,6 +626,55 @@ function InviteeModal({ invitee, onClose, onSaved }) {
         <div className="actions">
           <button className="btn btn-primary" onClick={save} disabled={busy}>
             {busy ? 'שומר…' : 'שמירה'}
+          </button>
+          <button className="btn btn-ghost" onClick={onClose}>
+            ביטול
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function VcardModal({ onClose, onImported, helpText }) {
+  const [text, setText] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState('');
+
+  async function submit() {
+    if (!/BEGIN:VCARD/i.test(text)) {
+      setErr('נא להדביק כרטיס קשר תקין (טקסט שמתחיל ב-BEGIN:VCARD)');
+      return;
+    }
+    setBusy(true);
+    try {
+      const res = await api.post('/api/invitees/import-vcard', { text });
+      onImported(res);
+    } catch {
+      setErr('שגיאה בייבוא');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <h3>ייבוא איש קשר מוואטסאפ</h3>
+        {err && <div className="form-error">{err}</div>}
+        <p className="muted" style={{ fontSize: 13, marginTop: 0 }}>{helpText}</p>
+        <div className="field">
+          <textarea
+            dir="ltr"
+            style={{ minHeight: 180, textAlign: 'left', fontFamily: 'monospace', fontSize: 12 }}
+            placeholder={'BEGIN:VCARD\nVERSION:3.0\nFN:משה ליבוביץ\nORG:נתיבי ישראל\nitem1.TEL;waid=972504400485:+972 50-440-0485\nitem2.EMAIL:moshel@iroads.co.il\nEND:VCARD'}
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+          />
+        </div>
+        <div className="actions">
+          <button className="btn btn-primary" onClick={submit} disabled={busy}>
+            {busy ? 'מייבא…' : 'ייבוא'}
           </button>
           <button className="btn btn-ghost" onClick={onClose}>
             ביטול

@@ -429,6 +429,117 @@ router.post(
   })
 );
 
+// Decode a QUOTED-PRINTABLE value (WhatsApp/phone vCards sometimes encode Hebrew
+// this way), preserving multi-byte UTF-8.
+function decodeQuotedPrintable(s) {
+  const soft = s.replace(/=\r?\n/g, '');
+  const bytes = [];
+  for (let i = 0; i < soft.length; i += 1) {
+    if (soft[i] === '=' && i + 2 < soft.length && /[0-9A-Fa-f]{2}/.test(soft.substr(i + 1, 2))) {
+      bytes.push(parseInt(soft.substr(i + 1, 2), 16));
+      i += 2;
+    } else {
+      bytes.push(soft.charCodeAt(i));
+    }
+  }
+  return Buffer.from(bytes).toString('utf8');
+}
+
+// Parse one or more pasted vCard (.vcf) blocks into contact objects. Handles the
+// shape WhatsApp exports: item-prefixed props (item1.TEL), waid= params, folded
+// lines and optional QUOTED-PRINTABLE encoding.
+function parseVCards(raw) {
+  const cards = [];
+  const blocks = String(raw).split(/BEGIN:VCARD/i).slice(1);
+  for (const block of blocks) {
+    const body = block.split(/END:VCARD/i)[0] || '';
+    // Unfold: continuation lines start with a space or tab.
+    const unfolded = [];
+    for (const ln of body.split(/\r?\n/)) {
+      if (!ln) continue;
+      if (/^[ \t]/.test(ln) && unfolded.length) unfolded[unfolded.length - 1] += ln.slice(1);
+      else unfolded.push(ln);
+    }
+    const c = { fn: '', n: '', org: '', title: '', email: '', tel: '' };
+    for (const ln of unfolded) {
+      const idx = ln.indexOf(':');
+      if (idx < 0) continue;
+      const left = ln.slice(0, idx);
+      let value = ln.slice(idx + 1).trim();
+      const segs = left.split(';');
+      const key = segs[0].toUpperCase().replace(/^ITEM\d+\./, '');
+      const params = segs.slice(1).join(';').toUpperCase();
+      if (params.includes('QUOTED-PRINTABLE')) value = decodeQuotedPrintable(value);
+      if (!value) continue;
+      if (key === 'FN' && !c.fn) c.fn = value;
+      else if (key === 'N' && !c.n) c.n = value.replace(/;/g, ' ').replace(/\s+/g, ' ').trim();
+      else if (key === 'ORG' && !c.org) c.org = value.replace(/;/g, ' ').replace(/\s+/g, ' ').trim();
+      else if (key === 'TITLE' && !c.title) c.title = value;
+      else if (key === 'EMAIL' && !c.email) c.email = value;
+      else if (key === 'TEL' && !c.tel) c.tel = value.replace(/\s+/g, ' ').trim();
+    }
+    const name = (c.fn || c.n || '').trim();
+    if (name || c.email || c.tel) {
+      cards.push({ name, org: c.org, role: c.title, email: c.email, phone: c.tel });
+    }
+  }
+  return cards;
+}
+
+// POST /api/invitees/import-vcard — parse pasted vCard(s) (e.g. a contact shared
+// in a WhatsApp group) into invitees. Dedups by email, else by phone digits.
+router.post(
+  '/import-vcard',
+  asyncHandler(async (req, res) => {
+    const raw = (req.body && req.body.text) || '';
+    if (!String(raw).trim()) return res.status(400).json({ error: 'text is required' });
+    if (!/BEGIN:VCARD/i.test(raw)) {
+      return res.status(400).json({ error: 'no vCard found in the pasted text' });
+    }
+
+    const cards = parseVCards(raw);
+    let imported = 0;
+    let skipped = 0;
+    let invalid = 0;
+
+    for (const card of cards) {
+      const email = (card.email || '').trim();
+      const phone = (card.phone || '').trim();
+      const phoneDigits = phone.replace(/\D/g, '');
+      if (!card.name && !email && !phone) {
+        invalid += 1;
+        continue;
+      }
+
+      // Dedup: email first (most reliable), then normalized phone digits.
+      let existing = { rows: [] };
+      if (email) {
+        existing = await query('SELECT id FROM invitees WHERE LOWER(email) = LOWER($1) LIMIT 1', [email]);
+      }
+      if (existing.rows.length === 0 && phoneDigits) {
+        existing = await query(
+          "SELECT id FROM invitees WHERE regexp_replace(COALESCE(phone,''), '\\D', '', 'g') = $1 LIMIT 1",
+          [phoneDigits]
+        );
+      }
+      if (existing.rows.length) {
+        skipped += 1;
+        continue;
+      }
+
+      const org = card.org || (email ? orgFromEmail(email) : '') || 'לא ידוע';
+      await query(
+        `INSERT INTO invitees (organization, full_name, role, email, phone, status, source)
+         VALUES ($1,$2,$3,$4,$5,'not_invited','whatsapp')`,
+        [org, card.name || null, card.role || null, email || null, phone || null]
+      );
+      imported += 1;
+    }
+
+    res.json({ imported, skipped, invalid, found: cards.length });
+  })
+);
+
 // GET /api/invitees/stats/by-org — per-organization potential vs confirmed
 router.get(
   '/stats/by-org',
