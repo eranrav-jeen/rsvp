@@ -35,12 +35,29 @@ export default function Invitees() {
   const [editInvitee, setEditInvitee] = useState(null); // null | {} (new) | invitee (edit)
   const [showMaillist, setShowMaillist] = useState(false);
   const [showVcard, setShowVcard] = useState(false);
+  const [bccEmails, setBccEmails] = useState(null); // null | string[] (opens modal)
   const fileRef = useRef();
 
   const showToast = (m) => {
     setToast(m);
     setTimeout(() => setToast(''), 2800);
   };
+
+  // Collect unique emails from the currently shown list (respects filters).
+  function openBcc() {
+    const emails = [
+      ...new Set(
+        data.invitees
+          .map((r) => (r.email || '').trim().toLowerCase())
+          .filter(Boolean)
+      ),
+    ];
+    if (emails.length === 0) {
+      showToast('אין כתובות מייל ברשימה הנוכחית');
+      return;
+    }
+    setBccEmails(emails);
+  }
 
   async function load() {
     setLoading(true);
@@ -297,6 +314,13 @@ export default function Invitees() {
           style={{ display: 'none' }}
           onChange={handleImport}
         />
+        <button
+          className="btn btn-sm btn-ghost"
+          onClick={openBcc}
+          title="העתקת כל כתובות המייל ברשימה הנוכחית, מופרדות בפסיקים, להדבקה בשדה Bcc"
+        >
+          מיילים ל-Bcc
+        </button>
         <a className="btn btn-sm btn-primary" href="/api/invitees/export">
           ייצוא XLSX
         </a>
@@ -380,6 +404,9 @@ export default function Invitees() {
             load();
           }}
         />
+      )}
+      {bccEmails && (
+        <BccModal emails={bccEmails} onClose={() => setBccEmails(null)} onCopied={showToast} />
       )}
       {toast && <div className="toast">{toast}</div>}
     </div>
@@ -629,6 +656,56 @@ function InviteeModal({ invitee, onClose, onSaved }) {
           </button>
           <button className="btn btn-ghost" onClick={onClose}>
             ביטול
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BccModal({ emails, onClose, onCopied }) {
+  const text = emails.join(', ');
+  const areaRef = useRef();
+
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(text);
+      onCopied(`הועתקו ${emails.length} כתובות ללוח`);
+      onClose();
+    } catch {
+      // Fallback: select the text so the user can copy manually.
+      if (areaRef.current) {
+        areaRef.current.focus();
+        areaRef.current.select();
+      }
+      onCopied('בחרו והעתיקו ידנית (Ctrl/Cmd+C)');
+    }
+  }
+
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <h3>מיילים ל-Bcc · {emails.length} כתובות</h3>
+        <p className="muted" style={{ fontSize: 13, marginTop: 0 }}>
+          רשימת כל כתובות המייל ברשימה הנוכחית, מופרדות בפסיקים. העתיקו והדביקו בשדה
+          ה-Bcc של מייל חדש. (הרשימה מכבדת את הסינון/החיפוש הפעילים.)
+        </p>
+        <div className="field">
+          <textarea
+            ref={areaRef}
+            dir="ltr"
+            readOnly
+            style={{ minHeight: 160, textAlign: 'left', fontSize: 13 }}
+            value={text}
+            onFocus={(e) => e.target.select()}
+          />
+        </div>
+        <div className="actions">
+          <button className="btn btn-primary" onClick={copy}>
+            העתקה ללוח
+          </button>
+          <button className="btn btn-ghost" onClick={onClose}>
+            סגירה
           </button>
         </div>
       </div>
