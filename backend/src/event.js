@@ -12,6 +12,10 @@ export const EVENT = {
   endUtc: process.env.EVENT_END_UTC || '20261020T100000Z',
 };
 
+// Public URL of the RSVP form, used in emails as a "register / change your mind"
+// link. Override with PUBLIC_BASE_URL if the site moves.
+export const SITE_URL = (process.env.PUBLIC_BASE_URL || 'https://rsvp.jeenai.app').replace(/\/+$/, '');
+
 // Google Calendar "add to calendar" link for the event.
 export function calendarUrl() {
   const params = new URLSearchParams({

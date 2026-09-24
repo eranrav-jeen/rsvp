@@ -85,6 +85,16 @@ export default function RsvpForm() {
       return { ...s, [q]: arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v] };
     });
 
+  function restart() {
+    setResult(null);
+    setForm(empty);
+    setAttendance(null);
+    setSurveyOptIn(false);
+    setSurvey({ q1: '', q2: [], q3: '' });
+    setError('');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
   async function submit(e) {
     e.preventDefault();
     setError('');
@@ -132,7 +142,7 @@ export default function RsvpForm() {
         </div>
         <div className="rsvp-body">
           {result ? (
-            <Confirmation status={result} />
+            <Confirmation status={result} onRestart={restart} />
           ) : (
             <form onSubmit={submit} noValidate>
               {error && <div className="form-error">{error}</div>}
@@ -290,7 +300,7 @@ export default function RsvpForm() {
   );
 }
 
-function Confirmation({ status }) {
+function Confirmation({ status, onRestart }) {
   if (status === 'confirmed') {
     return (
       <div className="confirm-screen">
@@ -328,6 +338,10 @@ function Confirmation({ status }) {
         <div className="confirm-emoji">🤔</div>
         <h2>תודה! רשמנו "אולי"</h2>
         <p>נשמח אם תעדכנו אותנו ברגע שתדעו — נשמור לכם מקום בינתיים.</p>
+        <p className="muted">החלטתם שאתם מגיעים? אפשר להגיש בקשת הרשמה:</p>
+        <button className="btn btn-primary cal-link" onClick={onRestart}>
+          הרשמה לכנס
+        </button>
       </div>
     );
   }
@@ -336,6 +350,10 @@ function Confirmation({ status }) {
       <div className="confirm-emoji">🙏</div>
       <h2>תודה שעדכנתם אותנו</h2>
       <p>חבל שלא תוכלו להגיע הפעם — נשמח לראותכם באירוע הבא.</p>
+      <p className="muted">שיניתם את דעתכם ורוצים להצטרף? אפשר להגיש בקשת הרשמה:</p>
+      <button className="btn btn-primary cal-link" onClick={onRestart}>
+        הרשמה לכנס
+      </button>
     </div>
   );
 }

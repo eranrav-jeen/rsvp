@@ -1,4 +1,4 @@
-import { EVENT, calendarUrl } from './event.js';
+import { EVENT, calendarUrl, SITE_URL } from './event.js';
 
 // Hebrew / RTL transactional email templates. Each builder returns
 // { subject, html, text, kind }. Keep the HTML inline-styled and simple so it
@@ -141,9 +141,11 @@ export function registrationReceived({ name, status }) {
         heading: 'תודה! רשמנו "אולי" 🤔',
         bodyHtml:
           p(`${greet}`) +
-          p('רשמנו שאתם עדיין לא בטוחים. נשמח אם תעדכנו אותנו ברגע שתדעו — נשמור מקום בינתיים.'),
+          p('רשמנו שאתם עדיין לא בטוחים. נשמח אם תעדכנו אותנו ברגע שתדעו — נשמור מקום בינתיים.') +
+          p('החלטתם שאתם מגיעים? אפשר להגיש בקשת הרשמה כאן:'),
+        cta: { href: SITE_URL, label: 'הרשמה לכנס' },
       }),
-      text: `${greet}\n\nרשמנו "אולי". נשמח אם תעדכנו אותנו ברגע שתדעו.${textFooter()}`,
+      text: `${greet}\n\nרשמנו "אולי". נשמח אם תעדכנו אותנו ברגע שתדעו.\nהחלטתם להגיע? הרשמה כאן: ${SITE_URL}${textFooter()}`,
     };
   }
 
@@ -155,9 +157,11 @@ export function registrationReceived({ name, status }) {
       heading: 'תודה שעדכנתם אותנו 🙏',
       bodyHtml:
         p(`${greet}`) +
-        p('חבל שלא תוכלו להגיע הפעם — נשמח לראותכם באירוע הבא.'),
+        p('חבל שלא תוכלו להגיע הפעם — נשמח לראותכם באירוע הבא.') +
+        p('שינית/ה את דעתך ורוצה להצטרף בכל זאת? אפשר להגיש בקשת הרשמה כאן:'),
+      cta: { href: SITE_URL, label: 'הרשמה לכנס' },
     }),
-    text: `${greet}\n\nתודה שעדכנתם אותנו. נשמח לראותכם באירוע הבא.${textFooter()}`,
+    text: `${greet}\n\nתודה שעדכנתם אותנו. נשמח לראותכם באירוע הבא.\nשינית/ה את דעתך? הרשמה כאן: ${SITE_URL}${textFooter()}`,
   };
 }
 
