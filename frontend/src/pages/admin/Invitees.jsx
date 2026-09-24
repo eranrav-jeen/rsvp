@@ -690,8 +690,12 @@ function BccModal({ invitees, onClose, onCopied, markEmailed }) {
   const fromTs = from ? new Date(from).getTime() : null;
   const toTs = to ? new Date(to).getTime() : null;
 
+  // Filter by last-update time (updated_at >= created_at), so records that were
+  // added earlier but changed later (e.g. an email filled in) fall into the
+  // window too.
   function inRange(r) {
-    const t = r.created_at ? new Date(r.created_at).getTime() : null;
+    const stamp = r.updated_at || r.created_at;
+    const t = stamp ? new Date(stamp).getTime() : null;
     if (fromTs != null && (t == null || t < fromTs)) return false;
     if (toTs != null && (t == null || t > toTs)) return false;
     return true;
@@ -711,6 +715,7 @@ function BccModal({ invitees, onClose, onCopied, markEmailed }) {
   const text = emails.join(', ');
   const ids = matched.map((r) => r.id); // mark every matched row (incl. dup emails)
   const noEmail = invitees.filter((r) => !(r.email || '').trim() && inRange(r)).length;
+  const dupCount = matched.length - emails.length; // rows sharing an address
 
   async function copy() {
     if (emails.length === 0) return;
@@ -739,7 +744,8 @@ function BccModal({ invitees, onClose, onCopied, markEmailed }) {
         <h3>מיילים ל-Bcc · {emails.length} כתובות</h3>
         <p className="muted" style={{ fontSize: 13, marginTop: 0 }}>
           כתובות המייל ברשימה הנוכחית, מופרדות בפסיקים, להדבקה בשדה ה-Bcc. אפשר לצמצם
-          לטווח תאריכים (לפי מועד ההוספה לרשימה) כדי לשלוח ולעקוב אחר מנה מסוימת.
+          לטווח תאריכים (לפי מועד <b>עדכון</b> הרשומה — כולל רשומות שנוספו קודם ועודכנו
+          מאוחר יותר) כדי לשלוח ולעקוב אחר מנה מסוימת.
         </p>
 
         <div className="bcc-range">
@@ -772,11 +778,11 @@ function BccModal({ invitees, onClose, onCopied, markEmailed }) {
             onFocus={(e) => e.target.select()}
           />
         </div>
-        {noEmail > 0 && (
-          <p className="muted" style={{ fontSize: 12, marginTop: 0 }}>
-            {noEmail} מוזמנים בטווח ללא כתובת מייל דולגו.
-          </p>
-        )}
+        <p className="muted" style={{ fontSize: 12, marginTop: 0 }}>
+          <b>{emails.length}</b> כתובות ייחודיות
+          {dupCount > 0 && <> · {dupCount} כפולות אוחדו</>}
+          {noEmail > 0 && <> · {noEmail} ללא כתובת מייל דולגו</>}
+        </p>
 
         <div className="actions">
           <button className="btn btn-primary" onClick={copy} disabled={busy || emails.length === 0}>
