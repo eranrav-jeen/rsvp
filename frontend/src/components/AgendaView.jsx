@@ -59,7 +59,8 @@ export const SCHEDULE = [
     time: '12:00',
     dur: '45 דק׳ · פאנל',
     title: 'מ-AI ניסיוני לארגון מבוסס AI: המגזר הציבורי במבט ל-2027',
-    desc: 'מהפיילוטים להטמעה ארגונית רחבה, מאובטחת ומדידה של AI וסוכנים חכמים · בהנחיית ערן רביב ומתן ניצן, Jeen.ai',
+    desc: 'מהפיילוטים להטמעה ארגונית רחבה, מאובטחת ומדידה של AI וסוכנים חכמים',
+    hosts: 'בהנחיית ערן רביב ומתן ניצן, Jeen.ai',
     kind: 'anchor',
     people: [
       { name: 'אלבי מלכה', role: 'סמנכ״ל טכנולוגיות ומערכות מידע, רשות העתיקות' },
@@ -98,11 +99,11 @@ export default function AgendaView() {
             <li className={`agenda-item ${item.kind || ''}`} key={i}>
               <div className="agenda-time">
                 <span className="ag-time">{item.time}</span>
-                <span className="ag-dur">{item.dur}</span>
               </div>
               <div className="agenda-detail">
                 <div className="ag-title">{item.title}</div>
                 {item.desc && <div className="ag-desc">{item.desc}</div>}
+                {item.hosts && <div className="ag-hosts">{item.hosts}</div>}
                 {item.people && (
                   <ul className="ag-people">
                     {item.people.map((p, j) => (
