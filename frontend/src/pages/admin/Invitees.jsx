@@ -35,7 +35,7 @@ export default function Invitees() {
   const [editInvitee, setEditInvitee] = useState(null); // null | {} (new) | invitee (edit)
   const [showMaillist, setShowMaillist] = useState(false);
   const [showVcard, setShowVcard] = useState(false);
-  const [bccEmails, setBccEmails] = useState(null); // null | string[] (opens modal)
+  const [showBcc, setShowBcc] = useState(false);
   const fileRef = useRef();
 
   const showToast = (m) => {
@@ -43,21 +43,31 @@ export default function Invitees() {
     setTimeout(() => setToast(''), 2800);
   };
 
-  // Collect unique emails from the currently shown list (respects filters).
   function openBcc() {
-    const emails = [
-      ...new Set(
-        data.invitees
-          .map((r) => (r.email || '').trim().toLowerCase())
-          .filter(Boolean)
-      ),
-    ];
-    const noEmail = data.invitees.filter((r) => !(r.email || '').trim()).length;
-    if (emails.length === 0) {
+    if (!data.invitees.some((r) => (r.email || '').trim())) {
       showToast('אין כתובות מייל ברשימה הנוכחית');
       return;
     }
-    setBccEmails({ emails, noEmail });
+    setShowBcc(true);
+  }
+
+  // Mark a batch of invitees as emailed (outreach_email = true), update the rows
+  // in place and refresh the dashboard counters. Returns how many were updated.
+  async function markEmailed(ids) {
+    if (!ids || ids.length === 0) return 0;
+    try {
+      const res = await api.post('/api/invitees/mark-outreach', { ids, channel: 'email' });
+      const idSet = new Set(ids);
+      setData((d) => ({
+        ...d,
+        invitees: d.invitees.map((r) => (idSet.has(r.id) ? { ...r, outreach_email: true } : r)),
+      }));
+      refreshStats();
+      return res.updated ?? ids.length;
+    } catch {
+      showToast('שגיאה בסימון הנמענים');
+      return 0;
+    }
   }
 
   async function load() {
@@ -406,12 +416,12 @@ export default function Invitees() {
           }}
         />
       )}
-      {bccEmails && (
+      {showBcc && (
         <BccModal
-          emails={bccEmails.emails}
-          noEmail={bccEmails.noEmail}
-          onClose={() => setBccEmails(null)}
+          invitees={data.invitees}
+          onClose={() => setShowBcc(false)}
           onCopied={showToast}
+          markEmailed={markEmailed}
         />
       )}
       {toast && <div className="toast">{toast}</div>}
@@ -669,23 +679,58 @@ function InviteeModal({ invitee, onClose, onSaved }) {
   );
 }
 
-function BccModal({ emails, noEmail = 0, onClose, onCopied }) {
-  const text = emails.join(', ');
+function BccModal({ invitees, onClose, onCopied, markEmailed }) {
+  const [from, setFrom] = useState('');
+  const [to, setTo] = useState('');
+  const [onlyNew, setOnlyNew] = useState(false); // exclude already-emailed
+  const [doMark, setDoMark] = useState(true); // mark as emailed on copy
+  const [busy, setBusy] = useState(false);
   const areaRef = useRef();
 
+  const fromTs = from ? new Date(from).getTime() : null;
+  const toTs = to ? new Date(to).getTime() : null;
+
+  function inRange(r) {
+    const t = r.created_at ? new Date(r.created_at).getTime() : null;
+    if (fromTs != null && (t == null || t < fromTs)) return false;
+    if (toTs != null && (t == null || t > toTs)) return false;
+    return true;
+  }
+
+  const matched = invitees.filter(
+    (r) => (r.email || '').trim() && inRange(r) && (!onlyNew || !r.outreach_email)
+  );
+  const seen = new Set();
+  const uniqueRows = matched.filter((r) => {
+    const e = r.email.trim().toLowerCase();
+    if (seen.has(e)) return false;
+    seen.add(e);
+    return true;
+  });
+  const emails = uniqueRows.map((r) => r.email.trim().toLowerCase());
+  const text = emails.join(', ');
+  const ids = matched.map((r) => r.id); // mark every matched row (incl. dup emails)
+  const noEmail = invitees.filter((r) => !(r.email || '').trim() && inRange(r)).length;
+
   async function copy() {
+    if (emails.length === 0) return;
+    setBusy(true);
     try {
       await navigator.clipboard.writeText(text);
-      onCopied(`הועתקו ${emails.length} כתובות ללוח`);
-      onClose();
     } catch {
-      // Fallback: select the text so the user can copy manually.
       if (areaRef.current) {
         areaRef.current.focus();
         areaRef.current.select();
       }
-      onCopied('בחרו והעתיקו ידנית (Ctrl/Cmd+C)');
     }
+    let markMsg = '';
+    if (doMark) {
+      const n = await markEmailed(ids);
+      markMsg = ` · סומנו ${n} כהוזמנו במייל`;
+    }
+    setBusy(false);
+    onCopied(`הועתקו ${emails.length} כתובות${markMsg}`);
+    onClose();
   }
 
   return (
@@ -693,28 +738,49 @@ function BccModal({ emails, noEmail = 0, onClose, onCopied }) {
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <h3>מיילים ל-Bcc · {emails.length} כתובות</h3>
         <p className="muted" style={{ fontSize: 13, marginTop: 0 }}>
-          רשימת כל כתובות המייל ברשימה הנוכחית, מופרדות בפסיקים. העתיקו והדביקו בשדה
-          ה-Bcc של מייל חדש. (הרשימה מכבדת את הסינון/החיפוש הפעילים.)
-          {noEmail > 0 && (
-            <>
-              {' '}
-              <b>{noEmail} מוזמנים ללא כתובת מייל דולגו</b> — אפשר להשלים להם מייל בעריכת השורה.
-            </>
-          )}
+          כתובות המייל ברשימה הנוכחית, מופרדות בפסיקים, להדבקה בשדה ה-Bcc. אפשר לצמצם
+          לטווח תאריכים (לפי מועד ההוספה לרשימה) כדי לשלוח ולעקוב אחר מנה מסוימת.
         </p>
-        <div className="field">
+
+        <div className="bcc-range">
+          <div className="field" style={{ marginBottom: 0 }}>
+            <label>מתאריך/שעה</label>
+            <input type="datetime-local" value={from} onChange={(e) => setFrom(e.target.value)} />
+          </div>
+          <div className="field" style={{ marginBottom: 0 }}>
+            <label>עד תאריך/שעה</label>
+            <input type="datetime-local" value={to} onChange={(e) => setTo(e.target.value)} />
+          </div>
+        </div>
+
+        <label className="bcc-check">
+          <input type="checkbox" checked={onlyNew} onChange={(e) => setOnlyNew(e.target.checked)} />
+          <span>רק מי שעדיין לא סומן כ"הוזמן במייל"</span>
+        </label>
+        <label className="bcc-check">
+          <input type="checkbox" checked={doMark} onChange={(e) => setDoMark(e.target.checked)} />
+          <span>לסמן את הנמענים כ"הוזמנו במייל" לאחר ההעתקה</span>
+        </label>
+
+        <div className="field" style={{ marginTop: 12 }}>
           <textarea
             ref={areaRef}
             dir="ltr"
             readOnly
-            style={{ minHeight: 160, textAlign: 'left', fontSize: 13 }}
+            style={{ minHeight: 130, textAlign: 'left', fontSize: 13 }}
             value={text}
             onFocus={(e) => e.target.select()}
           />
         </div>
+        {noEmail > 0 && (
+          <p className="muted" style={{ fontSize: 12, marginTop: 0 }}>
+            {noEmail} מוזמנים בטווח ללא כתובת מייל דולגו.
+          </p>
+        )}
+
         <div className="actions">
-          <button className="btn btn-primary" onClick={copy}>
-            העתקה ללוח
+          <button className="btn btn-primary" onClick={copy} disabled={busy || emails.length === 0}>
+            {busy ? 'מעתיק…' : doMark ? 'העתקה וסימון' : 'העתקה ללוח'}
           </button>
           <button className="btn btn-ghost" onClick={onClose}>
             סגירה

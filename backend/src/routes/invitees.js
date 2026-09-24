@@ -285,6 +285,30 @@ router.delete(
   })
 );
 
+// POST /api/invitees/mark-outreach — mark a batch of invitees as reached via a
+// channel (default email). Used by the Bcc export to record who was emailed.
+router.post(
+  '/mark-outreach',
+  asyncHandler(async (req, res) => {
+    const body = req.body || {};
+    const ids = Array.isArray(body.ids)
+      ? [...new Set(body.ids.map((n) => Number.parseInt(n, 10)).filter((n) => !Number.isNaN(n)))]
+      : [];
+    if (ids.length === 0) return res.json({ updated: 0 });
+    const col =
+      body.channel === 'whatsapp'
+        ? 'outreach_whatsapp'
+        : body.channel === 'call'
+          ? 'outreach_call'
+          : 'outreach_email';
+    const result = await query(
+      `UPDATE invitees SET ${col} = true, updated_at = now() WHERE id = ANY($1::int[])`,
+      [ids]
+    );
+    res.json({ updated: result.rowCount });
+  })
+);
+
 // POST /api/invitees/import — bulk import from CSV/XLSX
 router.post(
   '/import',
