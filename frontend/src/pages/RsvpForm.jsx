@@ -67,16 +67,56 @@ const empty = {
   plus_ones: 0,
 };
 
+// --- Field validation -------------------------------------------------------
+function isValidEmail(v) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(v).trim());
+}
+
+// Normalize an Israeli number to local 0-prefixed digits (+972/972 → 0).
+function normalizeIlPhone(v) {
+  let d = String(v).replace(/[^\d+]/g, '');
+  d = d.replace(/^\+?972/, '0');
+  return d;
+}
+
+// Accept Israeli mobile (05X + 8 digits = 10) or landline (0X + 7 digits = 9).
+function isValidPhone(v) {
+  return /^0\d{8,9}$/.test(normalizeIlPhone(v));
+}
+
+function fieldError(k, val) {
+  const v = String(val || '').trim();
+  if (k === 'email') {
+    if (!v) return 'נא למלא כתובת מייל.';
+    if (!isValidEmail(v)) return 'כתובת המייל אינה תקינה (למשל name@org.gov.il).';
+  }
+  if (k === 'phone') {
+    if (!v) return 'נא למלא מספר טלפון.';
+    if (!isValidPhone(v)) return 'מספר הטלפון אינו תקין (למשל 050-1234567).';
+  }
+  return '';
+}
+
 export default function RsvpForm() {
   const [form, setForm] = useState(empty);
   const [attendance, setAttendance] = useState(null); // 'yes' | 'maybe' | 'no'
   const [surveyOptIn, setSurveyOptIn] = useState(false);
   const [survey, setSurvey] = useState({ q1: '', q2: [], q3: '' });
   const [error, setError] = useState('');
+  const [fieldErr, setFieldErr] = useState({}); // { email, phone }
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState(null);
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
+
+  // For email/phone: update value and clear the error once it becomes valid.
+  const setValidated = (k) => (e) => {
+    const val = e.target.value;
+    setForm((f) => ({ ...f, [k]: val }));
+    setFieldErr((fe) => (fe[k] && !fieldError(k, val) ? { ...fe, [k]: '' } : fe));
+  };
+  const validateOnBlur = (k) => (e) =>
+    setFieldErr((fe) => ({ ...fe, [k]: fieldError(k, e.target.value) }));
 
   const setSingle = (q) => (v) => setSurvey((s) => ({ ...s, [q]: v }));
   const toggleMulti = (q, v) =>
@@ -92,6 +132,7 @@ export default function RsvpForm() {
     setSurveyOptIn(false);
     setSurvey({ q1: '', q2: [], q3: '' });
     setError('');
+    setFieldErr({});
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -102,13 +143,15 @@ export default function RsvpForm() {
       setError('נא לבחור אם תגיעו לכנס.');
       return;
     }
-    if (
-      !form.full_name.trim() ||
-      !form.organization.trim() ||
-      !form.email.trim() ||
-      !form.phone.trim()
-    ) {
-      setError('נא למלא שם מלא, ארגון, כתובת מייל וטלפון.');
+    if (!form.full_name.trim() || !form.organization.trim()) {
+      setError('נא למלא שם מלא וארגון.');
+      return;
+    }
+    const emailErr = fieldError('email', form.email);
+    const phoneErr = fieldError('phone', form.phone);
+    if (emailErr || phoneErr) {
+      setFieldErr({ email: emailErr, phone: phoneErr });
+      setError('נא לתקן את השדות המסומנים.');
       return;
     }
     setSubmitting(true);
@@ -198,13 +241,31 @@ export default function RsvpForm() {
                 <label>
                   כתובת מייל <span className="required-star">*</span>
                 </label>
-                <input type="email" value={form.email} onChange={set('email')} dir="ltr" required />
+                <input
+                  type="email"
+                  value={form.email}
+                  onChange={setValidated('email')}
+                  onBlur={validateOnBlur('email')}
+                  className={fieldErr.email ? 'invalid' : ''}
+                  dir="ltr"
+                  required
+                />
+                {fieldErr.email && <div className="field-err">{fieldErr.email}</div>}
               </div>
               <div className="field">
                 <label>
                   טלפון <span className="required-star">*</span>
                 </label>
-                <input type="tel" value={form.phone} onChange={set('phone')} dir="ltr" required />
+                <input
+                  type="tel"
+                  value={form.phone}
+                  onChange={setValidated('phone')}
+                  onBlur={validateOnBlur('phone')}
+                  className={fieldErr.phone ? 'invalid' : ''}
+                  dir="ltr"
+                  required
+                />
+                {fieldErr.phone && <div className="field-err">{fieldErr.phone}</div>}
               </div>
 
               {attendance === 'yes' && (

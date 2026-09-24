@@ -183,6 +183,19 @@ button {
   min-height: 80px;
   resize: vertical;
 }
+.field input.invalid {
+  border-color: #d64545;
+  background: #fdf3f2;
+}
+.field input.invalid:focus {
+  border-color: #d64545;
+  box-shadow: 0 0 0 3px rgba(214, 69, 69, 0.15);
+}
+.field-err {
+  color: #c0392b;
+  font-size: 13px;
+  margin-top: 5px;
+}
 .attend-toggle {
   display: flex;
   gap: 12px;

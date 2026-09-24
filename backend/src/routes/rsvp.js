@@ -13,6 +13,16 @@ function clampPlusOnes(value) {
   return Math.min(n, 20); // sanity cap
 }
 
+function isValidEmail(v) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(v).trim());
+}
+
+// Israeli mobile (05X + 8) or landline (0X + 7); accepts +972/972 prefix.
+function isValidPhone(v) {
+  const d = String(v).replace(/[^\d+]/g, '').replace(/^\+?972/, '0');
+  return /^0\d{8,9}$/.test(d);
+}
+
 // Keep only the expected survey shape; store option letters (א/ב/ג/ד).
 function cleanSurvey(s) {
   if (!s || typeof s !== 'object') return null;
@@ -59,8 +69,14 @@ router.post(
     if (!email || !String(email).trim()) {
       return res.status(400).json({ error: 'email is required' });
     }
+    if (!isValidEmail(email)) {
+      return res.status(400).json({ error: 'כתובת המייל אינה תקינה.' });
+    }
     if (!phone || !String(phone).trim()) {
       return res.status(400).json({ error: 'phone is required' });
+    }
+    if (!isValidPhone(phone)) {
+      return res.status(400).json({ error: 'מספר הטלפון אינו תקין.' });
     }
 
     const plusOnes = att === 'yes' ? clampPlusOnes(plus_ones) : 0;
