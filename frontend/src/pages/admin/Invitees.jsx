@@ -52,11 +52,12 @@ export default function Invitees() {
           .filter(Boolean)
       ),
     ];
+    const noEmail = data.invitees.filter((r) => !(r.email || '').trim()).length;
     if (emails.length === 0) {
       showToast('אין כתובות מייל ברשימה הנוכחית');
       return;
     }
-    setBccEmails(emails);
+    setBccEmails({ emails, noEmail });
   }
 
   async function load() {
@@ -406,7 +407,12 @@ export default function Invitees() {
         />
       )}
       {bccEmails && (
-        <BccModal emails={bccEmails} onClose={() => setBccEmails(null)} onCopied={showToast} />
+        <BccModal
+          emails={bccEmails.emails}
+          noEmail={bccEmails.noEmail}
+          onClose={() => setBccEmails(null)}
+          onCopied={showToast}
+        />
       )}
       {toast && <div className="toast">{toast}</div>}
     </div>
@@ -663,7 +669,7 @@ function InviteeModal({ invitee, onClose, onSaved }) {
   );
 }
 
-function BccModal({ emails, onClose, onCopied }) {
+function BccModal({ emails, noEmail = 0, onClose, onCopied }) {
   const text = emails.join(', ');
   const areaRef = useRef();
 
@@ -689,6 +695,12 @@ function BccModal({ emails, onClose, onCopied }) {
         <p className="muted" style={{ fontSize: 13, marginTop: 0 }}>
           רשימת כל כתובות המייל ברשימה הנוכחית, מופרדות בפסיקים. העתיקו והדביקו בשדה
           ה-Bcc של מייל חדש. (הרשימה מכבדת את הסינון/החיפוש הפעילים.)
+          {noEmail > 0 && (
+            <>
+              {' '}
+              <b>{noEmail} מוזמנים ללא כתובת מייל דולגו</b> — אפשר להשלים להם מייל בעריכת השורה.
+            </>
+          )}
         </p>
         <div className="field">
           <textarea
