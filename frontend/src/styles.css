@@ -214,6 +214,13 @@ button {
   width: 16px;
   height: 16px;
 }
+.bcc-sep {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin: 8px 0 2px;
+}
 .attend-toggle {
   display: flex;
   gap: 12px;

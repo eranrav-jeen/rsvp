@@ -305,7 +305,14 @@ router.post(
       `UPDATE invitees SET ${col} = true, updated_at = now() WHERE id = ANY($1::int[])`,
       [ids]
     );
-    res.json({ updated: result.rowCount });
+    // Reaching out = they've now been invited: promote not_invited -> invited
+    // (leave any further status like pending/confirmed/declined untouched).
+    const promoted = await query(
+      `UPDATE invitees SET status = 'invited', updated_at = now()
+       WHERE id = ANY($1::int[]) AND status = 'not_invited'`,
+      [ids]
+    );
+    res.json({ updated: result.rowCount, promoted: promoted.rowCount });
   })
 );
 

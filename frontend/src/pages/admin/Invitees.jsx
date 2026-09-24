@@ -60,7 +60,11 @@ export default function Invitees() {
       const idSet = new Set(ids);
       setData((d) => ({
         ...d,
-        invitees: d.invitees.map((r) => (idSet.has(r.id) ? { ...r, outreach_email: true } : r)),
+        invitees: d.invitees.map((r) =>
+          idSet.has(r.id)
+            ? { ...r, outreach_email: true, status: r.status === 'not_invited' ? 'invited' : r.status }
+            : r
+        ),
       }));
       refreshStats();
       return res.updated ?? ids.length;
@@ -684,6 +688,7 @@ function BccModal({ invitees, onClose, onCopied, markEmailed }) {
   const [to, setTo] = useState('');
   const [onlyNew, setOnlyNew] = useState(false); // exclude already-emailed
   const [doMark, setDoMark] = useState(true); // mark as emailed on copy
+  const [sep, setSep] = useState(';'); // ';' for Outlook, ',' for Gmail etc.
   const [busy, setBusy] = useState(false);
   const areaRef = useRef();
 
@@ -717,7 +722,7 @@ function BccModal({ invitees, onClose, onCopied, markEmailed }) {
     return true;
   });
   const emails = uniqueRows.map((r) => r.email.trim().toLowerCase());
-  const text = emails.join(', ');
+  const text = emails.join(`${sep} `);
   const ids = matched.map((r) => r.id); // mark every matched row (incl. dup emails)
   const noEmail = rangeRows.filter((r) => !(r.email || '').trim()).length;
   const invalidCount = withEmail.length - matched.length; // non-email junk
@@ -771,8 +776,20 @@ function BccModal({ invitees, onClose, onCopied, markEmailed }) {
         </label>
         <label className="bcc-check">
           <input type="checkbox" checked={doMark} onChange={(e) => setDoMark(e.target.checked)} />
-          <span>לסמן את הנמענים כ"הוזמנו במייל" לאחר ההעתקה</span>
+          <span>לסמן את הנמענים כ"הוזמנו במייל" (ולעדכן סטטוס ל"הוזמן")</span>
         </label>
+
+        <div className="bcc-sep">
+          <span className="muted" style={{ fontSize: 13 }}>מפריד:</span>
+          <label className="bcc-check" style={{ margin: 0 }}>
+            <input type="radio" name="bcc-sep" checked={sep === ';'} onChange={() => setSep(';')} />
+            <span>נקודה-פסיק ; (Outlook)</span>
+          </label>
+          <label className="bcc-check" style={{ margin: 0 }}>
+            <input type="radio" name="bcc-sep" checked={sep === ','} onChange={() => setSep(',')} />
+            <span>פסיק , (Gmail וכו׳)</span>
+          </label>
+        </div>
 
         <div className="field" style={{ marginTop: 12 }}>
           <textarea
