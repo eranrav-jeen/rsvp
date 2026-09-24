@@ -15,6 +15,49 @@ const STATUS_OPTIONS = [
   { value: 'no_response', label: 'ללא מענה' },
 ];
 
+const STATUS_INDEX = Object.fromEntries(STATUS_OPTIONS.map((o, i) => [o.value, i]));
+
+// How each column contributes to sorting. Numeric accessors sort numerically;
+// string accessors sort with Hebrew-aware locale compare.
+const SORT_ACCESSORS = {
+  organization: (r) => (r.organization || '').toLowerCase(),
+  full_name: (r) => (r.full_name || '').toLowerCase(),
+  role: (r) => (r.role || '').toLowerCase(),
+  email: (r) => (r.email || '').toLowerCase(),
+  phone: (r) => (r.phone || ''),
+  status: (r) => (r.status in STATUS_INDEX ? STATUS_INDEX[r.status] : 99),
+  invited_by: (r) => (r.invited_by || '').toLowerCase(),
+  outreach: (r) =>
+    (r.outreach_email ? 1 : 0) + (r.outreach_whatsapp ? 1 : 0) + (r.outreach_call ? 1 : 0),
+  source: (r) => (r.source || '').toLowerCase(),
+  // Actionable rows (pending — the ones showing אשר/דחה) sort to the top on asc.
+  actions: (r) => (r.status === 'pending' ? 0 : 1),
+};
+
+function sortInvitees(rows, key, dir) {
+  if (!key || !SORT_ACCESSORS[key]) return rows;
+  const acc = SORT_ACCESSORS[key];
+  const factor = dir === 'asc' ? 1 : -1;
+  return [...rows].sort((a, b) => {
+    const va = acc(a);
+    const vb = acc(b);
+    let c;
+    if (typeof va === 'number' && typeof vb === 'number') c = va - vb;
+    else c = String(va).localeCompare(String(vb), 'he');
+    return c * factor;
+  });
+}
+
+function Th({ label, sortKey, sort, onSort }) {
+  const active = sort.key === sortKey;
+  return (
+    <th className={`sortable ${active ? 'sorted' : ''}`} onClick={() => onSort(sortKey)} title="מיון">
+      {label}
+      <span className="sort-arrow">{active ? (sort.dir === 'asc' ? '▲' : '▼') : '↕'}</span>
+    </th>
+  );
+}
+
 const FILE_IMPORT_HELP =
   'מבנה נדרש: קובץ CSV/XLSX עם עמודות "משרד" ו-"כתובת מייל" (אופציונלי: שם, תפקיד, טלפון). שורה עם שם במקום מייל תיובא עם מייל ריק ותסומן להשלמה.';
 const MAILLIST_IMPORT_HELP =
@@ -36,7 +79,12 @@ export default function Invitees() {
   const [showMaillist, setShowMaillist] = useState(false);
   const [showVcard, setShowVcard] = useState(false);
   const [showBcc, setShowBcc] = useState(false);
+  const [sort, setSort] = useState({ key: null, dir: 'asc' });
   const fileRef = useRef();
+
+  function toggleSort(key) {
+    setSort((s) => (s.key === key ? { key, dir: s.dir === 'asc' ? 'desc' : 'asc' } : { key, dir: 'asc' }));
+  }
 
   const showToast = (m) => {
     setToast(m);
@@ -353,20 +401,20 @@ export default function Invitees() {
           <table className="grid">
             <thead>
               <tr>
-                <th>ארגון</th>
-                <th>שם</th>
-                <th>תפקיד</th>
-                <th>מייל</th>
-                <th>טלפון</th>
-                <th>סטטוס</th>
-                <th>אחראי/ת הזמנה</th>
-                <th>פניות</th>
-                <th>מקור</th>
-                <th></th>
+                <Th label="ארגון" sortKey="organization" sort={sort} onSort={toggleSort} />
+                <Th label="שם" sortKey="full_name" sort={sort} onSort={toggleSort} />
+                <Th label="תפקיד" sortKey="role" sort={sort} onSort={toggleSort} />
+                <Th label="מייל" sortKey="email" sort={sort} onSort={toggleSort} />
+                <Th label="טלפון" sortKey="phone" sort={sort} onSort={toggleSort} />
+                <Th label="סטטוס" sortKey="status" sort={sort} onSort={toggleSort} />
+                <Th label="אחראי/ת הזמנה" sortKey="invited_by" sort={sort} onSort={toggleSort} />
+                <Th label="פניות" sortKey="outreach" sort={sort} onSort={toggleSort} />
+                <Th label="מקור" sortKey="source" sort={sort} onSort={toggleSort} />
+                <Th label="פעולות" sortKey="actions" sort={sort} onSort={toggleSort} />
               </tr>
             </thead>
             <tbody>
-              {data.invitees.map((inv) => (
+              {sortInvitees(data.invitees, sort.key, sort.dir).map((inv) => (
                 <InviteeRow
                   key={inv.id}
                   inv={inv}

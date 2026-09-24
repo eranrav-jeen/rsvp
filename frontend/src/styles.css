@@ -897,6 +897,23 @@ table.grid th {
   position: sticky;
   top: 0;
 }
+table.grid th.sortable {
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+table.grid th.sortable:hover {
+  background: #f2e9e0;
+}
+table.grid th .sort-arrow {
+  font-size: 10px;
+  margin-inline-start: 4px;
+  opacity: 0.4;
+}
+table.grid th.sorted .sort-arrow {
+  opacity: 1;
+  color: var(--color-coral);
+}
 table.grid tr:hover td {
   background: #fcf9f6;
 }
