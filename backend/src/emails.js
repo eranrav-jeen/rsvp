@@ -1,4 +1,4 @@
-import { EVENT, calendarUrl, SITE_URL } from './event.js';
+import { EVENT, calendarUrl, outlookCalendarUrl, icsUrl, SITE_URL } from './event.js';
 
 // Hebrew / RTL transactional email templates. Each builder returns
 // { subject, html, text, kind }. Keep the HTML inline-styled and simple so it
@@ -22,16 +22,31 @@ function hello(name) {
   return f ? `שלום ${f},` : 'שלום,';
 }
 
-function layout({ heading, accent, bodyHtml, cta }) {
-  const ctaHtml = cta
-    ? `<tr><td style="padding:8px 0 4px;">
-         <a href="${cta.href}" target="_blank"
-            style="display:inline-block;background:${BRAND.coral};color:#fff;text-decoration:none;
-                   font-weight:700;font-size:16px;padding:12px 22px;border-radius:10px;">
-           ${cta.label}
-         </a>
-       </td></tr>`
-    : '';
+// Add-to-calendar buttons for the major clients.
+function calendarCtas() {
+  return [
+    { href: calendarUrl(), label: 'Google Calendar' },
+    { href: outlookCalendarUrl(), label: 'Outlook' },
+    { href: icsUrl(), label: 'Apple / אחר (ICS)' },
+  ];
+}
+
+function button(cta, i) {
+  const style =
+    i === 0
+      ? `background:${BRAND.coral};color:#fff;`
+      : `background:#fff;color:${BRAND.coral};border:1.5px solid ${BRAND.coral};`;
+  return `<a href="${cta.href}" target="_blank"
+     style="display:inline-block;${style}text-decoration:none;font-weight:700;font-size:15px;
+            padding:10px 16px;border-radius:10px;margin:4px 6px 4px 0;">${cta.label}</a>`;
+}
+
+// `ctas` is an array of { href, label }. The first renders filled, the rest outlined.
+function layout({ heading, accent, bodyHtml, ctas }) {
+  const ctaHtml =
+    ctas && ctas.length
+      ? `<tr><td style="padding:8px 0 4px;">${ctas.map(button).join('')}</td></tr>`
+      : '';
 
   return `<!doctype html>
 <html dir="rtl" lang="he">
@@ -95,10 +110,10 @@ export function registrationReceived({ name, status }) {
         bodyHtml:
           p(`${greet}`) +
           p('שמחים לאשר את השתתפותך בכנס. שמרנו לך מקום — נשמח לראותך!') +
-          p('ניתן להוסיף את האירוע ליומן בלחיצה על הכפתור:'),
-        cta: { href: calendarUrl(), label: 'הוספה ליומן Google' },
+          p('בחרו את היומן שלכם והוסיפו את האירוע:'),
+        ctas: calendarCtas(),
       }),
-      text: `${greet}\n\nההרשמה שלך אושרה! שמרנו לך מקום ונשמח לראותך.\nהוספה ליומן: ${calendarUrl()}${textFooter()}`,
+      text: `${greet}\n\nההרשמה שלך אושרה! שמרנו לך מקום ונשמח לראותך.\nהוספה ליומן — Google: ${calendarUrl()}\nOutlook: ${outlookCalendarUrl()}\nApple / אחר (ICS): ${icsUrl()}${textFooter()}`,
     };
   }
 
@@ -143,7 +158,7 @@ export function registrationReceived({ name, status }) {
           p(`${greet}`) +
           p('רשמנו שאתם עדיין לא בטוחים. נשמח אם תעדכנו אותנו ברגע שתדעו — נשמור מקום בינתיים.') +
           p('החלטתם שאתם מגיעים? אפשר להגיש בקשת הרשמה כאן:'),
-        cta: { href: SITE_URL, label: 'הרשמה לכנס' },
+        ctas: [{ href: SITE_URL, label: 'הרשמה לכנס' }],
       }),
       text: `${greet}\n\nרשמנו "אולי". נשמח אם תעדכנו אותנו ברגע שתדעו.\nהחלטתם להגיע? הרשמה כאן: ${SITE_URL}${textFooter()}`,
     };
@@ -159,7 +174,7 @@ export function registrationReceived({ name, status }) {
         p(`${greet}`) +
         p('חבל שלא תוכלו להגיע הפעם — נשמח לראותכם באירוע הבא.') +
         p('שינית/ה את דעתך ורוצה להצטרף בכל זאת? אפשר להגיש בקשת הרשמה כאן:'),
-      cta: { href: SITE_URL, label: 'הרשמה לכנס' },
+      ctas: [{ href: SITE_URL, label: 'הרשמה לכנס' }],
     }),
     text: `${greet}\n\nתודה שעדכנתם אותנו. נשמח לראותכם באירוע הבא.\nשינית/ה את דעתך? הרשמה כאן: ${SITE_URL}${textFooter()}`,
   };
@@ -176,10 +191,10 @@ export function participationApproved({ name }) {
       bodyHtml:
         p(`${greet}`) +
         p('בדקנו את בקשתך ושמחים לאשר את השתתפותך בכנס. שמרנו לך מקום!') +
-        p('ניתן להוסיף את האירוע ליומן בלחיצה על הכפתור:'),
-      cta: { href: calendarUrl(), label: 'הוספה ליומן Google' },
+        p('בחרו את היומן שלכם והוסיפו את האירוע:'),
+      ctas: calendarCtas(),
     }),
-    text: `${greet}\n\nהשתתפותך בכנס אושרה! שמרנו לך מקום.\nהוספה ליומן: ${calendarUrl()}${textFooter()}`,
+    text: `${greet}\n\nהשתתפותך בכנס אושרה! שמרנו לך מקום.\nהוספה ליומן — Google: ${calendarUrl()}\nOutlook: ${outlookCalendarUrl()}\nApple / אחר (ICS): ${icsUrl()}${textFooter()}`,
   };
 }
 

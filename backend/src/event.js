@@ -16,14 +16,70 @@ export const EVENT = {
 // link. Override with PUBLIC_BASE_URL if the site moves.
 export const SITE_URL = (process.env.PUBLIC_BASE_URL || 'https://rsvp.jeenai.app').replace(/\/+$/, '');
 
-// Google Calendar "add to calendar" link for the event.
+const EVENT_SUMMARY = `${EVENT.title} ${EVENT.subtitle}`.trim();
+const EVENT_DETAILS = 'כנס Jeen.ai לארגונים ממשלתיים';
+
+// '20261020T060000Z' -> '2026-10-20T06:00:00Z' (ISO 8601, for Outlook links).
+function isoFromCompact(c) {
+  return c.replace(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z$/, '$1-$2-$3T$4:$5:$6Z');
+}
+
+// Google Calendar "add to calendar" link.
 export function calendarUrl() {
   const params = new URLSearchParams({
     action: 'TEMPLATE',
-    text: `Jeen.ai · ${EVENT.title} ${EVENT.subtitle}`.trim(),
+    text: EVENT_SUMMARY,
     dates: `${EVENT.startUtc}/${EVENT.endUtc}`,
-    details: 'כנס Jeen.ai לארגונים ממשלתיים',
+    details: EVENT_DETAILS,
     location: EVENT.place,
   });
   return `https://calendar.google.com/calendar/render?${params.toString()}`;
+}
+
+// Outlook.com / Microsoft 365 web "add event" deep link.
+export function outlookCalendarUrl() {
+  const params = new URLSearchParams({
+    path: '/calendar/action/compose',
+    rru: 'addevent',
+    subject: EVENT_SUMMARY,
+    startdt: isoFromCompact(EVENT.startUtc),
+    enddt: isoFromCompact(EVENT.endUtc),
+    location: EVENT.place,
+    body: EVENT_DETAILS,
+  });
+  return `https://outlook.office.com/calendar/0/deeplink/compose?${params.toString()}`;
+}
+
+// URL of the downloadable .ics (Apple Calendar, Outlook desktop, and any other
+// client). Served by the backend at /api/calendar.ics.
+export function icsUrl() {
+  return `${SITE_URL}/api/calendar.ics`;
+}
+
+// The iCalendar (.ics) content for the event.
+export function icsContent() {
+  const esc = (s) =>
+    String(s)
+      .replace(/\\/g, '\\\\')
+      .replace(/;/g, '\\;')
+      .replace(/,/g, '\\,')
+      .replace(/\n/g, '\\n');
+  const dtstamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
+  return [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//Jeen.ai//RSVP//HE',
+    'CALSCALE:GREGORIAN',
+    'METHOD:PUBLISH',
+    'BEGIN:VEVENT',
+    'UID:jeen-event-20261020@jeen.ai',
+    `DTSTAMP:${dtstamp}`,
+    `DTSTART:${EVENT.startUtc}`,
+    `DTEND:${EVENT.endUtc}`,
+    `SUMMARY:${esc(EVENT_SUMMARY)}`,
+    `DESCRIPTION:${esc(EVENT_DETAILS)}`,
+    `LOCATION:${esc(EVENT.place)}`,
+    'END:VEVENT',
+    'END:VCALENDAR',
+  ].join('\r\n');
 }

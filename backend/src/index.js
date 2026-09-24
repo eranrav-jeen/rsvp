@@ -8,6 +8,7 @@ import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 
 import { pool } from './db.js';
+import { icsContent } from './event.js';
 import { requireAdmin } from './middleware.js';
 import authRouter from './routes/auth.js';
 import rsvpRouter from './routes/rsvp.js';
@@ -66,6 +67,13 @@ fs.mkdirSync(uploadDir, { recursive: true });
 app.use('/uploads', express.static(uploadDir));
 
 app.get('/api/health', (req, res) => res.json({ ok: true }));
+
+// Public: downloadable calendar file (Apple Calendar, Outlook desktop, etc.)
+app.get('/api/calendar.ics', (req, res) => {
+  res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
+  res.setHeader('Content-Disposition', 'attachment; filename="jeen-event.ics"');
+  res.send(icsContent());
+});
 
 // Public routes
 app.use('/api/auth', authRouter);
