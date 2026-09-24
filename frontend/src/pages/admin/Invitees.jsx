@@ -701,9 +701,14 @@ function BccModal({ invitees, onClose, onCopied, markEmailed }) {
     return true;
   }
 
-  const matched = invitees.filter(
-    (r) => (r.email || '').trim() && inRange(r) && (!onlyNew || !r.outreach_email)
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+  const rangeRows = invitees.filter(inRange);
+  const withEmail = rangeRows.filter(
+    (r) => (r.email || '').trim() && (!onlyNew || !r.outreach_email)
   );
+  // Only genuine, well-formed addresses (skips e.g. a phone number typed into
+  // the email column).
+  const matched = withEmail.filter((r) => EMAIL_RE.test(r.email.trim()));
   const seen = new Set();
   const uniqueRows = matched.filter((r) => {
     const e = r.email.trim().toLowerCase();
@@ -714,7 +719,8 @@ function BccModal({ invitees, onClose, onCopied, markEmailed }) {
   const emails = uniqueRows.map((r) => r.email.trim().toLowerCase());
   const text = emails.join(', ');
   const ids = matched.map((r) => r.id); // mark every matched row (incl. dup emails)
-  const noEmail = invitees.filter((r) => !(r.email || '').trim() && inRange(r)).length;
+  const noEmail = rangeRows.filter((r) => !(r.email || '').trim()).length;
+  const invalidCount = withEmail.length - matched.length; // non-email junk
   const dupCount = matched.length - emails.length; // rows sharing an address
 
   async function copy() {
@@ -781,7 +787,8 @@ function BccModal({ invitees, onClose, onCopied, markEmailed }) {
         <p className="muted" style={{ fontSize: 12, marginTop: 0 }}>
           <b>{emails.length}</b> כתובות ייחודיות
           {dupCount > 0 && <> · {dupCount} כפולות אוחדו</>}
-          {noEmail > 0 && <> · {noEmail} ללא כתובת מייל דולגו</>}
+          {invalidCount > 0 && <> · {invalidCount} לא תקינות דולגו</>}
+          {noEmail > 0 && <> · {noEmail} ללא כתובת מייל</>}
         </p>
 
         <div className="actions">
