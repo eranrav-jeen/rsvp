@@ -9,14 +9,20 @@
 //   - never after the event day (Oct 20, 2026)
 //
 // Run manually with `node scripts/daily-digest.js --force` to send regardless of
-// the date rules (for testing).
+// the date rules (for testing). Add `--to=eran@jeen.ai` to send the test to a
+// single address instead of the whole team.
 
 import { pool, query } from '../src/db.js';
 import { sendMail } from '../src/mailer.js';
 import { dailyDigest } from '../src/emails.js';
 
+// Recipients: --to=<addr[,addr]> overrides everything (handy for testing),
+// then DIGEST_RECIPIENTS env, then the default organizing team.
+const toArg = process.argv.find((a) => a.startsWith('--to='));
 const RECIPIENTS =
-  process.env.DIGEST_RECIPIENTS || 'meital@jeen.ai, matan@jeen.ai, inbar@jeen.ai, eran@jeen.ai';
+  (toArg && toArg.slice('--to='.length)) ||
+  process.env.DIGEST_RECIPIENTS ||
+  'meital@jeen.ai, matan@jeen.ai, inbar@jeen.ai, eran@jeen.ai';
 
 // Event day (Oct 20, 2026). The whole campaign window is within Israel Daylight
 // Time (UTC+3), so a fixed +3h shift gives Israel wall-clock parts.
