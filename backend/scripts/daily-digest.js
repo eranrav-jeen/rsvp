@@ -85,6 +85,50 @@ async function gatherStats() {
   };
 }
 
+// Compare current stats to the last stored snapshot and describe what changed.
+async function computeChanges(cur) {
+  const prev = (
+    await query('SELECT stats, created_at FROM digest_snapshots ORDER BY id DESC LIMIT 1')
+  ).rows[0];
+  if (!prev) return { isFirst: true };
+
+  const p = prev.stats;
+  const sinceLabel = new Date(prev.created_at).toLocaleDateString('he-IL', {
+    timeZone: 'Asia/Jerusalem',
+    day: '2-digit',
+    month: '2-digit',
+  });
+  const line = (label, now, before) => {
+    const d = (now || 0) - (before || 0);
+    return d ? `${label}: ${d > 0 ? '+' : '−'}${Math.abs(d)}` : null;
+  };
+  const deltas = [
+    line('אושרה השתתפות', cur.confirmed, p.confirmed),
+    line('ממתינים לאישור', cur.pending, p.pending),
+    line('אולי', cur.maybe, p.maybe),
+    line('סימנו שלא יגיעו', cur.declined, p.declined),
+    line('רשימת המתנה', cur.waitlist, p.waitlist),
+    line('הוזמנו במייל', cur.outreach_email, p.outreach_email),
+    line('מוזמנים ברשימה', cur.total, p.total),
+  ].filter(Boolean);
+
+  // New RSVP responses since the previous digest.
+  const subs = (
+    await query(
+      `SELECT full_name, organization, attendance, submitted_at
+       FROM rsvp_submissions WHERE submitted_at > $1 ORDER BY submitted_at DESC`,
+      [prev.created_at]
+    )
+  ).rows;
+  const answer = { yes: 'כן', maybe: 'אולי', no: 'לא' };
+  const newResponders = subs
+    .slice(0, 12)
+    .map((r) => `${r.full_name || '—'} · ${r.organization || '—'} · ${answer[r.attendance] || r.attendance || ''}`);
+  if (subs.length > 12) newResponders.push(`ועוד ${subs.length - 12}…`);
+
+  return { isFirst: false, sinceLabel, deltas, newResponders, newCount: subs.length };
+}
+
 function recommend(s) {
   const recs = [];
   if (s.pending > 0) recs.push(`יש ${s.pending} בקשות הממתינות לאישור — יש לאשר או לדחות אותן.`);
@@ -107,10 +151,11 @@ async function main() {
     return;
   }
   const s = await gatherStats();
+  const changes = await computeChanges(s);
   const { y, m, d } = israelParts();
   const dateLabel = `${String(d).padStart(2, '0')}.${String(m).padStart(2, '0')}.${y}`;
   const daysToEvent = Math.max(0, Math.round((Date.UTC(2026, 9, 20) - Date.UTC(y, m - 1, d)) / 86400000));
-  const msg = dailyDigest({ dateLabel, daysToEvent, stats: s, recommendations: recommend(s) });
+  const msg = dailyDigest({ dateLabel, daysToEvent, stats: s, recommendations: recommend(s), changes });
   const res = await sendMail({
     to: RECIPIENTS,
     subject: msg.subject,
@@ -118,6 +163,11 @@ async function main() {
     text: msg.text,
     kind: msg.kind,
   });
+  // Record a snapshot only for real, delivered scheduled digests, so the
+  // "what changed" baseline advances once per real send (not on test/--force runs).
+  if (res.sent && !force) {
+    await query('INSERT INTO digest_snapshots (stats) VALUES ($1)', [JSON.stringify(s)]);
+  }
   console.log(`[digest] ${decision.reason}${force ? ' (forced)' : ''} → ${JSON.stringify(res)}`);
   await pool.end();
 }

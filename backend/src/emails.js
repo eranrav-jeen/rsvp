@@ -216,8 +216,35 @@ export function participationDeclined({ name }) {
   };
 }
 
+function spotlightHtml(changes) {
+  if (!changes) return '';
+  if (changes.isFirst) {
+    return `<tr><td style="padding:6px 0 12px;">
+        <div style="background:${BRAND.cream};border-radius:10px;padding:10px 12px;color:#666;font-size:14px;">
+          🔦 זהו העדכון הראשון — מהעדכון הבא יופיע כאן ריכוז השינויים.
+        </div></td></tr>`;
+  }
+  const deltas = (changes.deltas || []).length
+    ? `<ul style="margin:0;padding-inline-start:18px;">${changes.deltas
+        .map((d) => `<li>${d}</li>`)
+        .join('')}</ul>`
+    : '<div style="color:#777;">אין שינוי במספרים.</div>';
+  const responders = (changes.newResponders || []).length
+    ? `<div style="margin-top:8px;font-weight:700;color:${BRAND.maroon};">רשומות חדשות (${changes.newCount}):</div>
+       <ul style="margin:4px 0 0;padding-inline-start:18px;">${changes.newResponders
+         .map((r) => `<li>${r}</li>`)
+         .join('')}</ul>`
+    : '';
+  return `<tr><td style="padding:6px 0 12px;">
+      <div style="background:#fff7f2;border:1px solid #f3c2b3;border-radius:10px;padding:12px 14px;">
+        <div style="font-weight:800;color:${BRAND.coral};margin-bottom:6px;">🔦 מה השתנה מאז ${changes.sinceLabel}</div>
+        <div style="font-size:14px;color:${BRAND.text};line-height:1.75;">${deltas}${responders}</div>
+      </div>
+    </td></tr>`;
+}
+
 // Internal daily status digest (registration status + action recommendations).
-export function dailyDigest({ dateLabel, daysToEvent, stats, recommendations }) {
+export function dailyDigest({ dateLabel, daysToEvent, stats, recommendations, changes }) {
   const s = stats;
   const row = (label, val) =>
     `<tr><td style="padding:4px 0;color:#555;">${label}</td>` +
@@ -251,11 +278,25 @@ export function dailyDigest({ dateLabel, daysToEvent, stats, recommendations }) 
     subject: `דוח הרשמה יומי · ${dateLabel} · ${s.confirmed} מאושרים, ${s.pending} ממתינים`,
     html: layout({
       heading: `סטטוס הרשמה · ${dateLabel}`,
-      bodyHtml: p(`נותרו <b>${daysToEvent}</b> ימים לכנס.`) + statsTable + recsHtml,
+      bodyHtml:
+        p(`נותרו <b>${daysToEvent}</b> ימים לכנס.`) + spotlightHtml(changes) + statsTable + recsHtml,
       ctas: [{ href: `${SITE_URL}/admin/invitees`, label: 'פתיחת לוח הבקרה' }],
     }),
     text:
       `סטטוס הרשמה · ${dateLabel}\nנותרו ${daysToEvent} ימים לכנס.\n\n` +
+      (changes
+        ? (changes.isFirst
+            ? 'מה השתנה: זהו העדכון הראשון.\n\n'
+            : `מה השתנה מאז ${changes.sinceLabel}:\n` +
+              ((changes.deltas || []).length
+                ? changes.deltas.map((d) => `- ${d}`).join('\n')
+                : '- אין שינוי במספרים.') +
+              ((changes.newResponders || []).length
+                ? `\nרשומות חדשות (${changes.newCount}):\n` +
+                  changes.newResponders.map((r) => `- ${r}`).join('\n')
+                : '') +
+              '\n\n')
+        : '') +
       `פוטנציאל: ${s.total} · טרם הוזמנו: ${s.not_invited} · הוזמנו: ${s.invited} · ` +
       `ממתינים: ${s.pending} · אושרו: ${s.confirmed} · אולי: ${s.maybe} · לא יגיעו: ${s.declined}\n` +
       `מקומות מאושרים: ${s.confirmed_seats}/${s.max_attendees} · הוזמנו במייל: ${s.outreach_email}\n\n` +
