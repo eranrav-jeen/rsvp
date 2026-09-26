@@ -215,3 +215,50 @@ export function participationDeclined({ name }) {
     text: `${greet}\n\nתודה על ההתעניינות. לצערנו בשל מספר המקומות המוגבל לא נוכל לאשר את השתתפותך הפעם. נשמח לראותך באירועים הבאים.${textFooter()}`,
   };
 }
+
+// Internal daily status digest (registration status + action recommendations).
+export function dailyDigest({ dateLabel, daysToEvent, stats, recommendations }) {
+  const s = stats;
+  const row = (label, val) =>
+    `<tr><td style="padding:4px 0;color:#555;">${label}</td>` +
+    `<td style="padding:4px 0;font-weight:700;color:${BRAND.maroon};text-align:left;">${val}</td></tr>`;
+  const statsTable = `<tr><td style="padding:6px 0;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:15px;">
+        ${row('מספר מוזמנים פוטנציאלי', s.total)}
+        ${row('טרם הוזמנו', s.not_invited)}
+        ${row('הוזמנו (טרם השיבו)', s.invited)}
+        ${row('ממתינים לאישור', s.pending)}
+        ${row('אושרה השתתפות', s.confirmed)}
+        ${row('מרצים/ות', s.speaker)}
+        ${row('אולי', s.maybe)}
+        ${row('רשימת המתנה', s.waitlist)}
+        ${row('סימנו שלא יגיעו', s.declined)}
+        ${row('הוזמנו במייל', s.outreach_email)}
+        ${row('ללא כתובת מייל', s.noEmail)}
+        ${row('מקומות מאושרים מול מכסה', `${s.confirmed_seats} / ${s.max_attendees}`)}
+      </table>
+    </td></tr>`;
+  const recsHtml = recommendations.length
+    ? `<tr><td style="padding:14px 0 0;">
+         <div style="font-weight:800;color:${BRAND.maroon};margin-bottom:6px;">המלצות לפעולה</div>
+         <ul style="margin:0;padding-inline-start:18px;color:${BRAND.text};font-size:15px;line-height:1.75;">
+           ${recommendations.map((r) => `<li>${r}</li>`).join('')}
+         </ul>
+       </td></tr>`
+    : '';
+  return {
+    kind: 'daily_digest',
+    subject: `דוח הרשמה יומי · ${dateLabel} · ${s.confirmed} מאושרים, ${s.pending} ממתינים`,
+    html: layout({
+      heading: `סטטוס הרשמה · ${dateLabel}`,
+      bodyHtml: p(`נותרו <b>${daysToEvent}</b> ימים לכנס.`) + statsTable + recsHtml,
+      ctas: [{ href: `${SITE_URL}/admin/invitees`, label: 'פתיחת לוח הבקרה' }],
+    }),
+    text:
+      `סטטוס הרשמה · ${dateLabel}\nנותרו ${daysToEvent} ימים לכנס.\n\n` +
+      `פוטנציאל: ${s.total} · טרם הוזמנו: ${s.not_invited} · הוזמנו: ${s.invited} · ` +
+      `ממתינים: ${s.pending} · אושרו: ${s.confirmed} · אולי: ${s.maybe} · לא יגיעו: ${s.declined}\n` +
+      `מקומות מאושרים: ${s.confirmed_seats}/${s.max_attendees} · הוזמנו במייל: ${s.outreach_email}\n\n` +
+      `המלצות לפעולה:\n${recommendations.map((r) => `- ${r}`).join('\n')}`,
+  };
+}
