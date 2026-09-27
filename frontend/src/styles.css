@@ -479,7 +479,7 @@ button {
 .agenda-detail .ag-hosts {
   font-size: 13px;
   font-weight: 600;
-  color: var(--color-coral);
+  color: #6b5b64;
   margin-top: 6px;
 }
 .agenda-detail .ag-title {
