@@ -140,7 +140,8 @@ button {
   opacity: 0.92;
   margin: 3px 0;
 }
-.rsvp-hero .meta-date {
+.rsvp-hero .meta-date,
+.agenda-hero .meta.meta-date {
   display: inline-block;
   font-size: 18px;
   font-weight: 800;
