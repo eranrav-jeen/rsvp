@@ -180,7 +180,7 @@ export default function RsvpForm() {
           </div>
           <h1>{EVENT.title}</h1>
           <div className="hero-subtitle">{EVENT.subtitle}</div>
-          <div className="meta">{EVENT.dateLabel}</div>
+          <div className="meta meta-date">{EVENT.dateLabel}</div>
           <div className="meta">{EVENT.place}</div>
         </div>
         <div className="rsvp-body">
