@@ -4,6 +4,9 @@ import { useState } from 'react';
 export default function AdminRegistration() {
   const shareUrl = `${window.location.origin}/rsvp`;
   const [toast, setToast] = useState('');
+  // Cache-buster so the preview iframe always fetches the current page
+  // instead of a copy the browser cached from an earlier deploy.
+  const [previewSrc] = useState(() => `/rsvp?preview=${Date.now()}`);
 
   const showToast = (m) => {
     setToast(m);
@@ -44,7 +47,7 @@ export default function AdminRegistration() {
       </p>
 
       <div className="form-preview">
-        <iframe src="/rsvp" title="תצוגה מקדימה של טופס ההרשמה" loading="lazy" />
+        <iframe src={previewSrc} title="תצוגה מקדימה של טופס ההרשמה" loading="lazy" />
       </div>
 
       {toast && <div className="toast">{toast}</div>}
