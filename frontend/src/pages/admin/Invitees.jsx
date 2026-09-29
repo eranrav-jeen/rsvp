@@ -421,6 +421,7 @@ export default function Invitees() {
                   onUpdate={updateInvitee}
                   onEdit={(row) => setEditInvitee(row)}
                   onDelete={deleteInvitee}
+                  onToast={showToast}
                 />
               ))}
               {data.invitees.length === 0 && (
@@ -490,7 +491,24 @@ function Counter({ cls, num, lbl }) {
   );
 }
 
-function InviteeRow({ inv, onUpdate, onEdit, onDelete }) {
+function CopyBtn({ value, label, onToast }) {
+  async function copy(e) {
+    e.stopPropagation();
+    try {
+      await navigator.clipboard.writeText(value);
+      onToast(`${label} הועתק`);
+    } catch {
+      onToast('לא ניתן להעתיק');
+    }
+  }
+  return (
+    <button type="button" className="copy-btn" title={`העתקת ${label}`} aria-label="העתקה" onClick={copy}>
+      ⧉
+    </button>
+  );
+}
+
+function InviteeRow({ inv, onUpdate, onEdit, onDelete, onToast }) {
   const [phone, setPhone] = useState(inv.phone || '');
 
   return (
@@ -503,7 +521,14 @@ function InviteeRow({ inv, onUpdate, onEdit, onDelete }) {
         {inv.role || <span className="muted">—</span>}
       </td>
       <td className="col-email" dir="ltr" style={{ textAlign: 'left' }} title={inv.email || ''}>
-        {inv.email || <span className="flag">⚑ חסר מייל</span>}
+        {inv.email ? (
+          <span className="copy-cell">
+            <CopyBtn value={inv.email} label="המייל" onToast={onToast} />
+            <span className="copy-cell-text">{inv.email}</span>
+          </span>
+        ) : (
+          <span className="flag">⚑ חסר מייל</span>
+        )}
       </td>
       <td dir="ltr" style={{ textAlign: 'left' }}>
         <div className="phone-edit">
@@ -529,6 +554,9 @@ function InviteeRow({ inv, onUpdate, onEdit, onDelete }) {
             >
               ✓
             </button>
+          )}
+          {(phone || '') === (inv.phone || '') && (inv.phone || '').trim() && (
+            <CopyBtn value={inv.phone} label="הטלפון" onToast={onToast} />
           )}
         </div>
       </td>

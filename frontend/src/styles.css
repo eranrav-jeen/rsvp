@@ -805,6 +805,34 @@ button {
   align-items: center;
   flex-wrap: nowrap;
 }
+.copy-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  direction: ltr;
+}
+.copy-cell-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.copy-btn {
+  flex: 0 0 auto;
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1;
+  padding: 3px 5px;
+  border-radius: 6px;
+  color: var(--color-coral);
+  opacity: 0.6;
+  transition: opacity 0.12s, background 0.12s;
+}
+.copy-btn:hover {
+  opacity: 1;
+  background: #fdecec;
+}
 .row-del {
   border: 1px solid transparent;
   background: transparent;
