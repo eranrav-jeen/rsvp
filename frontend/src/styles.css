@@ -845,6 +845,24 @@ button {
   opacity: 1;
   background: #fdecec;
 }
+.row-reminder {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  border: 1px solid var(--color-coral);
+  color: var(--color-coral);
+  background: #fff;
+  font-size: 14px;
+  line-height: 1;
+  padding: 5px 8px;
+  border-radius: 7px;
+  transition: background 0.12s, color 0.12s;
+}
+.row-reminder:hover {
+  background: var(--color-coral);
+  color: #fff;
+}
 .row-del {
   border: 1px solid transparent;
   background: transparent;
