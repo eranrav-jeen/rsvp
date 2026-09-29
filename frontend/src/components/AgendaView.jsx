@@ -94,7 +94,7 @@ export default function AgendaView() {
         </div>
         <h1>{EVENT.title}</h1>
         <div className="agenda-sub">{EVENT.subtitle}</div>
-        <div className="meta">{EVENT.dateLabel}</div>
+        <div className="meta meta-date">{EVENT.dateLabel}</div>
         <div className="meta">{EVENT.place}</div>
       </div>
       <div className="agenda-body">

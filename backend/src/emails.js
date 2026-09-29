@@ -244,46 +244,114 @@ function spotlightHtml(changes) {
 }
 
 // Internal daily status digest (registration status + action recommendations).
+// Email-client safe: table layout + inline styles only.
+function digestHeadline(confirmed, invited) {
+  const pct = invited > 0 ? Math.min(100, Math.round((confirmed / invited) * 100)) : 0;
+  return `<tr><td style="padding:4px 0 16px;">
+      <div style="background:${BRAND.maroon};border-radius:14px;padding:18px 16px;text-align:center;color:#fff;">
+        <div style="font-size:14px;color:${BRAND.amber};font-weight:700;">🎟️ אישרו הגעה מתוך המוזמנים</div>
+        <div style="font-size:44px;font-weight:800;line-height:1.15;margin-top:4px;direction:ltr;">
+          ${confirmed} <span style="color:${BRAND.amber};font-weight:700;">/</span> ${invited}
+        </div>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+               style="margin-top:10px;background:rgba(255,255,255,.18);border-radius:6px;">
+          <tr><td style="height:8px;line-height:8px;font-size:0;border-radius:6px;
+                         background:${BRAND.amber};width:${Math.max(pct, 1)}%;">&nbsp;</td>
+              <td style="font-size:0;line-height:8px;">&nbsp;</td></tr>
+        </table>
+        <div style="font-size:13px;margin-top:6px;color:${BRAND.cream};">${pct}% מהמוזמנים</div>
+      </div>
+    </td></tr>`;
+}
+
+function statGroup(title, rows) {
+  const body = rows
+    .map(
+      ([icon, label, val], i) =>
+        `<tr>
+          <td style="padding:8px 12px;width:28px;font-size:18px;${i ? 'border-top:1px solid #f1e6dc;' : ''}">${icon}</td>
+          <td style="padding:8px 0;color:#444;font-size:15px;${i ? 'border-top:1px solid #f1e6dc;' : ''}">${label}</td>
+          <td style="padding:8px 14px;font-weight:800;font-size:17px;color:${BRAND.maroon};text-align:left;${i ? 'border-top:1px solid #f1e6dc;' : ''}">${val}</td>
+        </tr>`
+    )
+    .join('');
+  return `<tr><td style="padding:0 0 14px;">
+      <div style="font-weight:800;color:${BRAND.maroon};font-size:16px;margin:0 2px 6px;">${title}</div>
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+             style="background:${BRAND.cream};border-radius:12px;">${body}</table>
+    </td></tr>`;
+}
+
+function seatsBar(used, max) {
+  const pct = max > 0 ? Math.min(100, Math.round((used / max) * 100)) : 0;
+  const color = pct >= 100 ? BRAND.coral : BRAND.amber;
+  return `<tr><td style="padding:0 0 14px;">
+      <div style="font-weight:800;color:${BRAND.maroon};font-size:16px;margin:0 2px 6px;">🪑 תפוסת מקומות</div>
+      <div style="background:${BRAND.cream};border-radius:12px;padding:12px 14px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
+          <td style="color:#444;font-size:15px;">מקומות מאושרים (כולל מלווים) מול מכסה</td>
+          <td style="font-weight:800;font-size:17px;color:${BRAND.maroon};text-align:left;direction:ltr;">${used} / ${max}</td>
+        </tr></table>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+               style="margin-top:8px;background:#ead9cb;border-radius:6px;">
+          <tr><td style="height:8px;line-height:8px;font-size:0;border-radius:6px;background:${color};width:${Math.max(pct, 1)}%;">&nbsp;</td>
+              <td style="font-size:0;line-height:8px;">&nbsp;</td></tr>
+        </table>
+      </div>
+    </td></tr>`;
+}
+
 export function dailyDigest({ dateLabel, daysToEvent, stats, recommendations, changes }) {
   const s = stats;
-  const row = (label, val) =>
-    `<tr><td style="padding:4px 0;color:#555;">${label}</td>` +
-    `<td style="padding:4px 0;font-weight:700;color:${BRAND.maroon};text-align:left;">${val}</td></tr>`;
-  const statsTable = `<tr><td style="padding:6px 0;">
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:15px;">
-        ${row('מספר מוזמנים פוטנציאלי', s.total)}
-        ${row('טרם הוזמנו', s.not_invited)}
-        ${row('הוזמנו (טרם השיבו)', s.invited)}
-        ${row('ממתינים לאישור', s.pending)}
-        ${row('אושרה השתתפות', s.confirmed)}
-        ${row('מרצים/ות', s.speaker)}
-        ${row('אולי', s.maybe)}
-        ${row('רשימת המתנה', s.waitlist)}
-        ${row('סימנו שלא יגיעו', s.declined)}
-        ${row('הוזמנו במייל', s.outreach_email)}
-        ${row('ללא כתובת מייל', s.noEmail)}
-        ${row('מקומות מאושרים מול מכסה', `${s.confirmed_seats} / ${s.max_attendees}`)}
-      </table>
-    </td></tr>`;
+  // Headline: confirmed attendees (incl. speakers) out of everyone invited so far.
+  const attending = s.confirmed + s.speaker;
+  const invitedCount = s.total - s.not_invited;
+  const statsHtml =
+    statGroup('✅ הרשמות', [
+      ['✅', 'אושרה השתתפות', s.confirmed],
+      ['🎤', 'מרצים/ות', s.speaker],
+      ['⏳', 'ממתינים לאישור', s.pending],
+      ['📋', 'רשימת המתנה', s.waitlist],
+    ]) +
+    statGroup('💬 תשובות פתוחות', [
+      ['📭', 'הוזמנו (טרם השיבו)', s.invited],
+      ['🤔', 'אולי', s.maybe],
+      ['❌', 'סימנו שלא יגיעו', s.declined],
+      ...(s.no_response ? [['🔕', 'לא הגיבו', s.no_response]] : []),
+    ]) +
+    statGroup('📨 הזמנות ופנייה', [
+      ['👥', 'מספר מוזמנים פוטנציאלי', s.total],
+      ['🆕', 'טרם הוזמנו', s.not_invited],
+      ['✉️', 'הוזמנו במייל', s.outreach_email],
+      ['⚠️', 'ללא כתובת מייל', s.noEmail],
+    ]) +
+    seatsBar(s.confirmed_seats, s.max_attendees);
   const recsHtml = recommendations.length
-    ? `<tr><td style="padding:14px 0 0;">
-         <div style="font-weight:800;color:${BRAND.maroon};margin-bottom:6px;">המלצות לפעולה</div>
-         <ul style="margin:0;padding-inline-start:18px;color:${BRAND.text};font-size:15px;line-height:1.75;">
-           ${recommendations.map((r) => `<li>${r}</li>`).join('')}
-         </ul>
+    ? `<tr><td style="padding:2px 0 0;">
+         <div style="font-weight:800;color:${BRAND.maroon};font-size:16px;margin:0 2px 6px;">💡 המלצות לפעולה</div>
+         <div style="border:1px solid #f1e6dc;border-radius:12px;padding:10px 14px;">
+           <ul style="margin:0;padding-inline-start:18px;color:${BRAND.text};font-size:15px;line-height:1.75;">
+             ${recommendations.map((r) => `<li>${r}</li>`).join('')}
+           </ul>
+         </div>
        </td></tr>`
     : '';
   return {
     kind: 'daily_digest',
-    subject: `דוח הרשמה יומי · ${dateLabel} · ${s.confirmed} מאושרים, ${s.pending} ממתינים`,
+    subject: `דוח הרשמה יומי · ${dateLabel} · ${attending}/${invitedCount} אישרו, ${s.pending} ממתינים`,
     html: layout({
       heading: `סטטוס הרשמה · ${dateLabel}`,
       bodyHtml:
-        p(`נותרו <b>${daysToEvent}</b> ימים לכנס.`) + spotlightHtml(changes) + statsTable + recsHtml,
+        digestHeadline(attending, invitedCount) +
+        p(`⏰ נותרו <b>${daysToEvent}</b> ימים לכנס.`) +
+        spotlightHtml(changes) +
+        statsHtml +
+        recsHtml,
       ctas: [{ href: `${SITE_URL}/admin/invitees`, label: 'פתיחת לוח הבקרה' }],
     }),
     text:
       `סטטוס הרשמה · ${dateLabel}\nנותרו ${daysToEvent} ימים לכנס.\n\n` +
+      `אישרו הגעה מתוך המוזמנים: ${attending} / ${invitedCount}\n\n` +
       (changes
         ? (changes.isFirst
             ? 'מה השתנה: זהו העדכון הראשון.\n\n'
