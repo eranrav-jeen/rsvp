@@ -65,6 +65,22 @@ const MAILLIST_IMPORT_HELP =
 const VCARD_IMPORT_HELP =
   'בחרו קובץ vCard (.vcf) ששותף בוואטסאפ (שיתוף איש קשר → שמירה/שיתוף כקובץ), או הדביקו את תוכנו. ניתן לבחור כמה קבצים יחד. שם, ארגון, מייל וטלפון יזוהו אוטומטית; כפילויות (לפי מייל/טלפון) ידולגו.';
 
+// Reminder email template (based on the "Save the Date" note). Editable in the
+// modal before sending.
+const REMINDER_SUBJECT = 'תזכורת · מיטאפ קהילת מובילי ה-AI במגזר הציבורי · 20.10.2026';
+const REMINDER_BODY = `שלום,
+
+תזכורת ידידותית — מיטאפ קהילת מובילי ה-AI במגזר הציבורי מתקרב: יום שלישי, 20.10.2026, במשרדי Jeen.ai.
+
+האירוע מיועד לנשות ואנשי דרג ניהולי בכיר בעולמות הובלת ה-AI בארגוני המגזר הציבורי, ומספר המקומות מוגבל.
+
+אם עדיין לא נרשמתם — זה הרגע להבטיח את מקומכם:
+https://rsvp.jeenai.app
+
+נשמח לראותכם!
+בברכה,
+ערן`;
+
 export default function Invitees() {
   const [data, setData] = useState({ invitees: [], summary: null });
   const [byOrg, setByOrg] = useState([]);
@@ -79,6 +95,7 @@ export default function Invitees() {
   const [showMaillist, setShowMaillist] = useState(false);
   const [showVcard, setShowVcard] = useState(false);
   const [showBcc, setShowBcc] = useState(false);
+  const [showReminder, setShowReminder] = useState(false);
   const [sort, setSort] = useState({ key: null, dir: 'asc' });
   const fileRef = useRef();
 
@@ -384,6 +401,13 @@ export default function Invitees() {
         >
           מיילים ל-Bcc
         </button>
+        <button
+          className="btn btn-sm btn-ghost"
+          onClick={() => setShowReminder(true)}
+          title="פתיחת מייל תזכורת חדש לפי התבנית"
+        >
+          שליחת תזכורת
+        </button>
         <a className="btn btn-sm btn-primary" href="/api/invitees/export">
           ייצוא XLSX
         </a>
@@ -468,6 +492,9 @@ export default function Invitees() {
             load();
           }}
         />
+      )}
+      {showReminder && (
+        <ReminderModal onClose={() => setShowReminder(false)} onToast={showToast} />
       )}
       {showBcc && (
         <BccModal
@@ -752,6 +779,72 @@ function InviteeModal({ invitee, onClose, onSaved }) {
           </button>
           <button className="btn btn-ghost" onClick={onClose}>
             ביטול
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ReminderModal({ onClose, onToast }) {
+  const [subject, setSubject] = useState(REMINDER_SUBJECT);
+  const [body, setBody] = useState(REMINDER_BODY);
+
+  function openInMail() {
+    const url = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = url;
+  }
+  async function copyBody() {
+    try {
+      await navigator.clipboard.writeText(body);
+      onToast('גוף המייל הועתק');
+    } catch {
+      onToast('לא ניתן להעתיק');
+    }
+  }
+  async function copySubject() {
+    try {
+      await navigator.clipboard.writeText(subject);
+      onToast('הנושא הועתק');
+    } catch {
+      onToast('לא ניתן להעתיק');
+    }
+  }
+
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <h3>שליחת תזכורת</h3>
+        <p className="muted" style={{ fontSize: 13, marginTop: 0 }}>
+          פתחו מייל חדש עם הנושא והתוכן שלהלן (ניתן לערוך לפני השליחה). את הנמענים הוסיפו
+          בשדה ה-Bcc — אפשר להעתיק אותם דרך הכפתור "מיילים ל-Bcc".
+        </p>
+        <div className="field">
+          <label>נושא</label>
+          <div style={{ display: 'flex', gap: 6 }}>
+            <input type="text" value={subject} onChange={(e) => setSubject(e.target.value)} />
+            <button type="button" className="btn btn-ghost btn-sm" onClick={copySubject}>
+              העתקה
+            </button>
+          </div>
+        </div>
+        <div className="field">
+          <label>תוכן</label>
+          <textarea
+            style={{ minHeight: 220, lineHeight: 1.6 }}
+            value={body}
+            onChange={(e) => setBody(e.target.value)}
+          />
+        </div>
+        <div className="actions">
+          <button className="btn btn-primary" onClick={openInMail}>
+            פתיחה במייל חדש
+          </button>
+          <button className="btn btn-ghost" onClick={copyBody}>
+            העתקת התוכן
+          </button>
+          <button className="btn btn-ghost" onClick={onClose}>
+            סגירה
           </button>
         </div>
       </div>
