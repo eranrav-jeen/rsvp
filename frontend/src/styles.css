@@ -1039,6 +1039,24 @@ table.grid tr:hover td:last-child {
   background: #fcf9f6;
 }
 
+/* Approved (confirmed) invitees — emphasized row. */
+table.grid tr.row-approved td {
+  background: #e9f9ef;
+  font-weight: 700;
+  color: var(--color-maroon);
+}
+table.grid tr.row-approved td:last-child {
+  background: #e9f9ef;
+}
+table.grid tr.row-approved:hover td,
+table.grid tr.row-approved:hover td:last-child {
+  background: #d9f3e3;
+}
+/* Leading (right, RTL) accent stripe on the first cell. */
+table.grid tr.row-approved td.col-org {
+  box-shadow: inset -4px 0 0 #2e8b57;
+}
+
 .badge {
   display: inline-block;
   padding: 3px 10px;

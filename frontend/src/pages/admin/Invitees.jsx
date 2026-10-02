@@ -536,7 +536,7 @@ function InviteeRow({ inv, onUpdate, onEdit, onDelete, onToast }) {
   const [phone, setPhone] = useState(inv.phone || '');
 
   return (
-    <tr>
+    <tr className={inv.status === 'confirmed' ? 'row-approved' : ''}>
       <td className="col-org" title={inv.organization}>{inv.organization}</td>
       <td className="col-name" title={inv.full_name || ''}>
         {inv.full_name || <span className="muted">—</span>}
