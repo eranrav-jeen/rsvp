@@ -370,7 +370,7 @@ export default function Invitees() {
           ))}
         </select>
         <span className="spacer" />
-        <button className="btn btn-sm btn-ghost" onClick={() => setEditInvitee({})}>
+        <button className="btn btn-sm btn-success" onClick={() => setEditInvitee({})}>
           + הוספת מוזמן
         </button>
         <button
@@ -614,7 +614,12 @@ function InviteeRow({ inv, onUpdate, onEdit, onDelete, onToast }) {
             type="button"
             className={`ob ${inv.outreach_whatsapp ? 'on' : ''}`}
             title="פנייה בוואטסאפ"
-            onClick={() => onUpdate(inv.id, { outreach_whatsapp: !inv.outreach_whatsapp })}
+            onClick={() => {
+              const turningOn = !inv.outreach_whatsapp;
+              const patch = { outreach_whatsapp: turningOn };
+              if (turningOn && inv.status === 'not_invited') patch.status = 'invited';
+              onUpdate(inv.id, patch);
+            }}
           >
             💬
           </button>

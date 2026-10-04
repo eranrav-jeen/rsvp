@@ -69,6 +69,15 @@ button {
   opacity: 0.55;
   cursor: not-allowed;
 }
+.btn-success {
+  background: #2e8b57;
+  color: #fff;
+  font-weight: 700;
+  box-shadow: var(--shadow-sm);
+}
+.btn-success:hover {
+  background: #267347;
+}
 .submit-disclaimer {
   margin: 10px 2px 0;
   font-size: 12.5px;
