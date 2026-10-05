@@ -123,20 +123,28 @@ export default function Invitees() {
     setShowBcc(true);
   }
 
-  // Mark a batch of invitees as emailed (outreach_email = true), update the rows
-  // in place and refresh the dashboard counters. Returns how many were updated.
-  async function markEmailed(ids) {
+  // Mark a batch of invitees as emailed, update the rows in place and refresh the
+  // dashboard counters. `wave` selects which email flag is set: 'invite'
+  // (outreach_email, also promotes not_invited→invited) or 'agenda'
+  // (agenda_email). Returns how many were updated.
+  async function markEmailed(ids, wave = 'invite') {
     if (!ids || ids.length === 0) return 0;
     try {
-      const res = await api.post('/api/invitees/mark-outreach', { ids, channel: 'email' });
+      const reqWave = wave === 'agenda' ? 'agenda' : 'outreach';
+      const res = await api.post('/api/invitees/mark-outreach', {
+        ids,
+        channel: 'email',
+        wave: reqWave,
+      });
       const idSet = new Set(ids);
       setData((d) => ({
         ...d,
-        invitees: d.invitees.map((r) =>
-          idSet.has(r.id)
-            ? { ...r, outreach_email: true, status: r.status === 'not_invited' ? 'invited' : r.status }
-            : r
-        ),
+        invitees: d.invitees.map((r) => {
+          if (!idSet.has(r.id)) return r;
+          return wave === 'agenda'
+            ? { ...r, agenda_email: true }
+            : { ...r, outreach_email: true, status: r.status === 'not_invited' ? 'invited' : r.status };
+        }),
       }));
       refreshStats();
       return res.updated ?? ids.length;
@@ -295,21 +303,40 @@ export default function Invitees() {
             פניות שבוצעו
             <span className="muted"> · ניתן לפנות ביותר מערוץ אחד, ולכן הסכום עשוי לעלות על מספר המוזמנים</span>
           </div>
+          <div className="outreach-wave-head">הזמנה (Save the Date)</div>
           <div className="outreach-cards">
             <div className="ostat">
               <span className="ostat-ico">📧</span>
               <span className="ostat-num">{s.outreach_email}</span>
-              <span className="ostat-lbl">הוזמנו במייל</span>
+              <span className="ostat-lbl">במייל</span>
             </div>
             <div className="ostat">
               <span className="ostat-ico">💬</span>
               <span className="ostat-num">{s.outreach_whatsapp}</span>
-              <span className="ostat-lbl">הוזמנו בוואטסאפ</span>
+              <span className="ostat-lbl">בוואטסאפ</span>
             </div>
             <div className="ostat">
               <span className="ostat-ico">📞</span>
               <span className="ostat-num">{s.outreach_call}</span>
-              <span className="ostat-lbl">הוזמנו בשיחה טלפונית</span>
+              <span className="ostat-lbl">בשיחה טלפונית</span>
+            </div>
+          </div>
+          <div className="outreach-wave-head">סדר יום (Agenda)</div>
+          <div className="outreach-cards">
+            <div className="ostat ostat-agenda">
+              <span className="ostat-ico">📧</span>
+              <span className="ostat-num">{s.agenda_email}</span>
+              <span className="ostat-lbl">במייל</span>
+            </div>
+            <div className="ostat ostat-agenda">
+              <span className="ostat-ico">💬</span>
+              <span className="ostat-num">{s.agenda_whatsapp}</span>
+              <span className="ostat-lbl">בוואטסאפ</span>
+            </div>
+            <div className="ostat ostat-agenda">
+              <span className="ostat-ico">📞</span>
+              <span className="ostat-num">{s.agenda_call}</span>
+              <span className="ostat-lbl">בשיחה טלפונית</span>
             </div>
           </div>
         </div>
@@ -601,36 +628,70 @@ function InviteeRow({ inv, onUpdate, onEdit, onDelete, onToast }) {
         />
       </td>
       <td>
-        <div className="outreach">
-          <button
-            type="button"
-            className={`ob ${inv.outreach_email ? 'on' : ''}`}
-            title="פנייה במייל"
-            onClick={() => onUpdate(inv.id, { outreach_email: !inv.outreach_email })}
-          >
-            📧
-          </button>
-          <button
-            type="button"
-            className={`ob ${inv.outreach_whatsapp ? 'on' : ''}`}
-            title="פנייה בוואטסאפ"
-            onClick={() => {
-              const turningOn = !inv.outreach_whatsapp;
-              const patch = { outreach_whatsapp: turningOn };
-              if (turningOn && inv.status === 'not_invited') patch.status = 'invited';
-              onUpdate(inv.id, patch);
-            }}
-          >
-            💬
-          </button>
-          <button
-            type="button"
-            className={`ob ${inv.outreach_call ? 'on' : ''}`}
-            title="פנייה בטלפון"
-            onClick={() => onUpdate(inv.id, { outreach_call: !inv.outreach_call })}
-          >
-            📞
-          </button>
+        <div className="outreach-waves">
+          <div className="ow-row">
+            <span className="ow-label">הזמנה</span>
+            <div className="outreach">
+              <button
+                type="button"
+                className={`ob ${inv.outreach_email ? 'on' : ''}`}
+                title="הזמנה (Save the Date) במייל"
+                onClick={() => onUpdate(inv.id, { outreach_email: !inv.outreach_email })}
+              >
+                📧
+              </button>
+              <button
+                type="button"
+                className={`ob ${inv.outreach_whatsapp ? 'on' : ''}`}
+                title="הזמנה בוואטסאפ"
+                onClick={() => {
+                  const turningOn = !inv.outreach_whatsapp;
+                  const patch = { outreach_whatsapp: turningOn };
+                  if (turningOn && inv.status === 'not_invited') patch.status = 'invited';
+                  onUpdate(inv.id, patch);
+                }}
+              >
+                💬
+              </button>
+              <button
+                type="button"
+                className={`ob ${inv.outreach_call ? 'on' : ''}`}
+                title="הזמנה בטלפון"
+                onClick={() => onUpdate(inv.id, { outreach_call: !inv.outreach_call })}
+              >
+                📞
+              </button>
+            </div>
+          </div>
+          <div className="ow-row">
+            <span className="ow-label">סדר יום</span>
+            <div className="outreach">
+              <button
+                type="button"
+                className={`ob ${inv.agenda_email ? 'on' : ''}`}
+                title="סדר יום במייל"
+                onClick={() => onUpdate(inv.id, { agenda_email: !inv.agenda_email })}
+              >
+                📧
+              </button>
+              <button
+                type="button"
+                className={`ob ${inv.agenda_whatsapp ? 'on' : ''}`}
+                title="סדר יום בוואטסאפ"
+                onClick={() => onUpdate(inv.id, { agenda_whatsapp: !inv.agenda_whatsapp })}
+              >
+                💬
+              </button>
+              <button
+                type="button"
+                className={`ob ${inv.agenda_call ? 'on' : ''}`}
+                title="סדר יום בטלפון"
+                onClick={() => onUpdate(inv.id, { agenda_call: !inv.agenda_call })}
+              >
+                📞
+              </button>
+            </div>
+          </div>
         </div>
       </td>
       <td>
@@ -801,11 +862,15 @@ function InviteeModal({ invitee, onClose, onSaved }) {
 function BccModal({ invitees, onClose, onCopied, markEmailed }) {
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
-  const [onlyNew, setOnlyNew] = useState(false); // exclude already-emailed
+  const [wave, setWave] = useState('invite'); // 'invite' (Save the Date) | 'agenda'
+  const [onlyNew, setOnlyNew] = useState(false); // exclude already-emailed (this wave)
   const [doMark, setDoMark] = useState(true); // mark as emailed on copy
   const [sep, setSep] = useState(';'); // ';' for Outlook, ',' for Gmail etc.
   const [busy, setBusy] = useState(false);
   const areaRef = useRef();
+
+  // Which email flag this wave tracks.
+  const emailedFlag = wave === 'agenda' ? 'agenda_email' : 'outreach_email';
 
   const fromTs = from ? new Date(from).getTime() : null;
   const toTs = to ? new Date(to).getTime() : null;
@@ -824,7 +889,7 @@ function BccModal({ invitees, onClose, onCopied, markEmailed }) {
   const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
   const rangeRows = invitees.filter(inRange);
   const withEmail = rangeRows.filter(
-    (r) => (r.email || '').trim() && (!onlyNew || !r.outreach_email)
+    (r) => (r.email || '').trim() && (!onlyNew || !r[emailedFlag])
   );
   // Only genuine, well-formed addresses (skips e.g. a phone number typed into
   // the email column).
@@ -856,8 +921,8 @@ function BccModal({ invitees, onClose, onCopied, markEmailed }) {
     }
     let markMsg = '';
     if (doMark) {
-      const n = await markEmailed(ids);
-      markMsg = ` · סומנו ${n} כהוזמנו במייל`;
+      const n = await markEmailed(ids, wave);
+      markMsg = wave === 'agenda' ? ` · סומנו ${n} כקיבלו סדר יום במייל` : ` · סומנו ${n} כהוזמנו במייל`;
     }
     setBusy(false);
     onCopied(`הועתקו ${emails.length} כתובות${markMsg}`);
@@ -874,6 +939,28 @@ function BccModal({ invitees, onClose, onCopied, markEmailed }) {
           מאוחר יותר) כדי לשלוח ולעקוב אחר מנה מסוימת.
         </p>
 
+        <div className="bcc-sep" style={{ marginBottom: 10 }}>
+          <span className="muted" style={{ fontSize: 13 }}>מטרת השליחה:</span>
+          <label className="bcc-check" style={{ margin: 0 }}>
+            <input
+              type="radio"
+              name="bcc-wave"
+              checked={wave === 'invite'}
+              onChange={() => setWave('invite')}
+            />
+            <span>הזמנה (Save the Date)</span>
+          </label>
+          <label className="bcc-check" style={{ margin: 0 }}>
+            <input
+              type="radio"
+              name="bcc-wave"
+              checked={wave === 'agenda'}
+              onChange={() => setWave('agenda')}
+            />
+            <span>סדר יום (Agenda)</span>
+          </label>
+        </div>
+
         <div className="bcc-range">
           <div className="field" style={{ marginBottom: 0 }}>
             <label>מתאריך/שעה</label>
@@ -887,11 +974,15 @@ function BccModal({ invitees, onClose, onCopied, markEmailed }) {
 
         <label className="bcc-check">
           <input type="checkbox" checked={onlyNew} onChange={(e) => setOnlyNew(e.target.checked)} />
-          <span>רק מי שעדיין לא סומן כ"הוזמן במייל"</span>
+          <span>{wave === 'agenda' ? 'רק מי שעדיין לא קיבל/ה סדר יום במייל' : 'רק מי שעדיין לא סומן כ"הוזמן במייל"'}</span>
         </label>
         <label className="bcc-check">
           <input type="checkbox" checked={doMark} onChange={(e) => setDoMark(e.target.checked)} />
-          <span>לסמן את הנמענים כ"הוזמנו במייל" (ולעדכן סטטוס ל"הוזמן")</span>
+          <span>
+            {wave === 'agenda'
+              ? 'לסמן את הנמענים כ"קיבלו סדר יום במייל"'
+              : 'לסמן את הנמענים כ"הוזמנו במייל" (ולעדכן סטטוס ל"הוזמן")'}
+          </span>
         </label>
 
         <div className="bcc-sep">

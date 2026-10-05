@@ -820,6 +820,41 @@ button {
   border-color: var(--color-coral);
 }
 
+/* Two outreach waves (invite / agenda) stacked in the table's "פניות" cell. */
+.outreach-waves {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.ow-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.ow-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #6b5b64;
+  min-width: 46px;
+  text-align: right;
+}
+
+/* Section headers inside the dashboard outreach strip. */
+.outreach-wave-head {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-maroon);
+  margin: 10px 0 7px;
+}
+/* The agenda wave's tiles, tinted to tell them apart from the invite wave. */
+.ostat-agenda {
+  background: #f3f6fa;
+  border-color: #dde6f0;
+}
+.ostat-agenda .ostat-num {
+  color: #2a4d74;
+}
+
 .row-actions {
   display: flex;
   gap: 6px;

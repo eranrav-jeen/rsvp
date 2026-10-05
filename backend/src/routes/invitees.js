@@ -66,9 +66,12 @@ router.get(
       'סטטוס': r.status,
       'מלווים': r.plus_ones,
       'אחראי/ת הזמנה': r.invited_by || '',
-      'פנייה במייל': r.outreach_email ? 'כן' : '',
-      'פנייה בוואטסאפ': r.outreach_whatsapp ? 'כן' : '',
-      'פנייה בטלפון': r.outreach_call ? 'כן' : '',
+      'הזמנה במייל': r.outreach_email ? 'כן' : '',
+      'הזמנה בוואטסאפ': r.outreach_whatsapp ? 'כן' : '',
+      'הזמנה בטלפון': r.outreach_call ? 'כן' : '',
+      'סדר יום במייל': r.agenda_email ? 'כן' : '',
+      'סדר יום בוואטסאפ': r.agenda_whatsapp ? 'כן' : '',
+      'סדר יום בטלפון': r.agenda_call ? 'כן' : '',
       'מקור': r.source || '',
       'הערות': r.notes || '',
     }));
@@ -223,6 +226,9 @@ router.patch(
                outreach_email = COALESCE($10, outreach_email),
                outreach_whatsapp = COALESCE($11, outreach_whatsapp),
                outreach_call = COALESCE($12, outreach_call),
+               agenda_email = COALESCE($14, agenda_email),
+               agenda_whatsapp = COALESCE($15, agenda_whatsapp),
+               agenda_call = COALESCE($16, agenda_call),
                updated_at = now()
          WHERE id = $13
          RETURNING *`,
@@ -240,6 +246,9 @@ router.patch(
           typeof body.outreach_whatsapp === 'boolean' ? body.outreach_whatsapp : null,
           typeof body.outreach_call === 'boolean' ? body.outreach_call : null,
           id,
+          typeof body.agenda_email === 'boolean' ? body.agenda_email : null,
+          typeof body.agenda_whatsapp === 'boolean' ? body.agenda_whatsapp : null,
+          typeof body.agenda_call === 'boolean' ? body.agenda_call : null,
         ]
       );
       return { invitee: updated.rows[0], overCapacity, prevStatus: inv.status };
@@ -295,23 +304,25 @@ router.post(
       ? [...new Set(body.ids.map((n) => Number.parseInt(n, 10)).filter((n) => !Number.isNaN(n)))]
       : [];
     if (ids.length === 0) return res.json({ updated: 0 });
-    const col =
-      body.channel === 'whatsapp'
-        ? 'outreach_whatsapp'
-        : body.channel === 'call'
-          ? 'outreach_call'
-          : 'outreach_email';
+    // wave: 'invite' (Save the Date) or 'agenda'. channel: email/whatsapp/call.
+    const wave = body.wave === 'agenda' ? 'agenda' : 'outreach';
+    const chan =
+      body.channel === 'whatsapp' ? 'whatsapp' : body.channel === 'call' ? 'call' : 'email';
+    const col = `${wave}_${chan}`;
     const result = await query(
       `UPDATE invitees SET ${col} = true, updated_at = now() WHERE id = ANY($1::int[])`,
       [ids]
     );
-    // Reaching out = they've now been invited: promote not_invited -> invited
-    // (leave any further status like pending/confirmed/declined untouched).
-    const promoted = await query(
-      `UPDATE invitees SET status = 'invited', updated_at = now()
-       WHERE id = ANY($1::int[]) AND status = 'not_invited'`,
-      [ids]
-    );
+    // Only the invite wave promotes status: reaching out = they've been invited.
+    // The agenda wave goes to people already invited, so it leaves status alone.
+    let promoted = { rowCount: 0 };
+    if (wave === 'outreach') {
+      promoted = await query(
+        `UPDATE invitees SET status = 'invited', updated_at = now()
+         WHERE id = ANY($1::int[]) AND status = 'not_invited'`,
+        [ids]
+      );
+    }
     res.json({ updated: result.rowCount, promoted: promoted.rowCount });
   })
 );
@@ -605,10 +616,20 @@ async function getSummary({ excludeJeen = false, excludeSpeakers = false } = {})
     `SELECT
        COUNT(*) FILTER (WHERE outreach_email)::int    AS email,
        COUNT(*) FILTER (WHERE outreach_whatsapp)::int AS whatsapp,
-       COUNT(*) FILTER (WHERE outreach_call)::int     AS call
+       COUNT(*) FILTER (WHERE outreach_call)::int     AS call,
+       COUNT(*) FILTER (WHERE agenda_email)::int      AS agenda_email,
+       COUNT(*) FILTER (WHERE agenda_whatsapp)::int   AS agenda_whatsapp,
+       COUNT(*) FILTER (WHERE agenda_call)::int        AS agenda_call
      FROM invitees ${where}`
   );
-  const o = outreach.rows[0] || { email: 0, whatsapp: 0, call: 0 };
+  const o = outreach.rows[0] || {
+    email: 0,
+    whatsapp: 0,
+    call: 0,
+    agenda_email: 0,
+    agenda_whatsapp: 0,
+    agenda_call: 0,
+  };
 
   const settings = await query('SELECT max_attendees FROM event_settings ORDER BY id LIMIT 1');
   const maxAttendees = settings.rows[0] ? settings.rows[0].max_attendees : 120;
@@ -629,6 +650,9 @@ async function getSummary({ excludeJeen = false, excludeSpeakers = false } = {})
     outreach_email: o.email,
     outreach_whatsapp: o.whatsapp,
     outreach_call: o.call,
+    agenda_email: o.agenda_email,
+    agenda_whatsapp: o.agenda_whatsapp,
+    agenda_call: o.agenda_call,
     confirmed_seats: confirmedSeats,
     max_attendees: maxAttendees,
   };
