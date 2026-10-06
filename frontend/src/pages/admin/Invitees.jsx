@@ -666,7 +666,7 @@ function InviteeRow({ inv, onUpdate, onEdit, onDelete, onToast }) {
       <td>
         <div className="outreach-waves">
           <div className="ow-row">
-            <span className="ow-label">הזמנה</span>
+            <span className="ow-label">STD</span>
             <div className="outreach">
               <button
                 type="button"
@@ -700,7 +700,7 @@ function InviteeRow({ inv, onUpdate, onEdit, onDelete, onToast }) {
             </div>
           </div>
           <div className="ow-row">
-            <span className="ow-label">סדר יום</span>
+            <span className="ow-label">הזמנה</span>
             <div className="outreach">
               <button
                 type="button"
