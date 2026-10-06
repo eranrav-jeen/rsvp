@@ -12,6 +12,7 @@ import { icsContent } from './event.js';
 import { requireAdmin } from './middleware.js';
 import authRouter from './routes/auth.js';
 import rsvpRouter from './routes/rsvp.js';
+import validationRouter from './routes/validation.js';
 import inviteesRouter from './routes/invitees.js';
 import tasksRouter from './routes/tasks.js';
 import marketingRouter from './routes/marketing.js';
@@ -78,6 +79,10 @@ app.get('/api/calendar.ics', (req, res) => {
 // Public routes
 app.use('/api/auth', authRouter);
 app.use('/api/rsvp', rsvpRouter);
+
+// Machine-to-machine: the attendance-validation calling bot. Not session-gated;
+// each route enforces the VALIDATION_API_KEY bearer token itself.
+app.use('/api/validation', validationRouter);
 
 // Admin-only routes
 app.use('/api/invitees', requireAdmin, inviteesRouter);

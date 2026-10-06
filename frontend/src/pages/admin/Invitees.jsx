@@ -210,7 +210,7 @@ export default function Invitees() {
 
   async function updateInvitee(id, patch) {
     // Whether this change can move the dashboard numbers.
-    const affectsCounts = 'status' in patch || 'plus_ones' in patch;
+    const affectsCounts = 'status' in patch || 'plus_ones' in patch || 'validation_status' in patch;
     try {
       const res = await api.patch(`/api/invitees/${id}`, patch);
       if (res && res.invitee) applyRow(res.invitee);
@@ -337,6 +337,42 @@ export default function Invitees() {
               <span className="ostat-ico">📞</span>
               <span className="ostat-num">{s.agenda_call}</span>
               <span className="ostat-lbl">בשיחה טלפונית</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {s && (
+        <div className="outreach-stats validation-stats">
+          <div className="outreach-stats-head">
+            אימות הגעה בשיחה טלפונית
+            <span className="muted"> · מבין המאושרים, לפי שיחות הבוט</span>
+          </div>
+          <div className="outreach-cards">
+            <div className="ostat ostat-ok">
+              <span className="ostat-ico">✅</span>
+              <span className="ostat-num">{s.validation_confirmed}</span>
+              <span className="ostat-lbl">אישרו הגעה</span>
+            </div>
+            <div className="ostat ostat-bad">
+              <span className="ostat-ico">❌</span>
+              <span className="ostat-num">{s.validation_declined}</span>
+              <span className="ostat-lbl">לא מגיעים</span>
+            </div>
+            <div className="ostat">
+              <span className="ostat-ico">📵</span>
+              <span className="ostat-num">{s.validation_no_answer}</span>
+              <span className="ostat-lbl">אין מענה</span>
+            </div>
+            <div className="ostat">
+              <span className="ostat-ico">🔁</span>
+              <span className="ostat-num">{s.validation_callback}</span>
+              <span className="ostat-lbl">לחזור אליהם</span>
+            </div>
+            <div className="ostat ostat-pending">
+              <span className="ostat-ico">⏳</span>
+              <span className="ostat-num">{s.validation_pending}</span>
+              <span className="ostat-lbl">טרם אומתו</span>
             </div>
           </div>
         </div>
@@ -692,6 +728,24 @@ function InviteeRow({ inv, onUpdate, onEdit, onDelete, onToast }) {
               </button>
             </div>
           </div>
+          {(inv.status === 'confirmed' || inv.status === 'speaker') && (
+            <div className="ow-row">
+              <span className="ow-label">אימות 📞</span>
+              <select
+                className={`vsel v-${inv.validation_status || 'none'}`}
+                value={inv.validation_status || ''}
+                title="אימות הגעה בשיחה טלפונית (מתעדכן אוטומטית מהבוט, וניתן לעדכן ידנית)"
+                onChange={(e) => onUpdate(inv.id, { validation_status: e.target.value })}
+              >
+                <option value="">— טרם אומת</option>
+                <option value="confirmed">✓ אישר/ה</option>
+                <option value="declined">✗ לא מגיע/ה</option>
+                <option value="no_answer">אין מענה</option>
+                <option value="callback">לחזור אליו/ה</option>
+                <option value="wrong_number">מספר שגוי</option>
+              </select>
+            </div>
+          )}
         </div>
       </td>
       <td>

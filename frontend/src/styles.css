@@ -855,6 +855,62 @@ button {
   color: #2a4d74;
 }
 
+/* Attendance-validation dashboard strip + outcome-tinted tiles. */
+.validation-stats {
+  border-top-color: #2e9e6b;
+}
+.ostat-ok {
+  background: #eef9f2;
+  border-color: #cdecda;
+}
+.ostat-ok .ostat-num {
+  color: #1f7a4d;
+}
+.ostat-bad {
+  background: #fdeeee;
+  border-color: #f3d2d2;
+}
+.ostat-bad .ostat-num {
+  color: #b23b3b;
+}
+.ostat-pending {
+  background: #fbf7ee;
+  border-color: #efe3c9;
+}
+.ostat-pending .ostat-num {
+  color: #8a6d1f;
+}
+
+/* Per-row attendance-validation picker in the "פניות" cell. */
+.vsel {
+  font-size: 11px;
+  padding: 2px 4px;
+  border-radius: 6px;
+  border: 1px solid #e3d5c8;
+  background: #fff;
+  max-width: 108px;
+  cursor: pointer;
+}
+.vsel.v-confirmed {
+  background: #eef9f2;
+  border-color: #1f7a4d;
+  color: #1f7a4d;
+  font-weight: 700;
+}
+.vsel.v-declined {
+  background: #fdeeee;
+  border-color: #b23b3b;
+  color: #b23b3b;
+  font-weight: 700;
+}
+.vsel.v-no_answer,
+.vsel.v-callback,
+.vsel.v-wrong_number {
+  background: #fbf7ee;
+  border-color: #c9a94e;
+  color: #8a6d1f;
+}
+
 .row-actions {
   display: flex;
   gap: 6px;

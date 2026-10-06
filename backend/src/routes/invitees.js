@@ -12,6 +12,15 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 *
 
 const VALID_STATUSES = ['not_invited', 'invited', 'pending', 'confirmed', 'speaker', 'maybe', 'declined', 'waitlist', 'no_response'];
 
+// Hebrew labels for the attendance-validation call outcome (set by the AI bot).
+const VALIDATION_LABELS = {
+  confirmed: 'אישר/ה הגעה',
+  declined: 'לא מגיע/ה',
+  no_answer: 'אין מענה',
+  callback: 'לחזור אליו/ה',
+  wrong_number: 'מספר שגוי',
+};
+
 // SQL fragments to identify Jeen employees (email @jeen.ai or org "jeen") and
 // the group we de-emphasise (speakers + Jeen employees) at the bottom of the list.
 const IS_JEEN = "(LOWER(COALESCE(email,'')) LIKE '%@jeen.ai' OR LOWER(organization) = 'jeen')";
@@ -72,6 +81,7 @@ router.get(
       'סדר יום במייל': r.agenda_email ? 'כן' : '',
       'סדר יום בוואטסאפ': r.agenda_whatsapp ? 'כן' : '',
       'סדר יום בטלפון': r.agenda_call ? 'כן' : '',
+      'אימות טלפוני': VALIDATION_LABELS[r.validation_status] || '',
       'מקור': r.source || '',
       'הערות': r.notes || '',
     }));
@@ -229,6 +239,8 @@ router.patch(
                agenda_email = COALESCE($14, agenda_email),
                agenda_whatsapp = COALESCE($15, agenda_whatsapp),
                agenda_call = COALESCE($16, agenda_call),
+               validation_status = CASE WHEN $17::boolean THEN $18 ELSE validation_status END,
+               validation_called_at = CASE WHEN $17::boolean THEN now() ELSE validation_called_at END,
                updated_at = now()
          WHERE id = $13
          RETURNING *`,
@@ -249,6 +261,8 @@ router.patch(
           typeof body.agenda_email === 'boolean' ? body.agenda_email : null,
           typeof body.agenda_whatsapp === 'boolean' ? body.agenda_whatsapp : null,
           typeof body.agenda_call === 'boolean' ? body.agenda_call : null,
+          'validation_status' in body, // $17: whether to set validation_status
+          'validation_status' in body ? body.validation_status || null : null, // $18
         ]
       );
       return { invitee: updated.rows[0], overCapacity, prevStatus: inv.status };
@@ -631,6 +645,27 @@ async function getSummary({ excludeJeen = false, excludeSpeakers = false } = {})
     agenda_call: 0,
   };
 
+  // Attendance-validation phone calls, counted among the confirmed participants
+  // (the people the bot calls). "pending" = confirmed but not yet called.
+  const validation = await query(
+    `SELECT
+       COUNT(*) FILTER (WHERE validation_status = 'confirmed')::int    AS confirmed,
+       COUNT(*) FILTER (WHERE validation_status = 'declined')::int     AS declined,
+       COUNT(*) FILTER (WHERE validation_status = 'no_answer')::int    AS no_answer,
+       COUNT(*) FILTER (WHERE validation_status = 'callback')::int     AS callback,
+       COUNT(*) FILTER (WHERE validation_status = 'wrong_number')::int AS wrong_number,
+       COUNT(*) FILTER (WHERE status = 'confirmed' AND validation_status IS NULL)::int AS pending
+     FROM invitees ${where}`
+  );
+  const v = validation.rows[0] || {
+    confirmed: 0,
+    declined: 0,
+    no_answer: 0,
+    callback: 0,
+    wrong_number: 0,
+    pending: 0,
+  };
+
   const settings = await query('SELECT max_attendees FROM event_settings ORDER BY id LIMIT 1');
   const maxAttendees = settings.rows[0] ? settings.rows[0].max_attendees : 120;
   // Approved seats = confirmed + speakers.
@@ -653,6 +688,12 @@ async function getSummary({ excludeJeen = false, excludeSpeakers = false } = {})
     agenda_email: o.agenda_email,
     agenda_whatsapp: o.agenda_whatsapp,
     agenda_call: o.agenda_call,
+    validation_confirmed: v.confirmed,
+    validation_declined: v.declined,
+    validation_no_answer: v.no_answer,
+    validation_callback: v.callback,
+    validation_wrong_number: v.wrong_number,
+    validation_pending: v.pending,
     confirmed_seats: confirmedSeats,
     max_attendees: maxAttendees,
   };
