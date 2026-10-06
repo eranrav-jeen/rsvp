@@ -249,7 +249,7 @@ function digestHeadline(confirmed, invited) {
   const pct = invited > 0 ? Math.min(100, Math.round((confirmed / invited) * 100)) : 0;
   return `<tr><td style="padding:4px 0 16px;">
       <div style="background:${BRAND.maroon};border-radius:14px;padding:18px 16px;text-align:center;color:#fff;">
-        <div style="font-size:14px;color:${BRAND.amber};font-weight:700;">🎟️ אישרו הגעה מתוך המוזמנים</div>
+        <div style="font-size:14px;color:${BRAND.amber};font-weight:700;">🎟️ אישרו הגעה (כולל מרצים) מתוך המוזמנים</div>
         <div style="font-size:44px;font-weight:800;line-height:1.15;margin-top:4px;direction:ltr;">
           ${confirmed} <span style="color:${BRAND.amber};font-weight:700;">/</span> ${invited}
         </div>
@@ -351,7 +351,7 @@ export function dailyDigest({ dateLabel, daysToEvent, stats, recommendations, ch
     }),
     text:
       `סטטוס הרשמה · ${dateLabel}\nנותרו ${daysToEvent} ימים לכנס.\n\n` +
-      `אישרו הגעה מתוך המוזמנים: ${attending} / ${invitedCount}\n\n` +
+      `אישרו הגעה (כולל מרצים) מתוך המוזמנים: ${attending} / ${invitedCount}\n\n` +
       (changes
         ? (changes.isFirst
             ? 'מה השתנה: זהו העדכון הראשון.\n\n'
