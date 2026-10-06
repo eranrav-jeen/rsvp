@@ -303,7 +303,7 @@ export default function Invitees() {
             פניות שבוצעו
             <span className="muted"> · ניתן לפנות ביותר מערוץ אחד, ולכן הסכום עשוי לעלות על מספר המוזמנים</span>
           </div>
-          <div className="outreach-wave-head">הזמנה (Save the Date)</div>
+          <div className="outreach-wave-head">STD (Save the Date)</div>
           <div className="outreach-cards">
             <div className="ostat">
               <span className="ostat-ico">📧</span>
@@ -321,7 +321,7 @@ export default function Invitees() {
               <span className="ostat-lbl">בשיחה טלפונית</span>
             </div>
           </div>
-          <div className="outreach-wave-head">סדר יום (Agenda)</div>
+          <div className="outreach-wave-head">הזמנה (Agenda)</div>
           <div className="outreach-cards">
             <div className="ostat ostat-agenda">
               <span className="ostat-ico">📧</span>
