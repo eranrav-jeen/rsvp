@@ -305,39 +305,15 @@ export default function Invitees() {
           </div>
           <div className="outreach-wave-head">STD (Save the Date)</div>
           <div className="outreach-cards">
-            <div className="ostat">
-              <span className="ostat-ico">📧</span>
-              <span className="ostat-num">{s.outreach_email}</span>
-              <span className="ostat-lbl">במייל</span>
-            </div>
-            <div className="ostat">
-              <span className="ostat-ico">💬</span>
-              <span className="ostat-num">{s.outreach_whatsapp}</span>
-              <span className="ostat-lbl">בוואטסאפ</span>
-            </div>
-            <div className="ostat">
-              <span className="ostat-ico">📞</span>
-              <span className="ostat-num">{s.outreach_call}</span>
-              <span className="ostat-lbl">בשיחה טלפונית</span>
-            </div>
+            <OutreachStat ico="📧" num={s.outreach_email} of={s.with_email} lbl="במייל" potLbl="עם מייל" />
+            <OutreachStat ico="💬" num={s.outreach_whatsapp} of={s.with_phone} lbl="בוואטסאפ" potLbl="עם טלפון" />
+            <OutreachStat ico="📞" num={s.outreach_call} of={s.with_phone} lbl="בשיחה טלפונית" potLbl="עם טלפון" />
           </div>
           <div className="outreach-wave-head">הזמנה (Agenda)</div>
           <div className="outreach-cards">
-            <div className="ostat ostat-agenda">
-              <span className="ostat-ico">📧</span>
-              <span className="ostat-num">{s.agenda_email}</span>
-              <span className="ostat-lbl">במייל</span>
-            </div>
-            <div className="ostat ostat-agenda">
-              <span className="ostat-ico">💬</span>
-              <span className="ostat-num">{s.agenda_whatsapp}</span>
-              <span className="ostat-lbl">בוואטסאפ</span>
-            </div>
-            <div className="ostat ostat-agenda">
-              <span className="ostat-ico">📞</span>
-              <span className="ostat-num">{s.agenda_call}</span>
-              <span className="ostat-lbl">בשיחה טלפונית</span>
-            </div>
+            <OutreachStat agenda ico="📧" num={s.agenda_email} of={s.with_email} lbl="במייל" potLbl="עם מייל" />
+            <OutreachStat agenda ico="💬" num={s.agenda_whatsapp} of={s.with_phone} lbl="בוואטסאפ" potLbl="עם טלפון" />
+            <OutreachStat agenda ico="📞" num={s.agenda_call} of={s.with_phone} lbl="בשיחה טלפונית" potLbl="עם טלפון" />
           </div>
         </div>
       )}
@@ -1220,6 +1196,30 @@ function MaillistModal({ onClose, onImported, helpText }) {
           <button className="btn btn-ghost" onClick={onClose}>
             ביטול
           </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// One outreach channel tile: how many were reached, and what share of the
+// invitees reachable on that channel (have an email / a phone number) that is.
+function OutreachStat({ ico, num, of, lbl, potLbl, agenda }) {
+  const pct = of > 0 ? Math.round((num / of) * 100) : 0;
+  return (
+    <div className={`ostat ${agenda ? 'ostat-agenda' : ''}`}>
+      <span className="ostat-ico">{ico}</span>
+      <div className="ostat-main">
+        <div className="ostat-row">
+          <span className="ostat-num">{num}</span>
+          <span className="ostat-lbl">{lbl}</span>
+          <span className="ostat-pct">{pct}%</span>
+        </div>
+        <div className="ostat-bar">
+          <span style={{ width: `${Math.min(100, pct)}%` }} />
+        </div>
+        <div className="ostat-of">
+          מתוך {of} {potLbl}
         </div>
       </div>
     </div>

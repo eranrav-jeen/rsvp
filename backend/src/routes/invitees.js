@@ -633,7 +633,9 @@ async function getSummary({ excludeJeen = false, excludeSpeakers = false } = {})
        COUNT(*) FILTER (WHERE outreach_call)::int     AS call,
        COUNT(*) FILTER (WHERE agenda_email)::int      AS agenda_email,
        COUNT(*) FILTER (WHERE agenda_whatsapp)::int   AS agenda_whatsapp,
-       COUNT(*) FILTER (WHERE agenda_call)::int        AS agenda_call
+       COUNT(*) FILTER (WHERE agenda_call)::int        AS agenda_call,
+       COUNT(*) FILTER (WHERE NULLIF(TRIM(email), '') IS NOT NULL)::int AS with_email,
+       COUNT(*) FILTER (WHERE NULLIF(TRIM(phone), '') IS NOT NULL)::int AS with_phone
      FROM invitees ${where}`
   );
   const o = outreach.rows[0] || {
@@ -643,6 +645,8 @@ async function getSummary({ excludeJeen = false, excludeSpeakers = false } = {})
     agenda_email: 0,
     agenda_whatsapp: 0,
     agenda_call: 0,
+    with_email: 0,
+    with_phone: 0,
   };
 
   // Attendance-validation phone calls, counted among the confirmed participants
@@ -688,6 +692,9 @@ async function getSummary({ excludeJeen = false, excludeSpeakers = false } = {})
     agenda_email: o.agenda_email,
     agenda_whatsapp: o.agenda_whatsapp,
     agenda_call: o.agenda_call,
+    // Reachable potential per channel (denominators for the outreach % tiles).
+    with_email: o.with_email,
+    with_phone: o.with_phone,
     validation_confirmed: v.confirmed,
     validation_declined: v.declined,
     validation_no_answer: v.no_answer,
