@@ -245,21 +245,28 @@ function spotlightHtml(changes) {
 
 // Internal daily status digest (registration status + action recommendations).
 // Email-client safe: table layout + inline styles only.
+// Attendance goal the headline is measured against (override with DIGEST_TARGET).
+const DIGEST_TARGET = Number(process.env.DIGEST_TARGET) || 80;
+
 function digestHeadline(confirmed, invited) {
-  const pct = invited > 0 ? Math.min(100, Math.round((confirmed / invited) * 100)) : 0;
+  const pct = Math.round((confirmed / DIGEST_TARGET) * 100);
+  const invitedPct = invited > 0 ? Math.round((confirmed / invited) * 100) : 0;
   return `<tr><td style="padding:4px 0 16px;">
       <div style="background:${BRAND.maroon};border-radius:14px;padding:18px 16px;text-align:center;color:#fff;">
-        <div style="font-size:14px;color:${BRAND.amber};font-weight:700;">🎟️ אישרו הגעה (כולל מרצים) מתוך המוזמנים</div>
+        <div style="font-size:14px;color:${BRAND.amber};font-weight:700;">🎯 אישרו הגעה (כולל מרצים) מתוך היעד</div>
         <div style="font-size:44px;font-weight:800;line-height:1.15;margin-top:4px;direction:ltr;">
-          ${confirmed} <span style="color:${BRAND.amber};font-weight:700;">/</span> ${invited}
+          ${confirmed} <span style="color:${BRAND.amber};font-weight:700;">/</span> ${DIGEST_TARGET}
         </div>
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
                style="margin-top:10px;background:rgba(255,255,255,.18);border-radius:6px;">
           <tr><td style="height:8px;line-height:8px;font-size:0;border-radius:6px;
-                         background:${BRAND.amber};width:${Math.max(pct, 1)}%;">&nbsp;</td>
+                         background:${BRAND.amber};width:${Math.min(100, Math.max(pct, 1))}%;">&nbsp;</td>
               <td style="font-size:0;line-height:8px;">&nbsp;</td></tr>
         </table>
-        <div style="font-size:13px;margin-top:6px;color:${BRAND.cream};">${pct}% מהמוזמנים</div>
+        <div style="font-size:15px;font-weight:700;margin-top:6px;color:#fff;">${pct}% מהיעד</div>
+        <div style="font-size:13px;margin-top:4px;color:${BRAND.cream};opacity:.85;">
+          מתוך ${invited} מוזמנים · ${invitedPct}%
+        </div>
       </div>
     </td></tr>`;
 }
@@ -338,7 +345,7 @@ export function dailyDigest({ dateLabel, daysToEvent, stats, recommendations, ch
     : '';
   return {
     kind: 'daily_digest',
-    subject: `דוח הרשמה יומי · ${dateLabel} · ${attending}/${invitedCount} אישרו, ${s.pending} ממתינים`,
+    subject: `דוח הרשמה יומי · ${dateLabel} · ${attending}/${DIGEST_TARGET} מהיעד, ${s.pending} ממתינים`,
     html: layout({
       heading: `סטטוס הרשמה · ${dateLabel}`,
       bodyHtml:
@@ -351,7 +358,8 @@ export function dailyDigest({ dateLabel, daysToEvent, stats, recommendations, ch
     }),
     text:
       `סטטוס הרשמה · ${dateLabel}\nנותרו ${daysToEvent} ימים לכנס.\n\n` +
-      `אישרו הגעה (כולל מרצים) מתוך המוזמנים: ${attending} / ${invitedCount}\n\n` +
+      `אישרו הגעה (כולל מרצים) מתוך היעד: ${attending} / ${DIGEST_TARGET}\n` +
+      `מתוך ${invitedCount} מוזמנים\n\n` +
       (changes
         ? (changes.isFirst
             ? 'מה השתנה: זהו העדכון הראשון.\n\n'
