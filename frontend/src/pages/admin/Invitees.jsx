@@ -301,7 +301,7 @@ export default function Invitees() {
         <div className="outreach-stats">
           <div className="outreach-stats-head">
             פניות שבוצעו
-            <span className="muted"> · ניתן לפנות ביותר מערוץ אחד, ולכן הסכום עשוי לעלות על מספר המוזמנים</span>
+            <span className="muted"> · ניתן לפנות ביותר מערוץ אחד, ולכן הסכום עשוי לעלות על מספר המוזמנים. האחוז מחושב מתוך מי שיש לו פרטי קשר לאותו ערוץ, ללא מי שאישר, ברשימת המתנה או סימן שלא יגיע</span>
           </div>
           <div className="outreach-wave-head">STD (Save the Date)</div>
           <div className="outreach-cards">
