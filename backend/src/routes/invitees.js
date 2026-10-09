@@ -637,8 +637,12 @@ async function getSummary({ excludeJeen = false, excludeSpeakers = false } = {})
        COUNT(*) FILTER (WHERE agenda_email)::int      AS agenda_email,
        COUNT(*) FILTER (WHERE agenda_whatsapp)::int   AS agenda_whatsapp,
        COUNT(*) FILTER (WHERE agenda_call)::int        AS agenda_call,
-       COUNT(*) FILTER (WHERE NULLIF(TRIM(email), '') IS NOT NULL)::int AS with_email,
-       COUNT(*) FILTER (WHERE NULLIF(TRIM(phone), '') IS NOT NULL)::int AS with_phone
+       -- Reachable potential: has the contact detail, and hasn't already
+       -- settled (confirmed / waitlisted / declined), so no outreach needed.
+       COUNT(*) FILTER (WHERE NULLIF(TRIM(email), '') IS NOT NULL
+                          AND status NOT IN ('confirmed', 'waitlist', 'declined'))::int AS with_email,
+       COUNT(*) FILTER (WHERE NULLIF(TRIM(phone), '') IS NOT NULL
+                          AND status NOT IN ('confirmed', 'waitlist', 'declined'))::int AS with_phone
      FROM invitees ${where}`
   );
   const o = outreach.rows[0] || {
