@@ -277,9 +277,12 @@ router.patch(
       });
     }
 
-    // Notify the invitee on a real status transition (approve / decline).
+    // Email the invitee ONLY when the admin made an explicit approve/reject
+    // decision (the אשר/דחה buttons send notify:true). A plain status change
+    // from the dropdown — e.g. marking someone "לא יגיע" because they're sick or
+    // abroad — is silent and never sends the rejection notice.
     // Fire-and-forget: never blocks or fails the admin action.
-    maybeSendStatusEmail(result.prevStatus, result.invitee);
+    if (body.notify === true) maybeSendStatusEmail(result.prevStatus, result.invitee);
 
     res.json({ invitee: result.invitee, overCapacity: result.overCapacity });
   })

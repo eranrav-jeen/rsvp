@@ -733,15 +733,19 @@ function InviteeRow({ inv, onUpdate, onEdit, onDelete, onToast }) {
             <>
               <button
                 className="btn btn-sm btn-primary"
-                title="אישור הבקשה"
-                onClick={() => onUpdate(inv.id, { status: 'confirmed' })}
+                title="אישור הבקשה ושליחת מייל אישור למוזמן/ת"
+                onClick={() => onUpdate(inv.id, { status: 'confirmed', notify: true })}
               >
                 אשר
               </button>
               <button
                 className="btn btn-sm btn-danger"
-                title="דחיית הבקשה"
-                onClick={() => onUpdate(inv.id, { status: 'declined' })}
+                title="דחיית הבקשה ושליחת מייל דחייה למוזמן/ת"
+                onClick={() => {
+                  if (window.confirm('לדחות את הבקשה ולשלוח מייל דחייה למוזמן/ת?')) {
+                    onUpdate(inv.id, { status: 'declined', notify: true });
+                  }
+                }}
               >
                 דחה
               </button>
