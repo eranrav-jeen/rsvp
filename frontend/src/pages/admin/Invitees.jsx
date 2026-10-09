@@ -574,6 +574,24 @@ function CopyBtn({ value, label, onToast }) {
 function InviteeRow({ inv, onUpdate, onEdit, onDelete, onToast }) {
   const [phone, setPhone] = useState(inv.phone || '');
 
+  // Change status from the dropdown. Moving someone to "אושר"/"לא יגיע" offers to
+  // send the approval/rejection email — OK sends it, Cancel changes the status
+  // silently (e.g. "לא יגיע" because they're sick/abroad, no rejection notice).
+  function changeStatus(next) {
+    if (next === inv.status) return;
+    const patch = { status: next };
+    if (next === 'confirmed') {
+      patch.notify = window.confirm(
+        'הסטטוס ישתנה ל"אושר". לשלוח למוזמן/ת מייל אישור?\n\nאישור = שליחת מייל · ביטול = שינוי שקט ללא מייל'
+      );
+    } else if (next === 'declined') {
+      patch.notify = window.confirm(
+        'הסטטוס ישתנה ל"לא יגיע". לשלוח למוזמן/ת מייל דחייה?\n\nאישור = שליחת מייל דחייה · ביטול = שינוי שקט ללא מייל'
+      );
+    }
+    onUpdate(inv.id, patch);
+  }
+
   return (
     <tr className={inv.status === 'confirmed' ? 'row-approved' : ''}>
       <td className="col-org" title={inv.organization}>{inv.organization}</td>
@@ -624,7 +642,7 @@ function InviteeRow({ inv, onUpdate, onEdit, onDelete, onToast }) {
         </div>
       </td>
       <td>
-        <select value={inv.status} onChange={(e) => onUpdate(inv.id, { status: e.target.value })}>
+        <select value={inv.status} onChange={(e) => changeStatus(e.target.value)}>
           {STATUS_OPTIONS.map((o) => (
             <option key={o.value} value={o.value}>
               {o.label}
