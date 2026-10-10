@@ -280,7 +280,12 @@ export default function Invitees() {
         <div className="counters">
           <Counter cls="" num={s.total_invitees} lbl="מספר מוזמנים פוטנציאלי" />
           <Counter cls="" num={s.not_invited} lbl="טרם הוזמנו" />
-          <Counter cls="" num={s.invited} lbl="הוזמנו" />
+          <Counter
+            cls=""
+            num={s.invited_total}
+            lbl="הוזמנו"
+            title="כל מי שהוזמן באמצעות ערוץ כלשהו (מייל/וואטסאפ/טלפון) או שכבר השיב — כולל מי שאישר, סימן 'אולי' או שלא יגיע"
+          />
           <Counter cls="pending" num={s.pending} lbl="ממתינים לאישור" />
           <Counter cls="confirmed" num={s.confirmed} lbl="אושרה השתתפות" />
           <Counter cls="confirmed" num={s.speaker} lbl="מרצים/ות" />
@@ -545,9 +550,9 @@ export default function Invitees() {
   );
 }
 
-function Counter({ cls, num, lbl }) {
+function Counter({ cls, num, lbl, title }) {
   return (
-    <div className={`counter ${cls}`}>
+    <div className={`counter ${cls}`} title={title}>
       <div className="num">{num}</div>
       <div className="lbl">{lbl}</div>
     </div>

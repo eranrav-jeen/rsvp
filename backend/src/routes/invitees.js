@@ -642,7 +642,11 @@ async function getSummary({ excludeJeen = false, excludeSpeakers = false } = {})
        COUNT(*) FILTER (WHERE NULLIF(TRIM(email), '') IS NOT NULL
                           AND status NOT IN ('confirmed', 'waitlist', 'declined'))::int AS with_email,
        COUNT(*) FILTER (WHERE NULLIF(TRIM(phone), '') IS NOT NULL
-                          AND status NOT IN ('confirmed', 'waitlist', 'declined'))::int AS with_phone
+                          AND status NOT IN ('confirmed', 'waitlist', 'declined'))::int AS with_phone,
+       -- Everyone who was invited at all: reached on any channel OR already moved
+       -- past "not invited" (so confirmed/declined/etc. still count as invited).
+       COUNT(*) FILTER (WHERE status <> 'not_invited'
+                           OR outreach_email OR outreach_whatsapp OR outreach_call)::int AS invited_total
      FROM invitees ${where}`
   );
   const o = outreach.rows[0] || {
@@ -654,6 +658,7 @@ async function getSummary({ excludeJeen = false, excludeSpeakers = false } = {})
     agenda_call: 0,
     with_email: 0,
     with_phone: 0,
+    invited_total: 0,
   };
 
   // Attendance-validation phone calls, counted among the confirmed participants
@@ -685,6 +690,8 @@ async function getSummary({ excludeJeen = false, excludeSpeakers = false } = {})
   return {
     not_invited: byStatus.not_invited ? byStatus.not_invited.count : 0,
     invited: byStatus.invited ? byStatus.invited.count : 0,
+    // Cumulative: everyone ever invited (any channel), regardless of current status.
+    invited_total: o.invited_total,
     pending: byStatus.pending ? byStatus.pending.count : 0,
     confirmed: byStatus.confirmed ? byStatus.confirmed.count : 0,
     speaker: byStatus.speaker ? byStatus.speaker.count : 0,
