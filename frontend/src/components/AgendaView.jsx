@@ -1,4 +1,5 @@
 import JeenLogo from './JeenLogo.jsx';
+import agenda from '../agenda.json';
 
 // Shared, presentational agenda used by both the public /agenda page and the
 // admin preview. Content mirrors the event brief up to (and excluding) the
@@ -14,83 +15,9 @@ export const EVENT = {
   place: 'משרדי Jeen.ai · בגין 121, מגדלי עזריאלי שרונה, קומה 34, תל אביב',
 };
 
-export const SCHEDULE = [
-  {
-    time: '09:00',
-    dur: '60 דק׳',
-    title: 'התכנסות, נטוורקינג וכיבוד',
-    desc: 'שעה של היכרות ומפגשים אישיים לפני שנפתח',
-    kind: 'pause',
-  },
-  {
-    time: '10:00',
-    dur: '10 דק׳',
-    title: 'דברי פתיחה',
-    desc: 'עודד טהורי, מנכ״ל Jeen.ai',
-  },
-  {
-    time: '10:10',
-    dur: '25 דק׳',
-    title: 'שלוש השאלות שכל ארגון צריך לשאול את עצמו על AI',
-    desc: 'מוטי קריספיל, Jeen.ai — מסגרת מעשית ליישום AI בסקייל',
-    kind: 'anchor',
-  },
-  {
-    time: '10:35',
-    dur: '15 דק׳',
-    title: 'מה בין ממשל לבינה מלאכותית?',
-    desc: 'מירב פרץ בילינסקי, סמנכ״לית דאטה ובינה מלאכותית, מערך הדיגיטל הלאומי',
-    kind: 'anchor',
-  },
-  {
-    time: '10:50',
-    dur: '20 דק׳',
-    title: 'מפרויקטים נקודתיים להטמעת AI ארגונית: מה למדנו בדרך במכבי',
-    desc: 'קובי כץ, משנה למנכ״ל וראש חטיבת טכנולוגיות, מכבי שירותי בריאות · סיפור לקוח',
-    kind: 'anchor',
-  },
-  {
-    time: '11:10',
-    dur: '20 דק׳',
-    title: 'כשאין מקום לטעויות: AI מאובטח, בהיקף ובסביבות רגישות',
-    desc: 'אל״ם ע׳, מנהלת AI, מפא״ת · סיפור לקוח',
-    kind: 'anchor',
-  },
-  {
-    time: '11:30',
-    dur: '30 דק׳',
-    title: 'הפסקה',
-    kind: 'pause',
-  },
-  {
-    time: '12:00',
-    dur: '45 דק׳ · פאנל',
-    title: 'מ-AI ניסיוני לארגון מבוסס AI: המגזר הציבורי במבט ל-2027',
-    desc: 'מהפיילוטים להטמעה ארגונית רחבה, מאובטחת ומדידה של AI וסוכנים חכמים',
-    hosts: 'בהנחיית ערן רביב ומתן ניצן, Jeen.ai',
-    kind: 'anchor',
-    people: [
-      { name: 'אלבי מלכה', role: 'סמנכ״ל טכנולוגיות ומערכות מידע, רשות העתיקות' },
-      { name: 'ששון סופרי', role: 'מנמ״ר משרד המשפטים' },
-      { name: 'ניר צטנר', role: 'כבאות והצלה לישראל' },
-      {
-        name: 'ניר מקובר',
-        role: 'ראש מערך הטכנולוגיות, המידע והחדשנות, חטיבת המרכזים הרפואיים הממשלתיים, משרד הבריאות',
-      },
-      { name: 'חנה שילדר', role: 'מנהלת מגזר דיגיטל, אנליטיקה ו-AI, חברת החשמל' },
-      {
-        name: 'ד״ר דיצה מורלי שגיב',
-        role: 'מנהלת אגף בכיר חדשנות וטכנולוגיות, משרד הרווחה והביטחון החברתי',
-      },
-    ],
-  },
-  {
-    time: '12:45',
-    dur: '15 דק׳',
-    title: 'דברי סיום ונטוורקינג',
-    desc: 'עודד טהורי, מנכ״ל Jeen.ai',
-  },
-];
+// The schedule lives in ../agenda.json so the backend can embed the same agenda
+// in outgoing emails (backend/src/agenda.js reads that file). Edit it there.
+export const SCHEDULE = agenda;
 
 export default function AgendaView() {
   return (

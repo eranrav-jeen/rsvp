@@ -12,6 +12,7 @@ import { icsContent } from './event.js';
 import { requireAdmin } from './middleware.js';
 import authRouter from './routes/auth.js';
 import rsvpRouter from './routes/rsvp.js';
+import replyRouter from './routes/reply.js';
 import validationRouter from './routes/validation.js';
 import inviteesRouter from './routes/invitees.js';
 import tasksRouter from './routes/tasks.js';
@@ -79,6 +80,8 @@ app.get('/api/calendar.ics', (req, res) => {
 // Public routes
 app.use('/api/auth', authRouter);
 app.use('/api/rsvp', rsvpRouter);
+// Public: answers to the reminder email (signed per-invitee token in the URL).
+app.use('/api/reply', replyRouter);
 
 // Machine-to-machine: the attendance-validation calling bot. Not session-gated;
 // each route enforces the VALIDATION_API_KEY bearer token itself.

@@ -913,6 +913,13 @@ button {
 .ostat-bad .ostat-num {
   color: #b23b3b;
 }
+.ostat-unsure {
+  background: #fffaf0;
+  border-color: #f3dcae;
+}
+.ostat-unsure .ostat-num {
+  color: #9a6a00;
+}
 .ostat-pending {
   background: #fbf7ee;
   border-color: #efe3c9;
@@ -945,6 +952,7 @@ button {
 }
 .vsel.v-no_answer,
 .vsel.v-callback,
+.vsel.v-unsure,
 .vsel.v-wrong_number {
   background: #fbf7ee;
   border-color: #c9a94e;
@@ -1682,5 +1690,52 @@ table.grid tr.row-approved td.col-org {
   }
   .rsvp-hero h1 {
     font-size: 25px;
+  }
+}
+
+/* Reminder-reply page (/reply/:token). */
+.reply-q {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--color-maroon);
+  margin: 0 0 16px;
+  text-align: center;
+}
+.reply-toggle {
+  flex-direction: column;
+}
+.reply-submit {
+  display: block;
+  width: 100%;
+  margin-top: 16px;
+  font-size: 17px;
+  padding: 12px;
+}
+.reply-note {
+  text-align: center;
+  margin-top: 14px;
+}
+.reply-thanks {
+  text-align: center;
+}
+.reply-thanks h2 {
+  color: var(--color-maroon);
+  margin: 4px 0 8px;
+}
+.reply-share {
+  margin: 18px 0 14px;
+  padding: 12px 14px;
+  border: 1px dashed var(--color-amber);
+  border-radius: var(--radius-sm);
+  background: #fffaf2;
+  font-size: 14px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 480px) {
+  .rsvp-hero .meta-date,
+  .agenda-hero .meta.meta-date {
+    font-size: 15px;
+    padding: 5px 12px;
   }
 }

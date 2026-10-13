@@ -326,14 +326,24 @@ export default function Invitees() {
       {s && (
         <div className="outreach-stats validation-stats">
           <div className="outreach-stats-head">
-            אימות הגעה בשיחה טלפונית
-            <span className="muted"> · מבין המאושרים, לפי שיחות הבוט</span>
+            אימות הגעה
+            <span className="muted">
+              {' '}
+              · מבין המאושרים, לפי תשובות לתזכורת במייל ושיחות הבוט
+              {s.reminder_sent > 0 &&
+                ` · תזכורת נשלחה ל-${s.reminder_sent}, ${s.validation_by_email} השיבו במייל`}
+            </span>
           </div>
           <div className="outreach-cards">
             <div className="ostat ostat-ok">
               <span className="ostat-ico">✅</span>
               <span className="ostat-num">{s.validation_confirmed}</span>
               <span className="ostat-lbl">אישרו הגעה</span>
+            </div>
+            <div className="ostat ostat-unsure">
+              <span className="ostat-ico">🤔</span>
+              <span className="ostat-num">{s.validation_unsure}</span>
+              <span className="ostat-lbl">עוד לא בטוחים</span>
             </div>
             <div className="ostat ostat-bad">
               <span className="ostat-ico">❌</span>
@@ -729,15 +739,16 @@ function InviteeRow({ inv, onUpdate, onEdit, onDelete, onToast }) {
           </div>
           {(inv.status === 'confirmed' || inv.status === 'speaker') && (
             <div className="ow-row">
-              <span className="ow-label">אימות 📞</span>
+              <span className="ow-label">אימות</span>
               <select
                 className={`vsel v-${inv.validation_status || 'none'}`}
                 value={inv.validation_status || ''}
-                title="אימות הגעה בשיחה טלפונית (מתעדכן אוטומטית מהבוט, וניתן לעדכן ידנית)"
+                title="אימות הגעה (מתעדכן אוטומטית מתשובות לתזכורת במייל ומהבוט, וניתן לעדכן ידנית)"
                 onChange={(e) => onUpdate(inv.id, { validation_status: e.target.value })}
               >
                 <option value="">— טרם אומת</option>
                 <option value="confirmed">✓ אישר/ה</option>
+                <option value="unsure">? עוד לא בטוח/ה</option>
                 <option value="declined">✗ לא מגיע/ה</option>
                 <option value="no_answer">אין מענה</option>
                 <option value="callback">לחזור אליו/ה</option>

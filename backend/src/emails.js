@@ -332,6 +332,15 @@ export function dailyDigest({ dateLabel, daysToEvent, stats, recommendations, ch
       ['✉️', 'הוזמנו במייל', s.outreach_email],
       ['⚠️', 'ללא כתובת מייל', s.noEmail],
     ]) +
+    (s.reminder && s.reminder.sent > 0
+      ? statGroup('📩 תזכורת שבוע לפני', [
+          ['📨', 'נשלחה ל', s.reminder.sent],
+          ['✅', 'אישרו הגעה', s.reminder.yes],
+          ['🤔', 'עוד לא בטוחים', s.reminder.unsure],
+          ['❌', 'ביטלו', s.reminder.no],
+          ['⏳', 'טרם השיבו', Math.max(0, s.reminder.sent - s.reminder.yes - s.reminder.unsure - s.reminder.no)],
+        ])
+      : '') +
     seatsBar(s.confirmed_seats, s.max_attendees);
   const recsHtml = recommendations.length
     ? `<tr><td style="padding:2px 0 0;">
@@ -377,5 +386,150 @@ export function dailyDigest({ dateLabel, daysToEvent, stats, recommendations, ch
       `ממתינים: ${s.pending} · אושרו: ${s.confirmed} · אולי: ${s.maybe} · לא יגיעו: ${s.declined}\n` +
       `מקומות מאושרים: ${s.confirmed_seats}/${s.max_attendees} · הוזמנו במייל: ${s.outreach_email}\n\n` +
       `המלצות לפעולה:\n${recommendations.map((r) => `- ${r}`).join('\n')}`,
+  };
+}
+
+// The organizing team (daily digest + reply notices). DIGEST_RECIPIENTS overrides.
+export function teamRecipients() {
+  return process.env.DIGEST_RECIPIENTS || 'meital@jeen.ai, matan@jeen.ai, inbar@jeen.ai, eran@jeen.ai';
+}
+
+function esc(s) {
+  return String(s ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+// The agenda as an email-safe table (mirrors the public /agenda page).
+function agendaHtml(schedule) {
+  const rows = schedule
+    .map((item, i) => {
+      const pause = item.kind === 'pause';
+      const people = (item.people || [])
+        .map(
+          (pp) =>
+            `<div style="font-size:13px;color:#555;line-height:1.5;margin-top:3px;">• <b style="color:${BRAND.text};">${esc(
+              pp.name
+            )}</b> · ${esc(pp.role)}</div>`
+        )
+        .join('');
+      return `<tr>
+        <td style="padding:10px 12px;vertical-align:top;width:52px;font-weight:800;font-size:15px;color:${
+          pause ? '#8a7a83' : BRAND.maroon
+        };${i ? 'border-top:1px solid #f1e6dc;' : ''}direction:ltr;text-align:right;">${esc(item.time)}</td>
+        <td style="padding:10px 12px 10px 0;vertical-align:top;${i ? 'border-top:1px solid #f1e6dc;' : ''}">
+          <div style="font-weight:${pause ? 600 : 800};font-size:15px;color:${pause ? '#6b5b64' : BRAND.text};line-height:1.4;">${esc(
+            item.title
+          )}</div>
+          ${item.desc ? `<div style="font-size:13px;color:#666;line-height:1.5;margin-top:2px;">${esc(item.desc)}</div>` : ''}
+          ${item.hosts ? `<div style="font-size:13px;color:${BRAND.maroon};font-weight:700;margin-top:4px;">${esc(item.hosts)}</div>` : ''}
+          ${people}
+        </td>
+      </tr>`;
+    })
+    .join('');
+  return `<tr><td style="padding:8px 0 4px;">
+      <div style="font-weight:800;color:${BRAND.maroon};font-size:17px;margin:0 2px 8px;">🗓️ סדר היום</div>
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+             style="background:${BRAND.cream};border-radius:12px;">${rows}</table>
+    </td></tr>`;
+}
+
+function agendaText(schedule) {
+  return schedule
+    .map((it) => {
+      let line = `${it.time}  ${it.title}${it.desc ? ` — ${it.desc}` : ''}`;
+      if (it.hosts) line += `\n       ${it.hosts}`;
+      for (const pp of it.people || []) line += `\n       • ${pp.name}, ${pp.role}`;
+      return line;
+    })
+    .join('\n');
+}
+
+// The three answer buttons, stacked (reads well on phones and in Outlook).
+function answerButtons(links) {
+  const btn = (href, label, bg, fg, border) =>
+    `<tr><td style="padding:0 0 10px;">
+       <a href="${href}" target="_blank"
+          style="display:block;background:${bg};color:${fg};border:2px solid ${border};text-decoration:none;
+                 font-weight:800;font-size:17px;padding:13px 16px;border-radius:12px;text-align:center;">${label}</a>
+     </td></tr>`;
+  return `<tr><td style="padding:6px 0 10px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+        ${btn(links.yes, '✅ כן, אני מגיע/ה', '#2e9e6b', '#fff', '#2e9e6b')}
+        ${btn(links.unsure, '🤔 עוד לא בטוח/ה', '#fff', '#9a6a00', BRAND.amber)}
+        ${btn(links.no, '❌ לצערי לא אוכל להגיע', '#fff', '#c0392b', '#e6b3ad')}
+      </table>
+    </td></tr>`;
+}
+
+// One-week reminder to confirmed participants, asking them to (re)confirm.
+// `replyUrl` is the personal /reply/<token> page; `schedule` is the agenda.
+export function attendanceReminder({ name, replyUrl, schedule }) {
+  const greet = hello(name);
+  const links = {
+    yes: `${replyUrl}?a=yes`,
+    unsure: `${replyUrl}?a=unsure`,
+    no: `${replyUrl}?a=no`,
+  };
+  const registerUrl = `${SITE_URL}/rsvp`;
+  const shareHtml = `<tr><td style="padding:16px 0 0;">
+      <div style="border:1px dashed ${BRAND.amber};border-radius:12px;padding:12px 14px;background:#fffaf2;">
+        <div style="font-weight:800;color:${BRAND.maroon};margin-bottom:4px;">👥 מכירים עוד מישהו שכדאי שיגיע?</div>
+        <div style="font-size:14px;color:${BRAND.text};line-height:1.6;">
+          מוזמנים להעביר לקולגות את קישור ההרשמה:
+          <a href="${registerUrl}" target="_blank" style="color:${BRAND.coral};font-weight:700;">${registerUrl}</a>
+        </div>
+      </div>
+    </td></tr>`;
+  return {
+    kind: 'reminder',
+    subject: `נתראה בעוד שבוע? · ${EVENT.title} · 20.10`,
+    html: layout({
+      heading: 'נתראה בעוד שבוע? 👋',
+      bodyHtml:
+        p(greet) +
+        p(
+          `בעוד שבוע בדיוק נפגשים בכנס <b>${esc(EVENT.title)}</b>. ` +
+            'כדי שנוכל להיערך (ולתת את המקום למישהו מרשימת ההמתנה במידת הצורך), נשמח לאישור קצר — לחיצה אחת:'
+        ) +
+        answerButtons(links) +
+        p('<span style="font-size:13px;color:#777;">אפשר לשנות את התשובה בכל עת דרך אותם כפתורים.</span>') +
+        agendaHtml(schedule) +
+        shareHtml +
+        p('<span style="display:block;margin-top:14px;">רוצים להוסיף ליומן?</span>'),
+      ctas: calendarCtas(),
+    }),
+    text:
+      `${greet}\n\nבעוד שבוע נפגשים בכנס ${EVENT.title}. נשמח לאישור קצר:\n` +
+      `✅ מגיע/ה: ${links.yes}\n🤔 עוד לא בטוח/ה: ${links.unsure}\n❌ לא אוכל להגיע: ${links.no}\n\n` +
+      `סדר היום:\n${agendaText(schedule)}\n\n` +
+      `מכירים עוד מישהו שכדאי שיגיע? קישור ההרשמה: ${registerUrl}\n\n` +
+      `הוספה ליומן — Google: ${calendarUrl()}\nOutlook: ${outlookCalendarUrl()}\nApple / אחר (ICS): ${icsUrl()}${textFooter()}`,
+  };
+}
+
+// Internal notice to the team when a reminder reply frees (or re-takes) a seat.
+export function replyTeamNotice({ name, organization, email, phone, cancelled }) {
+  const who = `${name || '—'}${organization ? ` · ${organization}` : ''}`;
+  const contact = [email, phone].filter(Boolean).join(' · ');
+  const heading = cancelled ? '❌ ביטול הגעה — התפנה מקום' : '✅ חזר/ה בו/ה מהביטול — מגיע/ה';
+  const line = cancelled
+    ? 'השיב/ה לתזכורת שלא יוכל/תוכל להגיע. הסטטוס עודכן אוטומטית ל"לא מגיע/ה" — אפשר להציע את המקום לרשימת ההמתנה.'
+    : 'ביטל/ה קודם דרך התזכורת וכעת אישר/ה הגעה. הסטטוס הוחזר אוטומטית ל"מאושר/ת".';
+  return {
+    kind: 'reply_notice',
+    subject: `${cancelled ? 'ביטול הגעה' : 'חזרה מביטול'}: ${name || '—'}${organization ? ` (${organization})` : ''}`,
+    html: layout({
+      heading,
+      accent: cancelled ? '#c0392b' : '#2e9e6b',
+      bodyHtml:
+        p(`<b>${esc(who)}</b>${contact ? `<br><span style="color:#666;font-size:14px;">${esc(contact)}</span>` : ''}`) +
+        p(line),
+      ctas: [{ href: `${SITE_URL}/admin/invitees`, label: 'פתיחת לוח הבקרה' }],
+    }),
+    text: `${heading}\n\n${who}\n${contact}\n\n${line}\n${SITE_URL}/admin/invitees`,
   };
 }

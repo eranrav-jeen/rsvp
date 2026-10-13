@@ -64,6 +64,15 @@ async function gatherStats() {
   const outreach = (
     await query(`SELECT COUNT(*) FILTER (WHERE outreach_email)::int AS email FROM invitees`)
   ).rows[0];
+  const reminder = (
+    await query(
+      `SELECT COUNT(*) FILTER (WHERE reminder_sent_at IS NOT NULL)::int AS sent,
+              COUNT(*) FILTER (WHERE validation_source = 'email' AND validation_status = 'confirmed')::int AS yes,
+              COUNT(*) FILTER (WHERE validation_source = 'email' AND validation_status = 'unsure')::int AS unsure,
+              COUNT(*) FILTER (WHERE validation_source = 'email' AND validation_status = 'declined')::int AS no
+         FROM invitees`
+    )
+  ).rows[0];
   const noEmail = (
     await query(`SELECT COUNT(*)::int AS n FROM invitees WHERE email IS NULL OR email = ''`)
   ).rows[0].n;
@@ -82,6 +91,7 @@ async function gatherStats() {
     max_attendees: settings ? settings.max_attendees : 120,
     outreach_email: outreach.email,
     noEmail,
+    reminder,
   };
 }
 

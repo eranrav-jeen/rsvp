@@ -19,6 +19,7 @@ const VALIDATION_LABELS = {
   no_answer: 'אין מענה',
   callback: 'לחזור אליו/ה',
   wrong_number: 'מספר שגוי',
+  unsure: 'עוד לא בטוח/ה',
 };
 
 // SQL fragments to identify Jeen employees (email @jeen.ai or org "jeen") and
@@ -670,6 +671,9 @@ async function getSummary({ excludeJeen = false, excludeSpeakers = false } = {})
        COUNT(*) FILTER (WHERE validation_status = 'no_answer')::int    AS no_answer,
        COUNT(*) FILTER (WHERE validation_status = 'callback')::int     AS callback,
        COUNT(*) FILTER (WHERE validation_status = 'wrong_number')::int AS wrong_number,
+       COUNT(*) FILTER (WHERE validation_status = 'unsure')::int       AS unsure,
+       COUNT(*) FILTER (WHERE validation_source = 'email')::int        AS by_email,
+       COUNT(*) FILTER (WHERE reminder_sent_at IS NOT NULL)::int       AS reminder_sent,
        COUNT(*) FILTER (WHERE status = 'confirmed' AND validation_status IS NULL)::int AS pending
      FROM invitees ${where}`
   );
@@ -679,6 +683,9 @@ async function getSummary({ excludeJeen = false, excludeSpeakers = false } = {})
     no_answer: 0,
     callback: 0,
     wrong_number: 0,
+    unsure: 0,
+    by_email: 0,
+    reminder_sent: 0,
     pending: 0,
   };
 
@@ -714,6 +721,9 @@ async function getSummary({ excludeJeen = false, excludeSpeakers = false } = {})
     validation_no_answer: v.no_answer,
     validation_callback: v.callback,
     validation_wrong_number: v.wrong_number,
+    validation_unsure: v.unsure,
+    validation_by_email: v.by_email,
+    reminder_sent: v.reminder_sent,
     validation_pending: v.pending,
     confirmed_seats: confirmedSeats,
     max_attendees: maxAttendees,

@@ -3,6 +3,7 @@ import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { api } from './api.js';
 import RsvpForm from './pages/RsvpForm.jsx';
 import Agenda from './pages/Agenda.jsx';
+import Reply from './pages/Reply.jsx';
 import Login from './pages/Login.jsx';
 import AdminLayout from './pages/admin/AdminLayout.jsx';
 import Invitees from './pages/admin/Invitees.jsx';
@@ -37,6 +38,7 @@ export default function App() {
       <Route path="/" element={<Navigate to="/rsvp" replace />} />
       <Route path="/rsvp" element={<RsvpForm />} />
       <Route path="/agenda" element={<Agenda />} />
+      <Route path="/reply/:token" element={<Reply />} />
 
       {/* Admin login */}
       <Route

@@ -23,3 +23,18 @@ UTC+3, i.e. through the Oct 20 event):
 The script decides by itself whether today is a send day. Test with
 `node scripts/daily-digest.js --force --to=<addr>`; sends are logged in the
 `email_log` table (`kind = 'daily_digest'`).
+
+## Agenda
+
+The schedule lives in `frontend/src/agenda.json` — the public `/agenda` page and
+the reminder email (`backend/src/agenda.js`) both read it. Edit it there.
+
+## One-week reminder email
+
+`backend/scripts/send-reminder.js` emails confirmed participants (not speakers,
+not Jeen staff) asking yes / unsure / no. Each button links to a signed personal
+page (`/reply/<token>`, `backend/src/routes/reply.js`); the answer is recorded
+only on the page's confirm button (mail scanners pre-open links). Answers go to
+`validation_status` with `validation_source = 'email'`; "no" also sets status
+`declined` and emails the team. Usage: `--dry-run`, `--to=<addr>` (test copy),
+no flag = send to everyone not yet sent (`reminder_sent_at` is null).
