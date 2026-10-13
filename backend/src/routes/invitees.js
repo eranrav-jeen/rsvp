@@ -52,7 +52,12 @@ router.get(
     const where = clauses.length ? `WHERE ${clauses.join(' AND ')}` : '';
     // Push speakers and Jeen employees to the bottom of the list.
     const rows = await query(
-      `SELECT * FROM invitees ${where}
+      `SELECT *,
+              -- A pending approval request submitted in the last 24h (highlighted in the table).
+              (status = 'pending' AND COALESCE(
+                 (SELECT MAX(s.submitted_at) FROM rsvp_submissions s WHERE s.invitee_id = invitees.id),
+                 created_at) > now() - interval '24 hours') AS is_new_request
+         FROM invitees ${where}
        ORDER BY (CASE WHEN ${IS_DEEMPHASIZED} THEN 1 ELSE 0 END), organization, id`,
       params
     );

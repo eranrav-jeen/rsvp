@@ -1200,6 +1200,18 @@ table.grid tr.row-approved:hover td,
 table.grid tr.row-approved:hover td:last-child {
   background: #d9f3e3;
 }
+/* Pending approval requests from the last 24h. */
+table.grid tr.row-new-request td,
+table.grid tr.row-new-request td:last-child {
+  background: #e6f0fb;
+}
+table.grid tr.row-new-request:hover td,
+table.grid tr.row-new-request:hover td:last-child {
+  background: #d6e6f8;
+}
+table.grid tr.row-new-request td.col-org {
+  box-shadow: inset -4px 0 0 #2f6fb5;
+}
 /* Leading (right, RTL) accent stripe on the first cell. */
 table.grid tr.row-approved td.col-org {
   box-shadow: inset -4px 0 0 #2e8b57;
