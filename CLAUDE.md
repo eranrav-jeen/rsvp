@@ -31,8 +31,8 @@ the reminder email (`backend/src/agenda.js`) both read it. Edit it there.
 
 ## One-week reminder email
 
-`backend/scripts/send-reminder.js` emails confirmed participants (not speakers,
-not Jeen staff) asking yes / unsure / no. Each button links to a signed personal
+`backend/scripts/send-reminder.js` emails confirmed participants (not speakers;
+Jeen staff included) asking yes / unsure / no. Each button links to a signed personal
 page (`/reply/<token>`, `backend/src/routes/reply.js`); the answer is recorded
 only on the page's confirm button (mail scanners pre-open links). Answers go to
 `validation_status` with `validation_source = 'email'`; "no" also sets status

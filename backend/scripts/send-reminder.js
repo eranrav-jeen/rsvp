@@ -1,8 +1,8 @@
 // One-week reminder to confirmed participants, asking them to confirm, say
 // they're unsure, or cancel (answers land in the dashboard's validation widget).
 //
-// Recipients: status = 'confirmed' (speakers excluded), with an email, not Jeen
-// staff, and not already sent (reminder_sent_at is null) — so re-running only
+// Recipients: status = 'confirmed' (speakers excluded, Jeen staff included), with
+// an email, and not already sent (reminder_sent_at is null) — so re-running only
 // picks up whoever was missed.
 //
 //   node scripts/send-reminder.js --dry-run            list who would get it
@@ -66,11 +66,12 @@ async function main() {
          FROM invitees
         WHERE status = ANY($1::text[])
           AND NULLIF(TRIM(email), '') IS NOT NULL
-          AND LOWER(email) NOT LIKE '%@jeen.ai'
-          AND LOWER(COALESCE(organization, '')) <> 'jeen'
+          -- Jeen staff get the confirmed reminder too; the last call skips them.
+          AND ($2::boolean IS FALSE OR (LOWER(email) NOT LIKE '%@jeen.ai'
+                                        AND LOWER(COALESCE(organization, '')) <> 'jeen'))
           AND ${SENT_COL} IS NULL
         ORDER BY id`,
-      [STATUSES]
+      [STATUSES, lastCall]
     )
   ).rows;
 
