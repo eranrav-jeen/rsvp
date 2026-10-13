@@ -448,6 +448,23 @@ function agendaText(schedule) {
     .join('\n');
 }
 
+// "בעוד שבוע" / "בעוד 5 ימים" / "מחר" — days from today (Israel time) to the event.
+function daysToEventIL(now = new Date()) {
+  const il = new Date(now.getTime() + 3 * 3600 * 1000); // Israel is UTC+3 through the event
+  const today = Date.UTC(il.getUTCFullYear(), il.getUTCMonth(), il.getUTCDate());
+  const m = /^(\d{4})(\d{2})(\d{2})T/.exec(EVENT.startUtc);
+  const eventDay = m ? Date.UTC(+m[1], +m[2] - 1, +m[3]) : today;
+  return Math.max(0, Math.round((eventDay - today) / 86400000));
+}
+
+function whenPhrase(days) {
+  if (days <= 0) return 'היום';
+  if (days === 1) return 'מחר';
+  if (days === 2) return 'בעוד יומיים';
+  if (days === 7) return 'בעוד שבוע';
+  return `בעוד ${days} ימים`;
+}
+
 // The three answer buttons, stacked (reads well on phones and in Outlook).
 function answerButtons(links) {
   const btn = (href, label, bg, fg, border) =>
@@ -469,6 +486,7 @@ function answerButtons(links) {
 // `replyUrl` is the personal /reply/<token> page; `schedule` is the agenda.
 export function attendanceReminder({ name, replyUrl, schedule }) {
   const greet = hello(name);
+  const when = whenPhrase(daysToEventIL());
   const links = {
     yes: `${replyUrl}?a=yes`,
     unsure: `${replyUrl}?a=unsure`,
@@ -486,13 +504,13 @@ export function attendanceReminder({ name, replyUrl, schedule }) {
     </td></tr>`;
   return {
     kind: 'reminder',
-    subject: `נתראה בעוד שבוע? · ${EVENT.title} · 20.10`,
+    subject: `נתראה ${when}? · ${EVENT.title} · 20.10`,
     html: layout({
-      heading: 'נתראה בעוד שבוע? 👋',
+      heading: `נתראה ${when}? 👋`,
       bodyHtml:
         p(greet) +
         p(
-          `בעוד שבוע בדיוק נפגשים בכנס <b>${esc(EVENT.title)}</b>. ` +
+          `${when} נפגשים בכנס <b>${esc(EVENT.title)}</b>. ` +
             'כדי שנוכל להיערך (ולתת את המקום למישהו מרשימת ההמתנה במידת הצורך), נשמח לאישור קצר — לחיצה אחת:'
         ) +
         answerButtons(links) +
@@ -503,7 +521,7 @@ export function attendanceReminder({ name, replyUrl, schedule }) {
       ctas: calendarCtas(),
     }),
     text:
-      `${greet}\n\nבעוד שבוע נפגשים בכנס ${EVENT.title}. נשמח לאישור קצר:\n` +
+      `${greet}\n\n${when} נפגשים בכנס ${EVENT.title}. נשמח לאישור קצר:\n` +
       `✅ מגיע/ה: ${links.yes}\n🤔 עוד לא בטוח/ה: ${links.unsure}\n❌ לא אוכל להגיע: ${links.no}\n\n` +
       `סדר היום:\n${agendaText(schedule)}\n\n` +
       `מכירים עוד מישהו שכדאי שיגיע? קישור ההרשמה: ${registerUrl}\n\n` +
@@ -531,5 +549,50 @@ export function replyTeamNotice({ name, organization, email, phone, cancelled })
       ctas: [{ href: `${SITE_URL}/admin/invitees`, label: 'פתיחת לוח הבקרה' }],
     }),
     text: `${heading}\n\n${who}\n${contact}\n\n${line}\n${SITE_URL}/admin/invitees`,
+  };
+}
+
+// "Last call" to people who were invited but haven't registered (invited /
+// no_response) or answered "maybe". One main button to the registration form —
+// the normal approval / capacity flow applies — plus the agenda and a share link.
+export function lastCallInvite({ name, status, schedule }) {
+  const greet = hello(name);
+  const when = whenPhrase(daysToEventIL());
+  const registerUrl = `${SITE_URL}/rsvp`;
+  const opener =
+    status === 'maybe'
+      ? `סימנת שאולי תצטרף/י אלינו — ${when} זה קורה, ונשארו מקומות אחרונים.`
+      : `${when} נפגשים בכנס <b>${esc(EVENT.title)}</b>, ונשארו מקומות אחרונים.`;
+  const bigButton = `<tr><td style="padding:6px 0 14px;">
+      <a href="${registerUrl}" target="_blank"
+         style="display:block;background:${BRAND.coral};color:#fff;text-decoration:none;font-weight:800;
+                font-size:18px;padding:14px 16px;border-radius:12px;text-align:center;">להרשמה לכנס ←</a>
+    </td></tr>`;
+  const shareHtml = `<tr><td style="padding:16px 0 0;">
+      <div style="border:1px dashed ${BRAND.amber};border-radius:12px;padding:12px 14px;background:#fffaf2;">
+        <div style="font-weight:800;color:${BRAND.maroon};margin-bottom:4px;">👥 מכירים עוד מישהו שכדאי שיגיע?</div>
+        <div style="font-size:14px;color:${BRAND.text};line-height:1.6;">
+          מוזמנים להעביר לקולגות את קישור ההרשמה:
+          <a href="${registerUrl}" target="_blank" style="color:${BRAND.coral};font-weight:700;">${registerUrl}</a>
+        </div>
+      </div>
+    </td></tr>`;
+  return {
+    kind: 'last_call',
+    subject: `מקומות אחרונים · ${EVENT.title} · 20.10`,
+    html: layout({
+      heading: 'מקומות אחרונים לכנס ⏳',
+      bodyHtml:
+        p(greet) +
+        p(opener) +
+        p('מנהלים ומנהלות מהמגזר הציבורי ישתפו איך עוברים מפיילוטים להטמעת AI ארגונית — מאובטחת, בהיקף ובסביבות רגישות. ההרשמה לוקחת דקה:') +
+        bigButton +
+        agendaHtml(schedule) +
+        shareHtml,
+    }),
+    text:
+      `${greet}\n\n${opener.replace(/<[^>]+>/g, '')}\n\nלהרשמה: ${registerUrl}\n\n` +
+      `סדר היום:\n${agendaText(schedule)}\n\n` +
+      `מכירים עוד מישהו שכדאי שיגיע? קישור ההרשמה: ${registerUrl}${textFooter()}`,
   };
 }

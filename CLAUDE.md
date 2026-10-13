@@ -38,3 +38,9 @@ only on the page's confirm button (mail scanners pre-open links). Answers go to
 `validation_status` with `validation_source = 'email'`; "no" also sets status
 `declined` and emails the team. Usage: `--dry-run`, `--to=<addr>` (test copy),
 no flag = send to everyone not yet sent (`reminder_sent_at` is null).
+
+`--audience=last-call` sends a "last call" invitation instead, to people invited
+but not registered (status `invited` / `no_response`) or who answered `maybe`:
+one button to the registration form (normal approval flow), plus the agenda.
+Tracked by `last_call_sent_at`. Both emails phrase the timing relative to the
+send day ("בעוד 5 ימים", "מחר", …).
