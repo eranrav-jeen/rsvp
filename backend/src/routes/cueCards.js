@@ -1,12 +1,21 @@
 import express from 'express';
 import { query, withTransaction } from '../db.js';
 import { asyncHandler } from '../middleware.js';
+import { signedToken, checkSignedToken } from '../replyToken.js';
 
 // Stage cue cards for the event MC and the panel host (admin only).
 const router = express.Router();
 
 const DECKS = ['mc', 'panel'];
 const FIELDS = ['time_label', 'title', 'who', 'say', 'question', 'follow', 'notes'];
+
+// GET /api/cue-cards/share — read-only share link tokens, one per deck.
+router.get(
+  '/share',
+  asyncHandler(async (req, res) => {
+    res.json({ tokens: Object.fromEntries(DECKS.map((d) => [d, signedToken(`cue:${d}`)])) });
+  })
+);
 
 // GET /api/cue-cards
 router.get(
@@ -97,3 +106,22 @@ router.delete(
 );
 
 export default router;
+
+// Public, read-only view of one deck for people outside the admin (the MC, the
+// panel host). Mounted without requireAdmin; the signed token is the access key.
+export const cueShareRouter = express.Router();
+cueShareRouter.get(
+  '/:deck/:token',
+  asyncHandler(async (req, res) => {
+    const { deck, token } = req.params;
+    if (!DECKS.includes(deck) || !checkSignedToken(`cue:${deck}`, token)) {
+      return res.status(404).json({ error: 'invalid link' });
+    }
+    const rows = await query(
+      `SELECT id, time_label, title, who, say, question, follow, notes
+         FROM cue_cards WHERE deck = $1 ORDER BY position, id`,
+      [deck]
+    );
+    res.json({ deck, cards: rows.rows });
+  })
+);

@@ -25,3 +25,14 @@ export function verifyReplyToken(token) {
   if (expected.length !== got.length || !crypto.timingSafeEqual(expected, got)) return null;
   return id;
 }
+
+// Generic signed value for other share links (e.g. read-only cue cards).
+export function signedToken(purpose) {
+  return crypto.createHmac('sha256', secret()).update(`share:${purpose}`).digest('base64url').slice(0, 22);
+}
+
+export function checkSignedToken(purpose, token) {
+  const expected = Buffer.from(signedToken(purpose));
+  const got = Buffer.from(String(token || ''));
+  return expected.length === got.length && crypto.timingSafeEqual(expected, got);
+}

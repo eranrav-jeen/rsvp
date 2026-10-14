@@ -1832,13 +1832,24 @@ table.grid tr.row-approved td.col-org {
 .cue-edit-actions .spacer { flex: 1; }
 .cue-confirm { font-size: 14px; font-weight: 700; color: #c0392b; }
 
+/* Public read-only share page. */
+.cue-public {
+  max-width: 900px; margin: 0 auto;
+  padding-block: 24px 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.cue-public h1 { color: var(--color-maroon); font-size: 26px; margin: 0 0 6px; }
+.cue-public .cue-deck { max-width: none; }
+.cue-share { margin-bottom: 4px; }
+
 /* Print: only the cards of the open tab, one A5-landscape card per page. */
 @page cue { size: A5 landscape; margin: 0; }
 @media print {
   body:has(.cue-page) { background: #fff; margin: 0; }
   body:has(.cue-page) .admin-topbar,
-  .cue-page > h1, .cue-intro, .cue-toolbar, .cue-actions, .cue-page .toast { display: none !important; }
-  body:has(.cue-page) .admin-main { padding: 0; margin: 0; max-width: none; }
+  .cue-page > h1, .cue-intro, .cue-toolbar, .cue-share, .cue-actions, .cue-page .toast { display: none !important; }
+  body:has(.cue-page) .admin-main, .cue-public { padding: 0; margin: 0; max-width: none; }
   .cue-deck { display: block; max-width: none; }
   .cue-card {
     page: cue; width: 210mm; height: 147.5mm; overflow: hidden; border: 0; border-radius: 0; box-shadow: none;

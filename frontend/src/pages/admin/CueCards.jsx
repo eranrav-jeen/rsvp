@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { api } from '../../api.js';
+import { CueCardView as CardView } from '../../components/CueCard.jsx';
 
 // Stage cue cards for the event MC and the panel host. Every card is editable
 // in place and saved to the server, so the whole team sees the same version.
@@ -9,51 +10,6 @@ const DECKS = [
   { key: 'mc', label: 'מנחה האירוע' },
   { key: 'panel', label: 'הנחיית הפאנל' },
 ];
-
-// Light markup: **bold**, ___ = blank to fill in.
-function Inline({ text }) {
-  const parts = String(text).split(/(\*\*[^*]+\*\*|_{3,})/g);
-  return parts.map((part, i) => {
-    if (/^\*\*[^*]+\*\*$/.test(part)) return <b key={i}>{part.slice(2, -2)}</b>;
-    if (/^_{3,}$/.test(part)) return <span key={i} className="cue-fill" />;
-    return part;
-  });
-}
-
-// Lines → paragraphs; consecutive lines starting with "- " → a bullet list.
-function RichText({ text }) {
-  if (!text) return null;
-  const blocks = [];
-  let list = null;
-  for (const raw of String(text).split('\n')) {
-    const line = raw.trimEnd();
-    if (/^\s*-\s+/.test(line)) {
-      if (!list) {
-        list = [];
-        blocks.push(list);
-      }
-      list.push(line.replace(/^\s*-\s+/, ''));
-    } else {
-      list = null;
-      if (line.trim()) blocks.push(line);
-    }
-  }
-  return blocks.map((b, i) =>
-    Array.isArray(b) ? (
-      <ul key={i}>
-        {b.map((li, j) => (
-          <li key={j}>
-            <Inline text={li} />
-          </li>
-        ))}
-      </ul>
-    ) : (
-      <p key={i}>
-        <Inline text={b} />
-      </p>
-    )
-  );
-}
 
 export default function CueCards() {
   const [cards, setCards] = useState(null);
@@ -67,6 +23,7 @@ export default function CueCards() {
   const [editingId, setEditingId] = useState(null);
   const [toast, setToast] = useState('');
   const [error, setError] = useState('');
+  const [shareTokens, setShareTokens] = useState(null);
 
   const showToast = (m) => {
     setToast(m);
@@ -78,7 +35,23 @@ export default function CueCards() {
       .get('/api/cue-cards')
       .then((d) => setCards(d.cards))
       .catch(() => setError('לא הצלחנו לטעון את הכרטיסיות.'));
+    api
+      .get('/api/cue-cards/share')
+      .then((d) => setShareTokens(d.tokens))
+      .catch(() => {});
   }, []);
+
+  const deckLabel = DECKS.find((d) => d.key === deck)?.label || '';
+  const shareUrl = shareTokens?.[deck] ? `${window.location.origin}/cue/${deck}/${shareTokens[deck]}` : '';
+
+  async function copyShare() {
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      showToast('הקישור הועתק ללוח');
+    } catch {
+      showToast('לא ניתן להעתיק — סמנו והעתיקו ידנית');
+    }
+  }
 
   function pickDeck(k) {
     setDeck(k);
@@ -149,6 +122,25 @@ export default function CueCards() {
         </button>
       </div>
 
+      {shareUrl && (
+        <div className="share-bar cue-share">
+          <div className="share-label">קישור לשיתוף ״{deckLabel}״ (צפייה בלבד, ללא התחברות):</div>
+          <input
+            className="share-url"
+            type="text"
+            readOnly
+            value={shareUrl}
+            onFocus={(e) => e.target.select()}
+          />
+          <button className="btn btn-sm btn-primary" onClick={copyShare}>
+            העתקת קישור
+          </button>
+          <a className="btn btn-sm btn-ghost" href={shareUrl} target="_blank" rel="noreferrer">
+            פתיחה
+          </a>
+        </div>
+      )}
+
       {error && <div className="form-error">{error}</div>}
       {!cards && !error && <p className="muted">טוען…</p>}
 
@@ -181,58 +173,6 @@ export default function CueCards() {
 
       {toast && <div className="toast">{toast}</div>}
     </div>
-  );
-}
-
-function CardView({ card, n, total, onEdit, onUp, onDown }) {
-  return (
-    <article className="cue-card">
-      <div className="cue-band">
-        {card.time_label && <span className="cue-time">{card.time_label}</span>}
-        <span className="cue-title">{card.title}</span>
-        {card.who && <span className="cue-who">{card.who}</span>}
-        <span className="cue-n">
-          {n}/{total}
-        </span>
-        <span className="cue-actions">
-          <button className="icon-btn" title="הזזה למעלה" disabled={!onUp} onClick={onUp || undefined}>
-            ▲
-          </button>
-          <button className="icon-btn" title="הזזה למטה" disabled={!onDown} onClick={onDown || undefined}>
-            ▼
-          </button>
-          <button className="btn btn-sm btn-ghost" onClick={onEdit}>
-            עריכה
-          </button>
-        </span>
-      </div>
-      <div className="cue-body">
-        {card.say && (
-          <div className="cue-say">
-            <RichText text={card.say} />
-          </div>
-        )}
-        {card.question && (
-          <>
-            <div className="cue-label">שאלה</div>
-            <div className="cue-q">
-              <Inline text={card.question} />
-            </div>
-          </>
-        )}
-        {card.follow && (
-          <div className="cue-follow">
-            <b>שאלת המשך: </b>
-            <Inline text={card.follow} />
-          </div>
-        )}
-        {card.notes && (
-          <div className="cue-notes">
-            <RichText text={card.notes} />
-          </div>
-        )}
-      </div>
-    </article>
   );
 }
 

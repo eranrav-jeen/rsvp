@@ -16,7 +16,7 @@ import replyRouter from './routes/reply.js';
 import validationRouter from './routes/validation.js';
 import inviteesRouter from './routes/invitees.js';
 import tasksRouter from './routes/tasks.js';
-import cueCardsRouter from './routes/cueCards.js';
+import cueCardsRouter, { cueShareRouter } from './routes/cueCards.js';
 import marketingRouter from './routes/marketing.js';
 import eventSettingsRouter from './routes/eventSettings.js';
 
@@ -83,6 +83,8 @@ app.use('/api/auth', authRouter);
 app.use('/api/rsvp', rsvpRouter);
 // Public: answers to the reminder email (signed per-invitee token in the URL).
 app.use('/api/reply', replyRouter);
+// Public: read-only cue cards behind a signed share link.
+app.use('/api/cue-share', cueShareRouter);
 
 // Machine-to-machine: the attendance-validation calling bot. Not session-gated;
 // each route enforces the VALIDATION_API_KEY bearer token itself.
