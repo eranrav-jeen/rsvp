@@ -36,6 +36,9 @@ export default function AdminLayout({ onLogout }) {
           <NavLink to="/admin/agenda" className={({ isActive }) => (isActive ? 'active' : '')}>
             סדר יום
           </NavLink>
+          <NavLink to="/admin/cue-cards" className={({ isActive }) => (isActive ? 'active' : '')}>
+            כרטיסיות הנחיה
+          </NavLink>
           <NavLink to="/admin/marketing" className={({ isActive }) => (isActive ? 'active' : '')}>
             חומרי שיווק
           </NavLink>

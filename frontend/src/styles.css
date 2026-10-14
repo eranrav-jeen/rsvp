@@ -1751,3 +1751,105 @@ table.grid tr.row-approved td.col-org {
     padding: 5px 12px;
   }
 }
+
+/* ===== Cue cards (admin "כרטיסיות הנחיה") ===== */
+.cue-intro { margin: -4px 0 14px; max-width: 70ch; }
+.cue-toolbar {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  position: sticky; top: 0; z-index: 2; background: var(--color-cream, #fbf3ec);
+  padding: 10px 0; margin-bottom: 6px;
+}
+.cue-toolbar .spacer { flex: 1; }
+.cue-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.cue-tabs button {
+  border: 1.5px solid #e3d5c8; background: #fff; color: var(--color-maroon);
+  font-weight: 700; font-size: 15px; padding: 7px 14px; border-radius: 999px; cursor: pointer;
+}
+.cue-tabs button.active { background: var(--color-maroon); border-color: var(--color-maroon); color: #fff; }
+.cue-count {
+  display: inline-block; margin-inline-start: 6px; font-size: 12px; font-weight: 700;
+  background: rgba(0,0,0,.08); border-radius: 999px; padding: 0 7px;
+}
+.cue-tabs button.active .cue-count { background: rgba(255,255,255,.22); }
+.cue-deck { display: flex; flex-direction: column; gap: 16px; max-width: 860px; }
+
+.cue-card {
+  background: #fff; border: 1px solid #eadcd1; border-radius: 6px; overflow: hidden;
+  box-shadow: 0 6px 18px rgba(61, 15, 46, .06);
+}
+.cue-band {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  padding: 9px 16px; border-bottom: 3px solid var(--color-amber);
+}
+.cue-time {
+  font-weight: 800; font-size: 24px; color: var(--color-coral);
+  font-variant-numeric: tabular-nums; direction: ltr; unicode-bidi: isolate;
+}
+.cue-title { font-weight: 800; font-size: 18px; color: var(--color-maroon); flex: 1; min-width: 0; }
+.cue-who {
+  font-size: 13px; font-weight: 700; color: #6e5d67; border: 1px solid #e3d5c8;
+  border-radius: 999px; padding: 2px 10px;
+}
+.cue-n { font-size: 13px; color: #8a7a83; font-variant-numeric: tabular-nums; direction: ltr; }
+.cue-actions { display: flex; align-items: center; gap: 4px; }
+.cue-actions .icon-btn {
+  border: 1px solid #e3d5c8; background: #fff; color: var(--color-maroon); border-radius: 6px;
+  width: 30px; height: 30px; font-size: 11px; cursor: pointer;
+}
+.cue-actions .icon-btn:disabled { opacity: .35; cursor: default; }
+.cue-body { padding: 12px 18px 14px; display: flex; flex-direction: column; gap: 10px; }
+.cue-say { font-size: 18px; line-height: 1.6; color: #2a1a24; }
+.cue-say p, .cue-notes p { margin: 0 0 6px; }
+.cue-say p:last-child, .cue-notes p:last-child { margin-bottom: 0; }
+.cue-say ul, .cue-notes ul { margin: 0; padding-inline-start: 20px; }
+.cue-say b, .cue-follow b { color: var(--color-maroon); }
+.cue-label { font-size: 12px; font-weight: 700; letter-spacing: .06em; color: #8a7a83; margin-bottom: -4px; }
+.cue-q {
+  background: #fff6ee; border-right: 4px solid var(--color-coral); border-radius: 4px;
+  padding: 10px 14px; font-size: 21px; font-weight: 700; line-height: 1.5; color: #2a1a24;
+}
+.cue-follow { font-size: 16px; color: #2a1a24; }
+.cue-notes {
+  background: #fbf3ec; border-radius: 4px; padding: 8px 12px; font-size: 14.5px; color: #6e5d67; line-height: 1.6;
+}
+.cue-notes b { color: #2a1a24; }
+.cue-fill { display: inline-block; min-width: 70px; border-bottom: 1.5px dashed #8a7a83; vertical-align: baseline; }
+
+.cue-editing { border-color: var(--color-coral); }
+.cue-edit-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.cue-field { display: flex; flex-direction: column; gap: 4px; font-size: 13px; font-weight: 700; color: #6e5d67; }
+.cue-field input, .cue-field textarea {
+  font: inherit; font-size: 15px; font-weight: 400; color: #2a1a24;
+  border: 1.5px solid #e3d5c8; border-radius: 6px; padding: 8px 10px; background: #fff; width: 100%;
+}
+.cue-field textarea { resize: vertical; line-height: 1.55; }
+.cue-field input:focus, .cue-field textarea:focus { outline: none; border-color: var(--color-coral); }
+.cue-field-time { width: 110px; }
+.cue-field-title { flex: 1; min-width: 200px; }
+.cue-field-who { width: 150px; }
+.cue-hint { margin: 0; font-size: 13px; color: #8a7a83; }
+.cue-edit-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.cue-edit-actions .spacer { flex: 1; }
+.cue-confirm { font-size: 14px; font-weight: 700; color: #c0392b; }
+
+/* Print: only the cards of the open tab, one A5-landscape card per page. */
+@page cue { size: A5 landscape; margin: 0; }
+@media print {
+  body:has(.cue-page) { background: #fff; margin: 0; }
+  body:has(.cue-page) .admin-topbar,
+  .cue-page > h1, .cue-intro, .cue-toolbar, .cue-actions, .cue-page .toast { display: none !important; }
+  body:has(.cue-page) .admin-main { padding: 0; margin: 0; max-width: none; }
+  .cue-deck { display: block; max-width: none; }
+  .cue-card {
+    page: cue; width: 210mm; height: 147.5mm; overflow: hidden; border: 0; border-radius: 0; box-shadow: none;
+    break-after: page; page-break-after: always;
+  }
+  .cue-card:last-child { break-after: auto; page-break-after: auto; }
+  .cue-band { padding: 3.5mm 9mm; }
+  .cue-body { padding: 5mm 9mm; gap: 3mm; }
+  .cue-say { font-size: 20px; }
+  .cue-q { font-size: 25px; }
+  .cue-follow { font-size: 18px; }
+  .cue-notes { font-size: 15px; }
+  .cue-q, .cue-notes { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}

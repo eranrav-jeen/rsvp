@@ -44,3 +44,10 @@ but not registered (status `invited` / `no_response`) or who answered `maybe`:
 one button to the registration form (normal approval flow), plus the agenda.
 Tracked by `last_call_sent_at`. Both emails phrase the timing relative to the
 send day ("בעוד 5 ימים", "מחר", …).
+
+## Cue cards (admin "כרטיסיות הנחיה")
+
+`/admin/cue-cards` — stage cue cards for the event MC (`deck = 'mc'`) and the
+panel host (`'panel'`), stored in `cue_cards` (seeded by migration 013) and
+edited in the UI. Text markup: `**bold**`, lines starting with `- ` are bullets,
+`___` is a blank. Printing the page gives one A5-landscape card per sheet.
