@@ -8,6 +8,10 @@ if (!process.env.DATABASE_URL) {
   process.exit(1);
 }
 
+// Return DATE columns as plain 'YYYY-MM-DD' strings instead of JS Dates (which
+// serialise as '…T00:00:00.000Z' and can shift a day across time zones).
+pg.types.setTypeParser(1082, (v) => v);
+
 export const pool = new pg.Pool({
   connectionString: process.env.DATABASE_URL,
 });

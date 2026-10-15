@@ -11,6 +11,12 @@ const STATUS = [
 
 const todayStr = () => new Date().toISOString().slice(0, 10);
 
+// '2026-10-18' (or an ISO timestamp) → '18/10/2026'.
+function fmtDate(d) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(d || ''));
+  return m ? `${m[3]}/${m[2]}/${m[1]}` : d;
+}
+
 function isOverdue(t) {
   return t.status !== 'done' && t.due_date && t.due_date.slice(0, 10) < todayStr();
 }
@@ -115,7 +121,7 @@ export default function Tasks() {
                     </div>
                     <div style={{ margin: '8px 0 6px' }}>{t.title}</div>
                     <div className={`due ${isOverdue(t) ? 'overdue' : ''}`}>
-                      {t.due_date_text || t.due_date || '—'}
+                      {t.due_date_text || fmtDate(t.due_date) || '—'}
                       {isOverdue(t) && ' ⚠'}
                     </div>
                     <div className="row" style={{ display: 'flex', gap: 6, marginTop: 10 }}>
@@ -167,7 +173,7 @@ export default function Tasks() {
                     </select>
                   </td>
                   <td className={isOverdue(t) ? 'overdue' : ''}>
-                    {t.due_date_text || t.due_date || '—'}
+                    {t.due_date_text || fmtDate(t.due_date) || '—'}
                     {isOverdue(t) && ' ⚠'}
                   </td>
                   <td>
