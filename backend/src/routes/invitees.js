@@ -103,9 +103,18 @@ router.get(
 );
 
 // GET /api/invitees/survey-export — download survey responses as XLSX
-// Send rows ({ full_name, phone }) as a call-list .xlsx download.
+// First name for the call lists: the first word, skipping a leading title
+// (ד״ר / דר׳ / פרופ׳ / עו״ד / רו״ח / אל״ם / תא״ל / Dr. / Prof. …).
+const NAME_TITLE = /^(ד["״׳']?ר|דר["״׳'.]?|פרופ["״׳'.]?|פרופסור|עו["״׳']?ד|רו["״׳']?ח|מר|גב['׳.]?|גברת|אל["״׳']?ם|סא["״׳']?ל|תא["״׳']?ל|רס["״׳']?ן|ניצ["״׳']?ם|dr\.?|prof\.?|mr\.?|mrs\.?|ms\.?)$/i;
+function firstName(full) {
+  const words = String(full || '').trim().split(/\s+/).filter(Boolean);
+  while (words.length > 1 && NAME_TITLE.test(words[0])) words.shift();
+  return words[0] || '';
+}
+
+// Send rows ({ full_name, phone }) as a call-list .xlsx download (first names only).
 function sendCallList(res, rows, asciiName, hebrewName) {
-  const buf = buildCallListXlsx(rows.map((r) => ({ name: r.full_name || '', phone: String(r.phone).trim() })));
+  const buf = buildCallListXlsx(rows.map((r) => ({ name: firstName(r.full_name), phone: String(r.phone).trim() })));
   const day = new Date().toISOString().slice(0, 10);
   res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
   res.setHeader(

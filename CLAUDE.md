@@ -58,7 +58,8 @@ edited in the UI. Text markup: `**bold**`, lines starting with `- ` are bullets,
 confirmed invitees with a phone whose `validation_status` isn't confirmed /
 declined / wrong_number, excluding Jeen staff. Built from the team's template in
 `backend/templates/call-list/` (sheet "מוזמנים", שם | טלפון) by
-`backend/src/callListXlsx.js`; only the sheet rows are generated.
+`backend/src/callListXlsx.js`; only the sheet rows are generated. Both call
+lists export first names only (leading titles like ד״ר / פרופ׳ are skipped).
 
 "הזמנה קולית למיטאפ" (`GET /api/invitees/voice-invite-export`) uses the same
 template for invitees who haven't responded (status `invited` / `no_response`)
