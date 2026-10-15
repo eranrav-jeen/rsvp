@@ -1,6 +1,7 @@
 import express from 'express';
 import multer from 'multer';
 import * as XLSX from 'xlsx';
+import { buildCallListXlsx } from '../callListXlsx.js';
 import { query, withTransaction } from '../db.js';
 import { lockAndCount, decideStatus } from '../capacity.js';
 import { asyncHandler } from '../middleware.js';
@@ -102,6 +103,35 @@ router.get(
 );
 
 // GET /api/invitees/survey-export — download survey responses as XLSX
+// GET /api/invitees/validation-export — approved participants who haven't
+// confirmed attendance yet, in the calling team's template (שם | טלפון).
+// Included: status 'confirmed' with a phone, validation not yet 'confirmed'
+// (null / unsure / no_answer / callback). Excluded: wrong numbers and Jeen staff.
+router.get(
+  '/validation-export',
+  asyncHandler(async (req, res) => {
+    const rows = (
+      await query(
+        `SELECT full_name, phone FROM invitees
+          WHERE status = 'confirmed'
+            AND NULLIF(TRIM(phone), '') IS NOT NULL
+            AND COALESCE(validation_status, '') NOT IN ('confirmed', 'declined', 'wrong_number')
+            AND NOT ${IS_JEEN}
+          ORDER BY full_name NULLS LAST, id`
+      )
+    ).rows;
+    const buf = buildCallListXlsx(rows.map((r) => ({ name: r.full_name || '', phone: String(r.phone).trim() })));
+    const day = new Date().toISOString().slice(0, 10);
+    const fname = `אימות-הגעה-${day}.xlsx`;
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="validation-${day}.xlsx"; filename*=UTF-8''${encodeURIComponent(fname)}`
+    );
+    res.send(buf);
+  })
+);
+
 router.get(
   '/survey-export',
   asyncHandler(async (req, res) => {

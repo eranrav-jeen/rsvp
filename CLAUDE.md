@@ -51,3 +51,11 @@ send day ("בעוד 5 ימים", "מחר", …).
 panel host (`'panel'`), stored in `cue_cards` (seeded by migration 013) and
 edited in the UI. Text markup: `**bold**`, lines starting with `- ` are bullets,
 `___` is a blank. Printing the page gives one A5-landscape card per sheet.
+
+## Attendance-validation call list export
+
+"ייצוא לאימות הגעה" on the invitees page → `GET /api/invitees/validation-export`:
+confirmed invitees with a phone whose `validation_status` isn't confirmed /
+declined / wrong_number, excluding Jeen staff. Built from the team's template in
+`backend/templates/call-list/` (sheet "מוזמנים", שם | טלפון) by
+`backend/src/callListXlsx.js`; only the sheet rows are generated.

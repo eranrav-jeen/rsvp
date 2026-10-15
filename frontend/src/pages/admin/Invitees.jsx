@@ -465,6 +465,13 @@ export default function Invitees() {
         <a className="btn btn-sm btn-primary" href="/api/invitees/export">
           ייצוא XLSX
         </a>
+        <a
+          className="btn btn-sm btn-ghost"
+          href="/api/invitees/validation-export"
+          title="מאושרים שעוד לא אישרו הגעה (כולל ״עוד לא בטוחים״, אין מענה ולחזור אליהם), עם טלפון, בפורמט שם | טלפון. ללא עובדי Jeen ומספרים שגויים."
+        >
+          ייצוא לאימות הגעה
+        </a>
         <a className="btn btn-sm btn-ghost" href="/api/invitees/survey-export">
           ייצוא סקר
         </a>
