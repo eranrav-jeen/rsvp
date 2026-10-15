@@ -472,6 +472,13 @@ export default function Invitees() {
         >
           ייצוא לאימות הגעה
         </a>
+        <a
+          className="btn btn-sm btn-ghost"
+          href="/api/invitees/voice-invite-export"
+          title="מוזמנים שלא הגיבו להזמנה (״הוזמנו״ / ״ללא מענה״) ויש להם טלפון, בפורמט שם | טלפון. ללא עובדי Jeen."
+        >
+          הזמנה קולית למיטאפ
+        </a>
         <a className="btn btn-sm btn-ghost" href="/api/invitees/survey-export">
           ייצוא סקר
         </a>

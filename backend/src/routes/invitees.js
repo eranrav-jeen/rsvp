@@ -103,6 +103,18 @@ router.get(
 );
 
 // GET /api/invitees/survey-export — download survey responses as XLSX
+// Send rows ({ full_name, phone }) as a call-list .xlsx download.
+function sendCallList(res, rows, asciiName, hebrewName) {
+  const buf = buildCallListXlsx(rows.map((r) => ({ name: r.full_name || '', phone: String(r.phone).trim() })));
+  const day = new Date().toISOString().slice(0, 10);
+  res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+  res.setHeader(
+    'Content-Disposition',
+    `attachment; filename="${asciiName}-${day}.xlsx"; filename*=UTF-8''${encodeURIComponent(`${hebrewName}-${day}.xlsx`)}`
+  );
+  res.send(buf);
+}
+
 // GET /api/invitees/validation-export — approved participants who haven't
 // confirmed attendance yet, in the calling team's template (שם | טלפון).
 // Included: status 'confirmed' with a phone, validation not yet 'confirmed'
@@ -120,15 +132,26 @@ router.get(
           ORDER BY full_name NULLS LAST, id`
       )
     ).rows;
-    const buf = buildCallListXlsx(rows.map((r) => ({ name: r.full_name || '', phone: String(r.phone).trim() })));
-    const day = new Date().toISOString().slice(0, 10);
-    const fname = `אימות-הגעה-${day}.xlsx`;
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    res.setHeader(
-      'Content-Disposition',
-      `attachment; filename="validation-${day}.xlsx"; filename*=UTF-8''${encodeURIComponent(fname)}`
-    );
-    res.send(buf);
+    sendCallList(res, rows, 'validation', 'אימות-הגעה');
+  })
+);
+
+// GET /api/invitees/voice-invite-export — "הזמנה קולית למיטאפ": invited people
+// who haven't responded (status invited / no_response) and have a phone, in the
+// same call-list template. Jeen staff excluded.
+router.get(
+  '/voice-invite-export',
+  asyncHandler(async (req, res) => {
+    const rows = (
+      await query(
+        `SELECT full_name, phone FROM invitees
+          WHERE status IN ('invited', 'no_response')
+            AND NULLIF(TRIM(phone), '') IS NOT NULL
+            AND NOT ${IS_JEEN}
+          ORDER BY full_name NULLS LAST, id`
+      )
+    ).rows;
+    sendCallList(res, rows, 'voice-invite', 'הזמנה-קולית');
   })
 );
 
