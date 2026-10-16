@@ -26,6 +26,7 @@ export default function Tasks() {
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState('table'); // kanban | table
   const [ownerFilter, setOwnerFilter] = useState('');
+  const [hideDone, setHideDone] = useState(false); // filter out completed tasks
   const [editing, setEditing] = useState(null); // task or {} for new
   const [toast, setToast] = useState('');
 
@@ -67,7 +68,11 @@ export default function Tasks() {
   const owners = [...new Set(tasks.map((t) => t.owner).filter(Boolean))].sort((a, b) =>
     a.localeCompare(b, 'he')
   );
-  const visibleTasks = ownerFilter ? tasks.filter((t) => t.owner === ownerFilter) : tasks;
+  let visibleTasks = ownerFilter ? tasks.filter((t) => t.owner === ownerFilter) : tasks;
+  if (hideDone) visibleTasks = visibleTasks.filter((t) => t.status !== 'done');
+  const doneCount = (ownerFilter ? tasks.filter((t) => t.owner === ownerFilter) : tasks).filter(
+    (t) => t.status === 'done'
+  ).length;
   const overdueCount = visibleTasks.filter(isOverdue).length;
 
   return (
@@ -82,6 +87,10 @@ export default function Tasks() {
             </option>
           ))}
         </select>
+        <label className="exclude-opt" title="הסתרת משימות שסומנו כ'הושלם'">
+          <input type="checkbox" checked={hideDone} onChange={(e) => setHideDone(e.target.checked)} />
+          <span>הסתר שהושלמו{doneCount > 0 ? ` (${doneCount})` : ''}</span>
+        </label>
         {overdueCount > 0 && (
           <span className="overdue">⚠ {overdueCount} משימות באיחור</span>
         )}

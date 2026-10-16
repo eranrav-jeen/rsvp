@@ -104,6 +104,7 @@ export default function Invitees() {
   const [showVcard, setShowVcard] = useState(false);
   const [showBcc, setShowBcc] = useState(false);
   const [sort, setSort] = useState({ key: null, dir: 'asc' });
+  const [showOutreach, setShowOutreach] = useState(false); // "פניות שבוצעו" collapsed by default
   const fileRef = useRef();
   const valImportRef = useRef();
 
@@ -293,6 +294,9 @@ export default function Invitees() {
   }
 
   const s = data.summary;
+  // Name lists per validation bucket, for the tile hover tooltips.
+  const vnames = (s && s.validation_names) || {};
+  const vtip = (arr) => (arr && arr.length ? arr.join('\n') : 'אין');
 
   return (
     <div>
@@ -325,64 +329,43 @@ export default function Invitees() {
       )}
 
       {s && (
-        <div className="outreach-stats">
-          <div className="outreach-stats-head">
-            פניות שבוצעו
-            <span className="muted"> · ניתן לפנות ביותר מערוץ אחד, ולכן הסכום עשוי לעלות על מספר המוזמנים. האחוז מחושב מתוך מי שיש לו פרטי קשר לאותו ערוץ, ללא מי שאישר, ברשימת המתנה או סימן שלא יגיע</span>
-          </div>
-          <div className="outreach-wave-head">STD (Save the Date)</div>
-          <div className="outreach-cards">
-            <OutreachStat ico="📧" num={s.outreach_email} of={s.with_email} lbl="במייל" potLbl="עם מייל" />
-            <OutreachStat ico="💬" num={s.outreach_whatsapp} of={s.with_phone} lbl="בוואטסאפ" potLbl="עם טלפון" />
-            <OutreachStat ico="📞" num={s.outreach_call} of={s.with_phone} lbl="בשיחה טלפונית" potLbl="עם טלפון" />
-          </div>
-          <div className="outreach-wave-head">הזמנה (Agenda)</div>
-          <div className="outreach-cards">
-            <OutreachStat agenda ico="📧" num={s.agenda_email} of={s.with_email} lbl="במייל" potLbl="עם מייל" />
-            <OutreachStat agenda ico="💬" num={s.agenda_whatsapp} of={s.with_phone} lbl="בוואטסאפ" potLbl="עם טלפון" />
-            <OutreachStat agenda ico="📞" num={s.agenda_call} of={s.with_phone} lbl="בשיחה טלפונית" potLbl="עם טלפון" />
-          </div>
-        </div>
-      )}
-
-      {s && (
         <div className="outreach-stats validation-stats">
           <div className="outreach-stats-head">
             אימות הגעה
             <span className="muted">
               {' '}
-              · מבין המאושרים, לפי תשובות לתזכורת במייל ושיחות הבוט
+              · מבין המאושרים, לפי תשובות לתזכורת במייל ושיחות הבוט · ריחוף מעל כרטיס מציג את השמות
               {s.reminder_sent > 0 &&
                 ` · תזכורת נשלחה ל-${s.reminder_sent}, ${s.validation_by_email} השיבו במייל`}
             </span>
           </div>
           <div className="outreach-cards">
-            <div className="ostat ostat-ok">
+            <div className="ostat ostat-ok" title={vtip(vnames.confirmed)}>
               <span className="ostat-ico">✅</span>
               <span className="ostat-num">{s.validation_confirmed}</span>
               <span className="ostat-lbl">אישרו הגעה</span>
             </div>
-            <div className="ostat ostat-unsure">
+            <div className="ostat ostat-unsure" title={vtip(vnames.unsure)}>
               <span className="ostat-ico">🤔</span>
               <span className="ostat-num">{s.validation_unsure}</span>
               <span className="ostat-lbl">עוד לא בטוחים</span>
             </div>
-            <div className="ostat ostat-bad">
+            <div className="ostat ostat-bad" title={vtip(vnames.declined)}>
               <span className="ostat-ico">❌</span>
               <span className="ostat-num">{s.validation_declined}</span>
               <span className="ostat-lbl">לא מגיעים</span>
             </div>
-            <div className="ostat">
+            <div className="ostat" title={vtip(vnames.no_answer)}>
               <span className="ostat-ico">📵</span>
               <span className="ostat-num">{s.validation_no_answer}</span>
               <span className="ostat-lbl">אין מענה</span>
             </div>
-            <div className="ostat">
+            <div className="ostat" title={vtip(vnames.callback)}>
               <span className="ostat-ico">🔁</span>
               <span className="ostat-num">{s.validation_callback}</span>
               <span className="ostat-lbl">לחזור אליהם</span>
             </div>
-            <div className="ostat ostat-pending">
+            <div className="ostat ostat-pending" title={vtip(vnames.pending)}>
               <span className="ostat-ico">⏳</span>
               <span className="ostat-num">{s.validation_pending}</span>
               <span className="ostat-lbl">טרם אומתו</span>
@@ -425,6 +408,40 @@ export default function Invitees() {
               onChange={handleValidationImport}
             />
           </div>
+        </div>
+      )}
+
+      {s && (
+        <div className="outreach-stats">
+          <button
+            type="button"
+            className="outreach-stats-head collapsible"
+            onClick={() => setShowOutreach((v) => !v)}
+            aria-expanded={showOutreach}
+          >
+            <span className="collapse-caret">{showOutreach ? '▾' : '▸'}</span>
+            פניות שבוצעו
+            {!showOutreach && <span className="muted"> · לחצו להצגה</span>}
+            {showOutreach && (
+              <span className="muted"> · ניתן לפנות ביותר מערוץ אחד, ולכן הסכום עשוי לעלות על מספר המוזמנים. האחוז מחושב מתוך מי שיש לו פרטי קשר לאותו ערוץ, ללא מי שאישר, ברשימת המתנה או סימן שלא יגיע</span>
+            )}
+          </button>
+          {showOutreach && (
+            <>
+              <div className="outreach-wave-head">STD (Save the Date)</div>
+              <div className="outreach-cards">
+                <OutreachStat ico="📧" num={s.outreach_email} of={s.with_email} lbl="במייל" potLbl="עם מייל" />
+                <OutreachStat ico="💬" num={s.outreach_whatsapp} of={s.with_phone} lbl="בוואטסאפ" potLbl="עם טלפון" />
+                <OutreachStat ico="📞" num={s.outreach_call} of={s.with_phone} lbl="בשיחה טלפונית" potLbl="עם טלפון" />
+              </div>
+              <div className="outreach-wave-head">הזמנה (Agenda)</div>
+              <div className="outreach-cards">
+                <OutreachStat agenda ico="📧" num={s.agenda_email} of={s.with_email} lbl="במייל" potLbl="עם מייל" />
+                <OutreachStat agenda ico="💬" num={s.agenda_whatsapp} of={s.with_phone} lbl="בוואטסאפ" potLbl="עם טלפון" />
+                <OutreachStat agenda ico="📞" num={s.agenda_call} of={s.with_phone} lbl="בשיחה טלפונית" potLbl="עם טלפון" />
+              </div>
+            </>
+          )}
         </div>
       )}
 

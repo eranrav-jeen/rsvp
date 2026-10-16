@@ -797,6 +797,7 @@ async function getSummary({ excludeJeen = false, excludeSpeakers = false } = {})
 
   // Attendance-validation phone calls, counted among the confirmed participants
   // (the people the bot calls). "pending" = confirmed but not yet called.
+  const nm = `COALESCE(NULLIF(TRIM(full_name), ''), organization, '—')`;
   const validation = await query(
     `SELECT
        COUNT(*) FILTER (WHERE validation_status = 'confirmed')::int    AS confirmed,
@@ -807,7 +808,13 @@ async function getSummary({ excludeJeen = false, excludeSpeakers = false } = {})
        COUNT(*) FILTER (WHERE validation_status = 'unsure')::int       AS unsure,
        COUNT(*) FILTER (WHERE validation_source = 'email')::int        AS by_email,
        COUNT(*) FILTER (WHERE reminder_sent_at IS NOT NULL)::int       AS reminder_sent,
-       COUNT(*) FILTER (WHERE status = 'confirmed' AND validation_status IS NULL)::int AS pending
+       COUNT(*) FILTER (WHERE status = 'confirmed' AND validation_status IS NULL)::int AS pending,
+       array_agg(${nm} ORDER BY ${nm}) FILTER (WHERE validation_status = 'confirmed') AS confirmed_names,
+       array_agg(${nm} ORDER BY ${nm}) FILTER (WHERE validation_status = 'declined')  AS declined_names,
+       array_agg(${nm} ORDER BY ${nm}) FILTER (WHERE validation_status = 'no_answer') AS no_answer_names,
+       array_agg(${nm} ORDER BY ${nm}) FILTER (WHERE validation_status = 'callback')  AS callback_names,
+       array_agg(${nm} ORDER BY ${nm}) FILTER (WHERE validation_status = 'unsure')    AS unsure_names,
+       array_agg(${nm} ORDER BY ${nm}) FILTER (WHERE status = 'confirmed' AND validation_status IS NULL) AS pending_names
      FROM invitees ${where}`
   );
   const v = validation.rows[0] || {
@@ -858,6 +865,15 @@ async function getSummary({ excludeJeen = false, excludeSpeakers = false } = {})
     validation_by_email: v.by_email,
     reminder_sent: v.reminder_sent,
     validation_pending: v.pending,
+    // Name lists per bucket, for the dashboard tile hover tooltips.
+    validation_names: {
+      confirmed: v.confirmed_names || [],
+      declined: v.declined_names || [],
+      no_answer: v.no_answer_names || [],
+      callback: v.callback_names || [],
+      unsure: v.unsure_names || [],
+      pending: v.pending_names || [],
+    },
     confirmed_seats: confirmedSeats,
     max_attendees: maxAttendees,
   };

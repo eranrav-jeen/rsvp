@@ -911,6 +911,27 @@ button {
   padding-top: 12px;
   border-top: 1px dashed #e7d9cb;
 }
+/* Collapsible "פניות שבוצעו" header (a button styled like the plain heading). */
+.outreach-stats-head.collapsible {
+  display: block;
+  width: 100%;
+  text-align: right;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  cursor: pointer;
+}
+.collapse-caret {
+  display: inline-block;
+  margin-inline-end: 6px;
+  color: var(--color-maroon);
+}
+/* Native title tooltips show \n as line breaks; help them wrap sensibly too. */
+.validation-stats .ostat {
+  cursor: help;
+}
 .ostat-ok {
   background: #eef9f2;
   border-color: #cdecda;
