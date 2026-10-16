@@ -313,7 +313,16 @@ export function dailyDigest({ dateLabel, daysToEvent, stats, recommendations, ch
   // Headline: confirmed attendees (incl. speakers) out of everyone invited so far.
   const attending = s.confirmed + s.speaker;
   const invitedCount = s.total - s.not_invited;
+  const v = s.validation || {};
   const statsHtml =
+    statGroup('📞 אישורי הגעה (מבין המאושרים)', [
+      ['✅', 'אישרו הגעה', v.confirmed || 0],
+      ['🤔', 'עוד לא בטוחים', v.unsure || 0],
+      ['❌', 'לא מגיעים', v.declined || 0],
+      ['📵', 'אין מענה', v.no_answer || 0],
+      ['🔁', 'לחזור אליהם', v.callback || 0],
+      ['⏳', 'טרם אומתו', v.pending || 0],
+    ]) +
     statGroup('✅ הרשמות', [
       ['✅', 'אושרה השתתפות', s.confirmed],
       ['🎤', 'מרצים/ות', s.speaker],
@@ -354,7 +363,7 @@ export function dailyDigest({ dateLabel, daysToEvent, stats, recommendations, ch
     : '';
   return {
     kind: 'daily_digest',
-    subject: `דוח הרשמה יומי · ${dateLabel} · ${attending}/${DIGEST_TARGET} מהיעד, ${s.pending} ממתינים`,
+    subject: `אישורי הגעה · ${dateLabel} · ${v.confirmed || 0} אישרו, ${v.pending || 0} טרם אומתו (${attending}/${DIGEST_TARGET} מהיעד)`,
     html: layout({
       heading: `סטטוס הרשמה · ${dateLabel}`,
       bodyHtml:
@@ -382,6 +391,8 @@ export function dailyDigest({ dateLabel, daysToEvent, stats, recommendations, ch
                 : '') +
               '\n\n')
         : '') +
+      `אישורי הגעה — אישרו: ${v.confirmed || 0} · עוד לא בטוחים: ${v.unsure || 0} · לא מגיעים: ${v.declined || 0} · ` +
+      `אין מענה: ${v.no_answer || 0} · לחזור: ${v.callback || 0} · טרם אומתו: ${v.pending || 0}\n` +
       `פוטנציאל: ${s.total} · טרם הוזמנו: ${s.not_invited} · הוזמנו: ${s.invited} · ` +
       `ממתינים: ${s.pending} · אושרו: ${s.confirmed} · אולי: ${s.maybe} · לא יגיעו: ${s.declined}\n` +
       `מקומות מאושרים: ${s.confirmed_seats}/${s.max_attendees} · הוזמנו במייל: ${s.outreach_email}\n\n` +

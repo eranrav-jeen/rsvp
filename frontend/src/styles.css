@@ -69,6 +69,10 @@ button {
   opacity: 0.55;
   cursor: not-allowed;
 }
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
 .btn-success {
   background: #2e8b57;
   color: #fff;
@@ -898,6 +902,14 @@ button {
 /* Attendance-validation dashboard strip + outcome-tinted tiles. */
 .validation-stats {
   border-top-color: #2e9e6b;
+}
+.validation-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed #e7d9cb;
 }
 .ostat-ok {
   background: #eef9f2;

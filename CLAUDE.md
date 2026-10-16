@@ -13,16 +13,32 @@ cd /var/www/jeen-event && ./deploy.sh
 
 `backend/scripts/daily-digest.js` is run by the `ubuntu` user's crontab on the
 server (not set up by `deploy.sh`). The server clock is UTC and Ubuntu's cron
-ignores `CRON_TZ`, so 05:00 UTC = 08:00 Israel time (valid while Israel is on
-UTC+3, i.e. through the Oct 20 event):
+ignores `CRON_TZ`, so UTC = Israel − 3h (valid while Israel is on UTC+3, i.e.
+through the Oct 20 event).
+
+**Final push (Oct 18–19):** the digest now focuses on attendance validation
+(אישורי הגעה) and goes out **three times a day — 08:00, 13:00, 19:00 Israel**
+(= 05:00, 10:00, 16:00 UTC). `shouldSend()` only sends on **Sun 18 & Mon 19 Oct
+2026**; on every other day the run is a no-op, so the single cron line can fire
+daily and still only send on those two days:
 
 ```
-0 5 * * * cd /var/www/jeen-event/backend && /usr/bin/node scripts/daily-digest.js >> /home/ubuntu/jeen-digest.log 2>&1
+0 5,10,16 * * * cd /var/www/jeen-event/backend && /usr/bin/node scripts/daily-digest.js >> /home/ubuntu/jeen-digest.log 2>&1
 ```
 
 The script decides by itself whether today is a send day. Test with
 `node scripts/daily-digest.js --force --to=<addr>`; sends are logged in the
 `email_log` table (`kind = 'daily_digest'`).
+
+## Attendance-validation import (voice agent call results)
+
+"ייבוא אקסל אימות הגעה" under the אימות הגעה widget → `POST
+/api/invitees/validation-import` (`backend/src/routes/invitees.js`). Reads the
+voice agent's xlsx (first sheet): **column B = phone, column C = status**. Maps
+status מגיע/ה→confirmed, לא מגיע/ה→declined, אולי→unsure, טרם ענה/תה→no_answer,
+matches invitees by phone (last 9 digits) and sets `validation_status` +
+`validation_source='phone'`. It does **not** change registration status.
+"ייבוא אקסל אישורי הזמנה קוליים" is a placeholder (disabled) for now.
 
 ## Agenda
 

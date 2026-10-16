@@ -36,18 +36,16 @@ function israelParts(now = new Date()) {
   };
 }
 
+// Final-push cadence: in the last days before the event the digest focuses on
+// attendance validation (אישורי הגעה) and goes out three times a day (08:00,
+// 13:00, 19:00 Israel — driven by cron) ONLY on Sun 18 & Mon 19 Oct 2026.
+// Nothing before, and nothing on the event day itself (Tue 20).
 export function shouldSend(now = new Date()) {
-  const { y, m, d, dow } = israelParts(now);
-  if (y > 2026 || (y === 2026 && (m > 10 || (m === 10 && d > 20)))) {
-    return { send: false, reason: 'after event day' };
+  const { y, m, d } = israelParts(now);
+  if (y === 2026 && m === 10 && (d === 18 || d === 19)) {
+    return { send: true, reason: 'final push (Sun/Mon, 3×/day)' };
   }
-  if (dow === 5 || dow === 6) return { send: false, reason: 'weekend (Fri/Sat)' };
-  const throughOct4 = m < 10 || (m === 10 && d <= 4);
-  if (throughOct4) {
-    const doy = Math.floor((Date.UTC(y, m - 1, d) - Date.UTC(y, 0, 1)) / 86400000);
-    if (doy % 2 !== 0) return { send: false, reason: 'holiday cadence (every 2 days)' };
-  }
-  return { send: true, reason: 'send day' };
+  return { send: false, reason: 'outside the Oct 18–19 send window' };
 }
 
 async function gatherStats() {
@@ -76,6 +74,19 @@ async function gatherStats() {
   const noEmail = (
     await query(`SELECT COUNT(*)::int AS n FROM invitees WHERE email IS NULL OR email = ''`)
   ).rows[0].n;
+  // Attendance validation (אישורי הגעה) across all sources (bot calls + email replies).
+  const validation = (
+    await query(
+      `SELECT
+         COUNT(*) FILTER (WHERE validation_status = 'confirmed')::int AS confirmed,
+         COUNT(*) FILTER (WHERE validation_status = 'unsure')::int    AS unsure,
+         COUNT(*) FILTER (WHERE validation_status = 'declined')::int  AS declined,
+         COUNT(*) FILTER (WHERE validation_status = 'no_answer')::int AS no_answer,
+         COUNT(*) FILTER (WHERE validation_status = 'callback')::int  AS callback,
+         COUNT(*) FILTER (WHERE status = 'confirmed' AND validation_status IS NULL)::int AS pending
+       FROM invitees`
+    )
+  ).rows[0];
   return {
     total: rows.reduce((a, r) => a + r.count, 0),
     not_invited: get('not_invited'),
@@ -92,6 +103,7 @@ async function gatherStats() {
     outreach_email: outreach.email,
     noEmail,
     reminder,
+    validation,
   };
 }
 
@@ -141,6 +153,13 @@ async function computeChanges(cur) {
 
 function recommend(s) {
   const recs = [];
+  // Final-push focus: attendance validation of the approved participants.
+  const v = s.validation || {};
+  if (v.pending > 0) recs.push(`${v.pending} מאושרים טרם אומתו טלפונית — להריץ סבב שיחות ולייבא את התוצאות.`);
+  if (v.no_answer > 0) recs.push(`${v.no_answer} ללא מענה בשיחת האימות — לנסות שוב או לפנות בערוץ אחר.`);
+  if (v.callback > 0) recs.push(`${v.callback} ביקשו שיחזרו אליהם — להשלים את החזרה.`);
+  if (v.unsure > 0) recs.push(`${v.unsure} עדיין לא בטוחים אם יגיעו — לחזור אליהם לתשובה סופית.`);
+  if (v.declined > 0) recs.push(`${v.declined} מאושרים הודיעו שלא יגיעו — לשקול השלמה מרשימת ההמתנה.`);
   if (s.pending > 0) recs.push(`יש ${s.pending} בקשות הממתינות לאישור — יש לאשר או לדחות אותן.`);
   if (s.not_invited > 0) recs.push(`${s.not_invited} מוזמנים טרם הוזמנו — כדאי לשלוח להם הזמנה.`);
   if (s.invited > 0) recs.push(`${s.invited} הוזמנו אך טרם נרשמו — כדאי תזכורת או פנייה נוספת.`);

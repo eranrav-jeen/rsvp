@@ -479,6 +479,72 @@ router.post(
   })
 );
 
+// Hebrew status (column C of the voice agent's call-results file) -> our
+// attendance validation_status.
+function mapCallStatus(raw) {
+  const v = String(raw || '').trim();
+  if (!v) return null;
+  const exact = {
+    'מגיע/ה': 'confirmed',
+    'לא מגיע/ה': 'declined',
+    'אולי': 'unsure',
+    'טרם ענה/תה': 'no_answer',
+  };
+  if (exact[v]) return exact[v];
+  // Tolerant fallbacks for minor wording differences.
+  if (/לא\s*מגיע/.test(v)) return 'declined';
+  if (/מגיע/.test(v)) return 'confirmed';
+  if (/אולי|לא\s*בטוח/.test(v)) return 'unsure';
+  if (/טרם|לא\s*ענ/.test(v)) return 'no_answer';
+  return null;
+}
+
+// POST /api/invitees/validation-import — import the voice agent's call-results
+// xlsx. Column B = phone, column C = status; matches invitees by phone (last 9
+// digits) and sets their attendance validation_status. Does NOT change the
+// registration status — organizers act on "לא מגיע/ה" themselves.
+router.post(
+  '/validation-import',
+  upload.single('file'),
+  asyncHandler(async (req, res) => {
+    if (!req.file) return res.status(400).json({ error: 'file is required' });
+    const wb = XLSX.read(req.file.buffer, { type: 'buffer' });
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+
+    let updated = 0;
+    let unmatched = 0;
+    let skipped = 0;
+    const unmatchedList = [];
+    for (const row of rows) {
+      const digits = String(row[1] ?? '').replace(/\D/g, ''); // column B = phone
+      if (digits.length < 7) continue; // header / blank / no phone — ignore
+      const vstatus = mapCallStatus(row[2]); // column C = status
+      if (!vstatus) {
+        skipped += 1; // has a phone but an unrecognised status value
+        continue;
+      }
+      const np = digits.length > 9 ? digits.slice(-9) : digits;
+      const upd = await query(
+        `UPDATE invitees
+            SET validation_status = $1,
+                validation_source = 'phone',
+                validation_called_at = now(),
+                updated_at = now()
+          WHERE phone IS NOT NULL
+            AND right(regexp_replace(phone, '\\D', '', 'g'), 9) = $2`,
+        [vstatus, np]
+      );
+      if (upd.rowCount > 0) updated += upd.rowCount;
+      else {
+        unmatched += 1;
+        if (unmatchedList.length < 25) unmatchedList.push(String(row[1]).trim());
+      }
+    }
+    res.json({ updated, unmatched, skipped, unmatchedList });
+  })
+);
+
 // Derive an organization label from an email domain, dropping common suffixes
 // e.g. digital.gov.il -> digital, jeen.ai -> jeen, moia.gov.il -> moia.
 function orgFromEmail(email) {

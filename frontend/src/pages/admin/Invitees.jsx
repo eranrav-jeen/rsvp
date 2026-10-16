@@ -105,6 +105,7 @@ export default function Invitees() {
   const [showBcc, setShowBcc] = useState(false);
   const [sort, setSort] = useState({ key: null, dir: 'asc' });
   const fileRef = useRef();
+  const valImportRef = useRef();
 
   function toggleSort(key) {
     setSort((s) => (s.key === key ? { key, dir: s.dir === 'asc' ? 'desc' : 'asc' } : { key, dir: 'asc' }));
@@ -270,6 +271,27 @@ export default function Invitees() {
     }
   }
 
+  // Import the voice agent's call-results xlsx (col B = phone, col C = status)
+  // and update attendance validation accordingly.
+  async function handleValidationImport(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const fd = new FormData();
+    fd.append('file', file);
+    try {
+      const res = await api.postForm('/api/invitees/validation-import', fd);
+      let msg = `עודכנו ${res.updated} אישורי הגעה`;
+      if (res.unmatched) msg += ` · ${res.unmatched} לא נמצאו לפי טלפון`;
+      if (res.skipped) msg += ` · ${res.skipped} דולגו`;
+      showToast(msg);
+      load();
+    } catch {
+      showToast('שגיאה בייבוא אימות ההגעה');
+    } finally {
+      if (valImportRef.current) valImportRef.current.value = '';
+    }
+  }
+
   const s = data.summary;
 
   return (
@@ -365,6 +387,43 @@ export default function Invitees() {
               <span className="ostat-num">{s.validation_pending}</span>
               <span className="ostat-lbl">טרם אומתו</span>
             </div>
+          </div>
+          <div className="validation-actions">
+            <a
+              className="btn btn-sm btn-ghost"
+              href="/api/invitees/validation-export"
+              title="מאושרים שעוד לא אישרו הגעה (כולל ״עוד לא בטוחים״, אין מענה ולחזור אליהם), עם טלפון, בפורמט שם | טלפון. ללא עובדי Jeen ומספרים שגויים."
+            >
+              ⬇ ייצוא לאימות הגעה
+            </a>
+            <a
+              className="btn btn-sm btn-ghost"
+              href="/api/invitees/voice-invite-export"
+              title="מוזמנים שלא הגיבו להזמנה (״הוזמנו״ / ״ללא מענה״) ויש להם טלפון, בפורמט שם | טלפון. ללא עובדי Jeen."
+            >
+              ⬇ הזמנה קולית למיטאפ
+            </a>
+            <button
+              className="btn btn-sm btn-ghost"
+              onClick={() => valImportRef.current?.click()}
+              title="ייבוא קובץ אקסל של תוצאות שיחות הבוט (עמודה B טלפון, עמודה C סטטוס). מעדכן את אישורי ההגעה לפי הטלפון."
+            >
+              ⬆ ייבוא אקסל אימות הגעה
+            </button>
+            <button
+              className="btn btn-sm btn-ghost"
+              disabled
+              title="בקרוב"
+            >
+              ⬆ ייבוא אקסל אישורי הזמנה קוליים
+            </button>
+            <input
+              ref={valImportRef}
+              type="file"
+              accept=".xlsx,.xls"
+              style={{ display: 'none' }}
+              onChange={handleValidationImport}
+            />
           </div>
         </div>
       )}
@@ -464,20 +523,6 @@ export default function Invitees() {
         </button>
         <a className="btn btn-sm btn-primary" href="/api/invitees/export">
           ייצוא XLSX
-        </a>
-        <a
-          className="btn btn-sm btn-ghost"
-          href="/api/invitees/validation-export"
-          title="מאושרים שעוד לא אישרו הגעה (כולל ״עוד לא בטוחים״, אין מענה ולחזור אליהם), עם טלפון, בפורמט שם | טלפון. ללא עובדי Jeen ומספרים שגויים."
-        >
-          ייצוא לאימות הגעה
-        </a>
-        <a
-          className="btn btn-sm btn-ghost"
-          href="/api/invitees/voice-invite-export"
-          title="מוזמנים שלא הגיבו להזמנה (״הוזמנו״ / ״ללא מענה״) ויש להם טלפון, בפורמט שם | טלפון. ללא עובדי Jeen."
-        >
-          הזמנה קולית למיטאפ
         </a>
         <a className="btn btn-sm btn-ghost" href="/api/invitees/survey-export">
           ייצוא סקר
