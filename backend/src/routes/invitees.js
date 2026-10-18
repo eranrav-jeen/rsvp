@@ -545,6 +545,75 @@ router.post(
   })
 );
 
+// POST /api/invitees/voice-invite-import — import the voice agent's results for
+// the "הזמנה קולית למיטאפ" calls. Same file format as validation-import (column
+// B = phone, column C = status). Only invitees who hadn't responded (invited /
+// no_response / maybe / not_invited) are updated:
+//   מגיע/ה → status confirmed (and attendance already validated)
+//   לא מגיע/ה → declined · אולי → maybe · טרם ענה/תה → status unchanged
+// Every matched row is marked as phoned in the invitation wave (agenda_call).
+router.post(
+  '/voice-invite-import',
+  upload.single('file'),
+  asyncHandler(async (req, res) => {
+    if (!req.file) return res.status(400).json({ error: 'file is required' });
+    const wb = XLSX.read(req.file.buffer, { type: 'buffer' });
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+    const NEXT = { confirmed: 'confirmed', declined: 'declined', unsure: 'maybe', no_answer: null };
+
+    let updated = 0;
+    let confirmed = 0;
+    let unmatched = 0;
+    let skipped = 0;
+    let alreadyRegistered = 0;
+    const unmatchedList = [];
+    for (const row of rows) {
+      const digits = String(row[1] ?? '').replace(/\D/g, ''); // column B = phone
+      if (digits.length < 7) continue; // header / blank / no phone
+      const result = mapCallStatus(row[2]); // column C = status
+      if (!result) {
+        skipped += 1;
+        continue;
+      }
+      const np = digits.length > 9 ? digits.slice(-9) : digits;
+      const matches = (
+        await query(
+          `SELECT id, status FROM invitees
+            WHERE phone IS NOT NULL AND right(regexp_replace(phone, '\\D', '', 'g'), 9) = $1`,
+          [np]
+        )
+      ).rows;
+      if (!matches.length) {
+        unmatched += 1;
+        if (unmatchedList.length < 25) unmatchedList.push(String(row[1]).trim());
+        continue;
+      }
+      for (const m of matches) {
+        if (!['invited', 'no_response', 'maybe', 'not_invited'].includes(m.status)) {
+          alreadyRegistered += 1; // registered / approved / declined already — leave as is
+          continue;
+        }
+        const next = NEXT[result];
+        await query(
+          `UPDATE invitees
+              SET status = COALESCE($1, status),
+                  agenda_call = true,
+                  validation_status = CASE WHEN $1 = 'confirmed' THEN 'confirmed' ELSE validation_status END,
+                  validation_source = CASE WHEN $1 = 'confirmed' THEN 'phone' ELSE validation_source END,
+                  validation_called_at = CASE WHEN $1 = 'confirmed' THEN now() ELSE validation_called_at END,
+                  updated_at = now()
+            WHERE id = $2`,
+          [next, m.id]
+        );
+        updated += 1;
+        if (next === 'confirmed') confirmed += 1;
+      }
+    }
+    res.json({ updated, confirmed, unmatched, skipped, alreadyRegistered, unmatchedList });
+  })
+);
+
 // Derive an organization label from an email domain, dropping common suffixes
 // e.g. digital.gov.il -> digital, jeen.ai -> jeen, moia.gov.il -> moia.
 function orgFromEmail(email) {

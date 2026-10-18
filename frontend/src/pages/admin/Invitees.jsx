@@ -107,6 +107,7 @@ export default function Invitees() {
   const [showOutreach, setShowOutreach] = useState(false); // "פניות שבוצעו" collapsed by default
   const fileRef = useRef();
   const valImportRef = useRef();
+  const voiceImportRef = useRef();
 
   function toggleSort(key) {
     setSort((s) => (s.key === key ? { key, dir: s.dir === 'asc' ? 'desc' : 'asc' } : { key, dir: 'asc' }));
@@ -293,6 +294,29 @@ export default function Invitees() {
     }
   }
 
+  // Import the voice agent's results for the voice invitation calls (same file
+  // format: col B = phone, col C = status) and update registration status.
+  async function handleVoiceInviteImport(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const fd = new FormData();
+    fd.append('file', file);
+    try {
+      const res = await api.postForm('/api/invitees/voice-invite-import', fd);
+      let msg = `עודכנו ${res.updated} מוזמנים`;
+      if (res.confirmed) msg += ` · ${res.confirmed} אישרו הגעה`;
+      if (res.alreadyRegistered) msg += ` · ${res.alreadyRegistered} כבר רשומים (לא שונו)`;
+      if (res.unmatched) msg += ` · ${res.unmatched} לא נמצאו לפי טלפון`;
+      if (res.skipped) msg += ` · ${res.skipped} דולגו`;
+      showToast(msg);
+      load();
+    } catch {
+      showToast('שגיאה בייבוא אישורי ההזמנה הקוליים');
+    } finally {
+      if (voiceImportRef.current) voiceImportRef.current.value = '';
+    }
+  }
+
   const s = data.summary;
   // Name lists per validation bucket, for the tile hover tooltips.
   const vnames = (s && s.validation_names) || {};
@@ -395,11 +419,18 @@ export default function Invitees() {
             </button>
             <button
               className="btn btn-sm btn-ghost"
-              disabled
-              title="בקרוב"
+              onClick={() => voiceImportRef.current?.click()}
+              title="ייבוא תוצאות ההזמנה הקולית (עמודה B טלפון, עמודה C סטטוס). מעדכן את סטטוס ההרשמה של מי שטרם הגיב: מגיע/ה → מאושר, לא מגיע/ה → לא מגיע, אולי → אולי."
             >
               ⬆ ייבוא אקסל אישורי הזמנה קוליים
             </button>
+            <input
+              ref={voiceImportRef}
+              type="file"
+              accept=".xlsx,.xls"
+              style={{ display: 'none' }}
+              onChange={handleVoiceInviteImport}
+            />
             <input
               ref={valImportRef}
               type="file"

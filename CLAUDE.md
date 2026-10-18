@@ -80,3 +80,9 @@ lists export first names only (leading titles like ד״ר / פרופ׳ are skipp
 "הזמנה קולית למיטאפ" (`GET /api/invitees/voice-invite-export`) uses the same
 template for invitees who haven't responded (status `invited` / `no_response`)
 and have a phone, excluding Jeen staff.
+
+"ייבוא אקסל אישורי הזמנה קוליים" (`POST /api/invitees/voice-invite-import`) reads
+the voice agent's results for those calls in the same format as the validation
+import (col B phone, col C status). Only invitees still invited / no_response /
+maybe / not_invited change: מגיע/ה → `confirmed` (and validated), לא מגיע/ה →
+`declined`, אולי → `maybe`, טרם ענה/תה → unchanged; all matched get `agenda_call`.
