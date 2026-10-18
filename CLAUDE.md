@@ -84,8 +84,8 @@ and have a phone, excluding Jeen staff.
 "ייבוא אקסל אישורי הזמנה קוליים" (`POST /api/invitees/voice-invite-import`) reads
 the voice agent's results for those calls in the same format as the validation
 import (col B phone, col C status). Only invitees still invited / no_response /
-maybe / not_invited change: מגיע/ה or מעוניין/ת → `confirmed` (and validated),
-לא מגיע/ה or לא מעוניין/ת → `declined`, אולי → `maybe`, טרם ענה/תה → unchanged;
+maybe / not_invited change: מעוניין/ת (or מגיע/ה) → `pending` (ממתין לאישור),
+לא מעוניין/ת (or לא מגיע/ה) → `declined`, אולי → `maybe`, טרם ענה/תה → unchanged;
 all matched get `agenda_call`. (The voice-invite results file says
 מעוניין/ת / לא מעוניין/ת; both imports accept either wording.)
 

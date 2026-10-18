@@ -304,7 +304,8 @@ export default function Invitees() {
     try {
       const res = await api.postForm('/api/invitees/voice-invite-import', fd);
       let msg = `עודכנו ${res.updated} מוזמנים`;
-      if (res.confirmed) msg += ` · ${res.confirmed} אישרו הגעה`;
+      if (res.pending) msg += ` · ${res.pending} מעוניינים (ממתינים לאישור)`;
+      if (res.declined) msg += ` · ${res.declined} לא יגיעו`;
       if (res.alreadyRegistered) msg += ` · ${res.alreadyRegistered} כבר רשומים (לא שונו)`;
       if (res.unmatched) msg += ` · ${res.unmatched} לא נמצאו לפי טלפון`;
       if (res.skipped) msg += ` · ${res.skipped} דולגו`;
@@ -420,7 +421,7 @@ export default function Invitees() {
             <button
               className="btn btn-sm btn-ghost"
               onClick={() => voiceImportRef.current?.click()}
-              title="ייבוא תוצאות ההזמנה הקולית (עמודה B טלפון, עמודה C סטטוס). מעדכן את סטטוס ההרשמה של מי שטרם הגיב: מגיע/ה → מאושר, לא מגיע/ה → לא מגיע, אולי → אולי."
+              title="ייבוא תוצאות ההזמנה הקולית (עמודה B טלפון, עמודה C סטטוס). מעדכן את סטטוס ההרשמה של מי שטרם הגיב: מעוניין/ת → ממתין לאישור, לא מעוניין/ת → לא יגיע, אולי → אולי."
             >
               ⬆ ייבוא אקסל אישורי הזמנה קוליים
             </button>

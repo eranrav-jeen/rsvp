@@ -552,8 +552,9 @@ router.post(
 // the "הזמנה קולית למיטאפ" calls. Same file format as validation-import (column
 // B = phone, column C = status). Only invitees who hadn't responded (invited /
 // no_response / maybe / not_invited) are updated:
-//   מגיע/ה → status confirmed (and attendance already validated)
-//   לא מגיע/ה → declined · אולי → maybe · טרם ענה/תה → status unchanged
+//   מעוניין/ת (or מגיע/ה) → pending (ממתין לאישור — organizers approve as usual)
+//   לא מעוניין/ת (or לא מגיע/ה) → declined (לא יגיע) · אולי → maybe
+//   טרם ענה/תה → status unchanged
 // Every matched row is marked as phoned in the invitation wave (agenda_call).
 router.post(
   '/voice-invite-import',
@@ -563,10 +564,11 @@ router.post(
     const wb = XLSX.read(req.file.buffer, { type: 'buffer' });
     const ws = wb.Sheets[wb.SheetNames[0]];
     const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
-    const NEXT = { confirmed: 'confirmed', declined: 'declined', unsure: 'maybe', no_answer: null };
+    const NEXT = { confirmed: 'pending', declined: 'declined', unsure: 'maybe', no_answer: null };
 
     let updated = 0;
-    let confirmed = 0;
+    let pending = 0;
+    let declined = 0;
     let unmatched = 0;
     let skipped = 0;
     let alreadyRegistered = 0;
@@ -602,18 +604,16 @@ router.post(
           `UPDATE invitees
               SET status = COALESCE($1, status),
                   agenda_call = true,
-                  validation_status = CASE WHEN $1 = 'confirmed' THEN 'confirmed' ELSE validation_status END,
-                  validation_source = CASE WHEN $1 = 'confirmed' THEN 'phone' ELSE validation_source END,
-                  validation_called_at = CASE WHEN $1 = 'confirmed' THEN now() ELSE validation_called_at END,
                   updated_at = now()
             WHERE id = $2`,
           [next, m.id]
         );
         updated += 1;
-        if (next === 'confirmed') confirmed += 1;
+        if (next === 'pending') pending += 1;
+        if (next === 'declined') declined += 1;
       }
     }
-    res.json({ updated, confirmed, unmatched, skipped, alreadyRegistered, unmatchedList });
+    res.json({ updated, pending, declined, unmatched, skipped, alreadyRegistered, unmatchedList });
   })
 );
 
