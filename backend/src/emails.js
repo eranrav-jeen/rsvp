@@ -607,3 +607,54 @@ export function lastCallInvite({ name, status, schedule }) {
       `מכירים עוד מישהו שכדאי שיגיע? קישור ההרשמה: ${registerUrl}${textFooter()}`,
   };
 }
+
+// Personal reminder of a team member's open / in-progress tasks.
+export function taskReminder({ name, tasks }) {
+  const greet = hello(name);
+  const today = new Date(Date.now() + 3 * 3600 * 1000).toISOString().slice(0, 10); // Israel date
+  const fmt = (d) => {
+    const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(d || ''));
+    return m ? `${m[3]}/${m[2]}` : '';
+  };
+  const statusLabel = { open: 'פתוחה', in_progress: 'בתהליך' };
+  const rows = tasks
+    .map((t, i) => {
+      const due = t.due_date ? fmt(t.due_date) : t.due_date_text || '';
+      const late = t.due_date && String(t.due_date).slice(0, 10) < today;
+      const border = i ? 'border-top:1px solid #f1e6dc;' : '';
+      return `<tr>
+        <td style="padding:10px 12px;vertical-align:top;${border}">
+          <div style="font-weight:700;color:${BRAND.text};font-size:15px;line-height:1.45;">${esc(t.title)}</div>
+          ${t.notes ? `<div style="font-size:13px;color:#666;line-height:1.5;margin-top:3px;">${esc(t.notes)}</div>` : ''}
+          ${t.owner && /[+,/&]|\sמול\s|\sו\S/.test(t.owner) ? `<div style="font-size:12px;color:#8a7a83;margin-top:3px;">אחראים: ${esc(t.owner)}</div>` : ''}
+        </td>
+        <td style="padding:10px 12px;vertical-align:top;white-space:nowrap;text-align:left;${border}">
+          <div style="font-weight:800;font-size:14px;color:${late ? '#c0392b' : BRAND.maroon};">${esc(due) || '—'}</div>
+          <div style="font-size:12px;color:${late ? '#c0392b' : '#8a7a83'};">${late ? 'באיחור' : statusLabel[t.status] || ''}</div>
+        </td>
+      </tr>`;
+    })
+    .join('');
+  const lateCount = tasks.filter((t) => t.due_date && String(t.due_date).slice(0, 10) < today).length;
+  return {
+    kind: 'task_reminder',
+    subject: `המשימות שלך לכנס · ${tasks.length} פתוחות${lateCount ? ` (${lateCount} באיחור)` : ''}`,
+    html: layout({
+      heading: 'המשימות הפתוחות שלך 📋',
+      bodyHtml:
+        p(greet) +
+        p(`לקראת הכנס ב-20.10, אלה המשימות שעדיין פתוחות או בתהליך אצלך (${tasks.length}). סיימת משימה? אפשר לסמן אותה במערכת.`) +
+        `<tr><td style="padding:4px 0 8px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+                 style="background:${BRAND.cream};border-radius:12px;">${rows}</table>
+        </td></tr>`,
+      ctas: [{ href: `${SITE_URL}/admin/tasks`, label: 'פתיחת המשימות במערכת' }],
+    }),
+    text:
+      `${greet}\n\nהמשימות הפתוחות שלך לקראת הכנס (${tasks.length}):\n` +
+      tasks
+        .map((t) => `- ${t.title}${t.due_date || t.due_date_text ? ` · ${t.due_date ? fmt(t.due_date) : t.due_date_text}` : ''}`)
+        .join('\n') +
+      `\n\n${SITE_URL}/admin/tasks`,
+  };
+}

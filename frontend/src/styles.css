@@ -1897,3 +1897,12 @@ table.grid tr.row-approved td.col-org {
   .cue-notes { font-size: 15px; }
   .cue-q, .cue-notes { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
+
+/* Tasks: "send open tasks by email" panel. */
+.notify-panel {
+  background: #fff; border: 1px solid #eadcd1; border-radius: var(--radius-sm);
+  padding: 12px 16px; margin: 0 0 14px; max-width: 720px;
+}
+.notify-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+.notify-list { margin: 0 0 10px; padding-inline-start: 18px; line-height: 1.8; }
+.notify-warn { color: #a3541a; font-size: 14px; margin: 0 0 10px; }

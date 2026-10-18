@@ -27,6 +27,7 @@ export default function Tasks() {
   const [view, setView] = useState('table'); // kanban | table
   const [ownerFilter, setOwnerFilter] = useState('');
   const [hideDone, setHideDone] = useState(false); // filter out completed tasks
+  const [showNotify, setShowNotify] = useState(false);
   const [editing, setEditing] = useState(null); // task or {} for new
   const [toast, setToast] = useState('');
 
@@ -107,10 +108,19 @@ export default function Tasks() {
         >
           טבלה
         </button>
+        <button
+          className="btn btn-sm btn-ghost"
+          onClick={() => setShowNotify(true)}
+          title="שליחת מייל לכל אחראי עם המשימות הפתוחות והמשימות בתהליך שלו"
+        >
+          📧 שליחת משימות במייל
+        </button>
         <button className="btn btn-sm btn-primary" onClick={() => setEditing({})}>
           + משימה
         </button>
       </div>
+
+      {showNotify && <NotifyPanel onClose={() => setShowNotify(false)} showToast={showToast} />}
 
       {loading ? (
         <div className="loading">טוען…</div>
@@ -315,6 +325,86 @@ function TaskModal({ task, onClose, onSaved }) {
           </button>
         </div>
       </div>
+    </div>
+  );
+}
+
+// Preview + confirm panel for emailing each owner their open / in-progress tasks.
+function NotifyPanel({ onClose, showToast }) {
+  const [preview, setPreview] = useState(null);
+  const [sending, setSending] = useState(false);
+  const [result, setResult] = useState(null);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    api
+      .get('/api/tasks/reminders')
+      .then(setPreview)
+      .catch(() => setError('לא הצלחנו לטעון את רשימת הנמענים.'));
+  }, []);
+
+  async function send() {
+    setSending(true);
+    try {
+      const res = await api.post('/api/tasks/reminders');
+      setResult(res);
+      const ok = res.results.filter((r) => r.sent).length;
+      showToast(`נשלחו ${ok} מיילים`);
+    } catch {
+      setError('השליחה נכשלה. נסו שוב.');
+    } finally {
+      setSending(false);
+    }
+  }
+
+  const withEmail = preview ? preview.people.filter((p) => p.email) : [];
+  const noEmail = preview ? preview.people.filter((p) => !p.email) : [];
+
+  return (
+    <div className="notify-panel">
+      <div className="notify-head">
+        <b>שליחת המשימות הפתוחות לאחראים</b>
+        <button className="btn btn-sm btn-ghost" onClick={onClose}>
+          סגירה
+        </button>
+      </div>
+      {error && <div className="form-error">{error}</div>}
+      {!preview && !error && <p className="muted">טוען…</p>}
+      {preview && !result && (
+        <>
+          <p className="muted" style={{ margin: '0 0 8px' }}>
+            כל אחראי יקבל מייל אחד עם המשימות הפתוחות והמשימות בתהליך שלו. משימה עם כמה אחראים נשלחת לכל אחד מהם.
+          </p>
+          <ul className="notify-list">
+            {withEmail.map((p) => (
+              <li key={p.name}>
+                <b>{p.name}</b> · {p.count} משימות · <span className="muted">{p.email}</span>
+              </li>
+            ))}
+          </ul>
+          {noEmail.length > 0 && (
+            <p className="notify-warn">
+              ללא כתובת מייל, לא יקבלו: {noEmail.map((p) => `${p.name} (${p.count})`).join(', ')}
+            </p>
+          )}
+          {preview.unassigned.length > 0 && (
+            <p className="notify-warn">{preview.unassigned.length} משימות בלי אחראי מזוהה (למשל ״לשיבוץ״) לא יישלחו.</p>
+          )}
+          <button className="btn btn-sm btn-primary" disabled={sending || withEmail.length === 0} onClick={send}>
+            {sending ? 'שולח…' : `שליחה ל-${withEmail.length} אנשים`}
+          </button>
+        </>
+      )}
+      {result && (
+        <ul className="notify-list">
+          {result.results.map((r) => (
+            <li key={r.name}>
+              {r.sent ? '✓' : '✗'} <b>{r.name}</b> · {r.count} משימות
+              {!r.sent && <span className="notify-warn"> · {r.reason === 'no email' ? 'אין כתובת מייל' : 'השליחה נכשלה'}</span>}
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

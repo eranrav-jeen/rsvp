@@ -86,3 +86,12 @@ the voice agent's results for those calls in the same format as the validation
 import (col B phone, col C status). Only invitees still invited / no_response /
 maybe / not_invited change: מגיע/ה → `confirmed` (and validated), לא מגיע/ה →
 `declined`, אולי → `maybe`, טרם ענה/תה → unchanged; all matched get `agenda_call`.
+
+## Task reminder emails
+
+"📧 שליחת משימות במייל" on the tasks page (preview → confirm) → `GET/POST
+/api/tasks/reminders`, or `node scripts/send-task-reminders.js [--dry-run |
+--to=<addr>]`. Each team member gets one email with their open / in-progress
+tasks; owners are free text, matched to people in `backend/src/team.js` (a task
+with several owners goes to each). Missing emails: add them in `team.js` or via
+`TEAM_EMAILS="name=email;…"` in `backend/.env`. "לשיבוץ" tasks are not sent.

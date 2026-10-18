@@ -1,9 +1,30 @@
 import express from 'express';
 import { query } from '../db.js';
 import { asyncHandler } from '../middleware.js';
+import { planTaskReminders, sendTaskReminders } from '../taskReminders.js';
 
 const router = express.Router();
 const VALID = ['open', 'in_progress', 'done'];
+
+// GET /api/tasks/reminders — preview: who would get an email and how many tasks.
+router.get(
+  '/reminders',
+  asyncHandler(async (req, res) => {
+    const { people, unassigned } = await planTaskReminders();
+    res.json({
+      people: people.map((p) => ({ name: p.name, email: p.email, count: p.tasks.length })),
+      unassigned: unassigned.map((t) => ({ id: t.id, title: t.title, owner: t.owner })),
+    });
+  })
+);
+
+// POST /api/tasks/reminders — email each owner their open / in-progress tasks.
+router.post(
+  '/reminders',
+  asyncHandler(async (req, res) => {
+    res.json(await sendTaskReminders());
+  })
+);
 
 // GET /api/tasks
 router.get(
