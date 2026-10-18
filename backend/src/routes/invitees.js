@@ -489,11 +489,14 @@ function mapCallStatus(raw) {
     'לא מגיע/ה': 'declined',
     'אולי': 'unsure',
     'טרם ענה/תה': 'no_answer',
+    // Voice-invitation results use "interested / not interested".
+    'מעוניין/ת': 'confirmed',
+    'לא מעוניין/ת': 'declined',
   };
   if (exact[v]) return exact[v];
   // Tolerant fallbacks for minor wording differences.
-  if (/לא\s*מגיע/.test(v)) return 'declined';
-  if (/מגיע/.test(v)) return 'confirmed';
+  if (/לא\s*(מגיע|מעוני?י?[נן])/.test(v)) return 'declined';
+  if (/מגיע|מעוני?י?[נן]/.test(v)) return 'confirmed';
   if (/אולי|לא\s*בטוח/.test(v)) return 'unsure';
   if (/טרם|לא\s*ענ/.test(v)) return 'no_answer';
   return null;
