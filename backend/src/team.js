@@ -8,12 +8,14 @@ const TEAM = [
   { name: 'מיטל נועם', first: ['מיטל'], email: 'meital@jeen.ai' },
   { name: 'ענבר הרבסט', first: ['ענבר'], email: 'inbar@jeen.ai' },
   { name: 'עודד טהורי', first: ['עודד'], email: null },
-  { name: 'אייל כהן', first: ['אייל'], email: null },
-  { name: 'דן שקרק', first: ['דן'], email: null },
-  { name: 'דור לוי', first: ['דור'], email: null },
-  { name: 'לי איתן ברק', first: ['לי'], email: null },
-  { name: 'יעל', first: ['יעל', 'יעלי'], email: null },
-  { name: 'תומר דולב', first: ['תומר'], email: null },
+  { name: 'אייל כהן', first: ['אייל'], email: 'eyalc@jeen.ai' },
+  { name: 'דן שקרק', first: ['דן'], email: 'dan@jeen.ai' },
+  { name: 'דור לוי', first: ['דור'], email: 'dor@jeen.ai' },
+  { name: 'לי איתן ברק', first: ['לי'], email: 'lee@jeen.ai' },
+  { name: 'יעל גיל', first: ['יעל', 'יעלי'], email: 'yael@jeen.ai' },
+  { name: 'תומר דולב', first: ['תומר'], email: 'tomer@jeen.ai' },
+  { name: 'יונתן בוגנים', first: ['יונתן'], email: 'jonathan@jeen.ai' },
+  { name: 'גל הלואני', first: ['גל'], email: 'gal@jeen.ai' },
 ];
 
 function withEnvOverrides() {
