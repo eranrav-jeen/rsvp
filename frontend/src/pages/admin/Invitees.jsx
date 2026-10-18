@@ -407,7 +407,7 @@ export default function Invitees() {
             <a
               className="btn btn-sm btn-ghost"
               href="/api/invitees/voice-invite-export"
-              title="מוזמנים שלא הגיבו להזמנה (״הוזמנו״ / ״ללא מענה״) ויש להם טלפון, בפורמט שם | טלפון. ללא עובדי Jeen."
+              title="מוזמנים שלא הגיבו להזמנה (״הוזמנו״ / ״ללא מענה״) ויש להם טלפון, בפורמט שם | טלפון | תפקיד | ארגון. ללא עובדי Jeen."
             >
               ⬇ הזמנה קולית למיטאפ
             </a>

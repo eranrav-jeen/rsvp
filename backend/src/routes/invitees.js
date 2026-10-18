@@ -112,9 +112,13 @@ function firstName(full) {
   return words[0] || '';
 }
 
-// Send rows ({ full_name, phone }) as a call-list .xlsx download (first names only).
-function sendCallList(res, rows, asciiName, hebrewName) {
-  const buf = buildCallListXlsx(rows.map((r) => ({ name: firstName(r.full_name), phone: String(r.phone).trim() })));
+// Send rows ({ full_name, phone, … }) as a call-list .xlsx download (first names
+// only). `extra` adds columns after שם | טלפון (see callListXlsx.js).
+function sendCallList(res, rows, asciiName, hebrewName, extra = []) {
+  const buf = buildCallListXlsx(
+    rows.map((r) => ({ ...r, name: firstName(r.full_name), phone: String(r.phone).trim() })),
+    extra
+  );
   const day = new Date().toISOString().slice(0, 10);
   res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
   res.setHeader(
@@ -153,14 +157,17 @@ router.get(
   asyncHandler(async (req, res) => {
     const rows = (
       await query(
-        `SELECT full_name, phone FROM invitees
+        `SELECT full_name, phone, role, organization FROM invitees
           WHERE status IN ('invited', 'no_response')
             AND NULLIF(TRIM(phone), '') IS NOT NULL
             AND NOT ${IS_JEEN}
           ORDER BY full_name NULLS LAST, id`
       )
     ).rows;
-    sendCallList(res, rows, 'voice-invite', 'הזמנה-קולית');
+    sendCallList(res, rows, 'voice-invite', 'הזמנה-קולית', [
+      { header: 'תפקיד', key: 'role', width: 34 },
+      { header: 'ארגון', key: 'organization', width: 28 },
+    ]);
   })
 );
 

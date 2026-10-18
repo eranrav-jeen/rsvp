@@ -79,7 +79,7 @@ lists export first names only (leading titles like ד״ר / פרופ׳ are skipp
 
 "הזמנה קולית למיטאפ" (`GET /api/invitees/voice-invite-export`) uses the same
 template for invitees who haven't responded (status `invited` / `no_response`)
-and have a phone, excluding Jeen staff.
+and have a phone, excluding Jeen staff, with two extra columns: תפקיד | ארגון.
 
 "ייבוא אקסל אישורי הזמנה קוליים" (`POST /api/invitees/voice-invite-import`) reads
 the voice agent's results for those calls in the same format as the validation

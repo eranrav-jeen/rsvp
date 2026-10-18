@@ -30,18 +30,36 @@ const xmlEsc = (s) =>
 const cell = (ref, style, value) =>
   `<c r="${ref}" s="${style}" t="inlineStr"><is><t xml:space="preserve">${xmlEsc(value)}</t></is></c>`;
 
-function fillSheet(xml, rows) {
+// extra: optional columns after שם | טלפון, e.g. [{ header: 'תפקיד', key: 'role', width: 30 }].
+function fillSheet(xml, rows, extra = []) {
   const last = rows.length + 1;
+  const letters = 'CDEFGH';
+  const lastCol = extra.length ? letters[extra.length - 1] : 'B';
+  const span = `1:${2 + extra.length}`;
   const body = rows
     .map((r, i) => {
       const n = i + 2;
       // Style 0 = default (name), style 1 = text format "@" (phone keeps its leading 0).
-      return `<row r="${n}" spans="1:2">${cell(`A${n}`, 0, r.name)}${cell(`B${n}`, 1, r.phone)}</row>`;
+      const more = extra.map((c, j) => cell(`${letters[j]}${n}`, 0, r[c.key])).join('');
+      return `<row r="${n}" spans="${span}">${cell(`A${n}`, 0, r.name)}${cell(`B${n}`, 1, r.phone)}${more}</row>`;
     })
     .join('');
-  return xml
-    .replace(/<dimension ref="[^"]*"\/>/, `<dimension ref="A1:B${last}"/>`)
+  let out = xml
+    .replace(/<dimension ref="[^"]*"\/>/, `<dimension ref="A1:${lastCol}${last}"/>`)
     .replace('</row></sheetData>', `</row>${body}</sheetData>`);
+  if (extra.length) {
+    // Header cells in the template's header style (2 = bold + tint), plus column widths.
+    const heads = extra.map((c, j) => cell(`${letters[j]}1`, 2, c.header)).join('');
+    out = out
+      .replace(/(<row r="1"[^>]*?)spans="[^"]*"/, `$1spans="${span}"`)
+      .replace(/(<c r="B1"[^>]*>.*?<\/c>)/, `$1${heads}`)
+      .replace(
+        '</cols>',
+        extra.map((c, j) => `<col min="${3 + j}" max="${3 + j}" width="${c.width || 28}" customWidth="1"/>`).join('') +
+          '</cols>'
+      );
+  }
+  return out;
 }
 
 // zlib.crc32 exists from Node 22.2; fall back to a table-driven CRC-32.
@@ -108,15 +126,15 @@ function zip(entries) {
   return Buffer.concat([...chunks, cenBuf, end]);
 }
 
-// rows: [{ name, phone }]
-export function buildCallListXlsx(rows) {
+// rows: [{ name, phone, ...extra keys }]; extra: see fillSheet.
+export function buildCallListXlsx(rows, extra = []) {
   const files = listFiles(TEMPLATE_DIR);
   // [Content_Types].xml must come first in the archive.
   files.sort((a, b) => (a === '[Content_Types].xml' ? -1 : b === '[Content_Types].xml' ? 1 : a.localeCompare(b)));
   return zip(
     files.map((name) => {
       let data = fs.readFileSync(path.join(TEMPLATE_DIR, name));
-      if (name === 'xl/worksheets/sheet1.xml') data = Buffer.from(fillSheet(data.toString('utf8'), rows), 'utf8');
+      if (name === 'xl/worksheets/sheet1.xml') data = Buffer.from(fillSheet(data.toString('utf8'), rows, extra), 'utf8');
       return { name, data };
     })
   );
