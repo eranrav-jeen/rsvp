@@ -202,6 +202,36 @@ router.get(
   })
 );
 
+// GET /api/invitees/survey-results — survey responses as JSON for the admin
+// "תוצאות הסקר" dashboard. Returns one flat row per respondent (q1 single,
+// q2 array, q3 single); the frontend aggregates and charts them.
+router.get(
+  '/survey-results',
+  asyncHandler(async (req, res) => {
+    const rows = (
+      await query(
+        `SELECT submitted_at, full_name, organization, attendance, survey
+           FROM rsvp_submissions
+          WHERE survey IS NOT NULL
+          ORDER BY submitted_at DESC`
+      )
+    ).rows;
+    const responses = rows.map((r) => {
+      const s = r.survey || {};
+      return {
+        submitted_at: r.submitted_at,
+        full_name: r.full_name || '',
+        organization: r.organization || '',
+        attendance: r.attendance || '',
+        q1: s.q1 || '',
+        q2: Array.isArray(s.q2) ? s.q2 : [],
+        q3: s.q3 || '',
+      };
+    });
+    res.json({ count: responses.length, responses });
+  })
+);
+
 // POST /api/invitees — create one manually
 router.post(
   '/',

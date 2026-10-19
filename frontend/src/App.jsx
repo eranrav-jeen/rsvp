@@ -9,6 +9,7 @@ import Login from './pages/Login.jsx';
 import AdminLayout from './pages/admin/AdminLayout.jsx';
 import Invitees from './pages/admin/Invitees.jsx';
 import Tasks from './pages/admin/Tasks.jsx';
+import Survey from './pages/admin/Survey.jsx';
 import Marketing from './pages/admin/Marketing.jsx';
 import AdminAgenda from './pages/admin/Agenda.jsx';
 import AdminRegistration from './pages/admin/Registration.jsx';
@@ -64,6 +65,7 @@ export default function App() {
         <Route path="invitees" element={<Invitees />} />
         <Route path="registration" element={<AdminRegistration />} />
         <Route path="tasks" element={<Tasks />} />
+        <Route path="survey" element={<Survey />} />
         <Route path="cue-cards" element={<CueCards />} />
         <Route path="agenda" element={<AdminAgenda />} />
         <Route path="marketing" element={<Marketing />} />
