@@ -214,7 +214,11 @@ export default function Invitees() {
   async function updateInvitee(id, patch) {
     // Whether this change can move the dashboard numbers.
     const affectsCounts =
-      'status' in patch || 'plus_ones' in patch || 'validation_status' in patch || 'arrived' in patch;
+      'status' in patch ||
+      'plus_ones' in patch ||
+      'validation_status' in patch ||
+      'arrived' in patch ||
+      'arrived_guests' in patch;
     try {
       const res = await api.patch(`/api/invitees/${id}`, patch);
       if (res && res.invitee) applyRow(res.invitee);
@@ -330,11 +334,11 @@ export default function Invitees() {
 
       {s && (
         <div className="counters">
-          <div className="counter arrived" title="משתתפים שסומנו ככניסה לאירוע (כפתור 'כניסה' בשורה)">
-            <div className="num">{s.arrived}</div>
+          <div className="counter arrived" title="סך כל מי שנכנס בפועל לאירוע — משתתפים + המלווים שהגיעו איתם">
+            <div className="num">{s.arrived_total}</div>
             <div className="lbl">
               נכנסו לאירוע
-              {s.arrived_seats > s.arrived ? ` · ${s.arrived_seats} עם מלווים` : ''}
+              {s.arrived_guests > 0 ? ` · ${s.arrived} + ${s.arrived_guests} מלווים` : ''}
             </div>
           </div>
           <Counter cls="" num={s.total_invitees} lbl="מספר מוזמנים פוטנציאלי" />
@@ -889,14 +893,42 @@ function InviteeRow({ inv, onUpdate, onEdit, onDelete, onToast }) {
       </td>
       <td>
         <div className="row-actions">
-          <button
-            type="button"
-            className={`btn btn-sm checkin-btn ${inv.arrived_at ? 'btn-success' : 'btn-ghost'}`}
-            title={inv.arrived_at ? 'בטל/י סימון כניסה' : 'סימון כניסה לאירוע'}
-            onClick={() => onUpdate(inv.id, { arrived: !inv.arrived_at })}
-          >
-            {inv.arrived_at ? '✓ נכנס/ה' : 'כניסה'}
-          </button>
+          {inv.arrived_at ? (
+            <span className="checkin-wrap">
+              <button
+                type="button"
+                className="btn btn-sm btn-success checkin-btn"
+                title="בטל/י סימון כניסה"
+                onClick={() => onUpdate(inv.id, { arrived: false })}
+              >
+                ✓ נכנס/ה
+              </button>
+              <label className="checkin-guests" title="מספר המלווים שנכנסו בפועל">
+                +
+                <input
+                  type="number"
+                  min="0"
+                  max="50"
+                  value={inv.arrived_guests ?? inv.plus_ones ?? 0}
+                  onChange={(e) =>
+                    onUpdate(inv.id, {
+                      arrived_guests: Math.max(0, Math.min(50, parseInt(e.target.value || '0', 10) || 0)),
+                    })
+                  }
+                />
+                מלווים
+              </label>
+            </span>
+          ) : (
+            <button
+              type="button"
+              className="btn btn-sm btn-ghost checkin-btn"
+              title="סימון כניסה לאירוע"
+              onClick={() => onUpdate(inv.id, { arrived: true, arrived_guests: inv.plus_ones || 0 })}
+            >
+              כניסה
+            </button>
+          )}
           {inv.status === 'pending' && (
             <>
               <button

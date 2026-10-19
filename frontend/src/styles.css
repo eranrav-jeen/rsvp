@@ -705,10 +705,32 @@ button {
 .counter.arrived .lbl {
   color: #1f6b43;
 }
-/* Per-row check-in toggle. */
+/* Per-row check-in toggle + companions-who-arrived input. */
 .checkin-btn {
   min-width: 62px;
   font-weight: 700;
+}
+.checkin-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.checkin-guests {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 12px;
+  color: #1f6b43;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.checkin-guests input {
+  width: 42px;
+  padding: 3px 5px;
+  text-align: center;
+  border: 1px solid #a8d8bd;
+  border-radius: 6px;
+  font-size: 13px;
 }
 .counter.pending {
   border-top-color: var(--color-coral);

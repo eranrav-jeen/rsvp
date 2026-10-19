@@ -108,5 +108,8 @@ with several owners goes to each). Missing emails: add them in `team.js` or via
 
 Each invitee row has a "כניסה" button in the פעולות column that toggles
 `arrived_at` (migration 017) via `PATCH /api/invitees/:id` with `{arrived}`.
-The green "נכנסו לאירוע" tile at the top of the invitees dashboard shows the
-head count of checked-in participants (and `arrived_seats` incl. companions).
+When checked in it shows a "+N מלווים" input bound to `arrived_guests`
+(migration 018) — the companions who actually came (defaults to the registered
+`plus_ones`; summary falls back to `plus_ones` when unset). The green
+"נכנסו לאירוע" tile shows `arrived_total` (named participants + companions who
+entered), with `arrived` and `arrived_guests` in the sub-label.

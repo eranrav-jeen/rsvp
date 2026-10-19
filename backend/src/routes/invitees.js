@@ -380,6 +380,9 @@ router.patch(
                arrived_at = CASE WHEN $19::boolean IS TRUE THEN COALESCE(arrived_at, now())
                                  WHEN $19::boolean IS FALSE THEN NULL
                                  ELSE arrived_at END,
+               arrived_guests = CASE WHEN $19::boolean IS FALSE THEN NULL
+                                     WHEN $20::int IS NOT NULL THEN $20::int
+                                     ELSE arrived_guests END,
                updated_at = now()
          WHERE id = $13
          RETURNING *`,
@@ -403,6 +406,9 @@ router.patch(
           'validation_status' in body, // $17: whether to set validation_status
           'validation_status' in body ? body.validation_status || null : null, // $18
           typeof body.arrived === 'boolean' ? body.arrived : null, // $19: door check-in
+          Number.isFinite(Number(body.arrived_guests)) && body.arrived_guests !== null && body.arrived_guests !== ''
+            ? Math.max(0, Math.min(50, Math.trunc(Number(body.arrived_guests))))
+            : null, // $20: companions who actually entered
         ]
       );
       return { invitee: updated.rows[0], overCapacity, prevStatus: inv.status };
@@ -925,9 +931,11 @@ async function getSummary({ excludeJeen = false, excludeSpeakers = false } = {})
        -- past "not invited" (so confirmed/declined/etc. still count as invited).
        COUNT(*) FILTER (WHERE status <> 'not_invited'
                            OR outreach_email OR outreach_whatsapp OR outreach_call)::int AS invited_total,
-       -- Door check-in: people who physically entered the venue (and their seats).
+       -- Door check-in: named participants who physically entered, and the
+       -- companions who actually came with them (falls back to the registered
+       -- plus_ones when the door count wasn't specified).
        COUNT(*) FILTER (WHERE arrived_at IS NOT NULL)::int AS arrived,
-       COALESCE(SUM(plus_ones + 1) FILTER (WHERE arrived_at IS NOT NULL), 0)::int AS arrived_seats
+       COALESCE(SUM(COALESCE(arrived_guests, plus_ones)) FILTER (WHERE arrived_at IS NOT NULL), 0)::int AS arrived_guests_total
      FROM invitees ${where}`
   );
   const o = outreach.rows[0] || {
@@ -941,7 +949,7 @@ async function getSummary({ excludeJeen = false, excludeSpeakers = false } = {})
     with_phone: 0,
     invited_total: 0,
     arrived: 0,
-    arrived_seats: 0,
+    arrived_guests_total: 0,
   };
 
   // Attendance-validation phone calls, counted among the confirmed participants
@@ -1024,7 +1032,8 @@ async function getSummary({ excludeJeen = false, excludeSpeakers = false } = {})
       pending: v.pending_names || [],
     },
     arrived: o.arrived,
-    arrived_seats: o.arrived_seats,
+    arrived_guests: o.arrived_guests_total,
+    arrived_total: o.arrived + o.arrived_guests_total,
     confirmed_seats: confirmedSeats,
     max_attendees: maxAttendees,
   };
