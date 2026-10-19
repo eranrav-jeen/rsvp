@@ -693,6 +693,41 @@ button {
 .counter.confirmed {
   border-top-color: #2e8b57;
 }
+/* Page header with the door-mode toggle. */
+.page-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+/* Door mode: just the big "נכנסו לאירוע" number. */
+.door-hero {
+  background: linear-gradient(180deg, #eafaf0, #cfeedd);
+  border: 1px solid #a8d8bd;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+  text-align: center;
+  padding: 40px 20px 34px;
+  margin: 8px 0 18px;
+}
+.door-num {
+  font-size: clamp(72px, 18vw, 180px);
+  font-weight: 800;
+  line-height: 1;
+  color: #137a3e;
+}
+.door-lbl {
+  font-size: clamp(20px, 4vw, 30px);
+  font-weight: 700;
+  color: #1f6b43;
+  margin-top: 8px;
+}
+.door-sub {
+  font-size: 16px;
+  color: #3a7a56;
+  margin-top: 6px;
+}
 /* Door check-in headline tile — stands out at the top of the dashboard. */
 .counter.arrived {
   background: linear-gradient(180deg, #eafaf0, #d8f3e3);

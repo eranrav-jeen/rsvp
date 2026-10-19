@@ -105,6 +105,25 @@ export default function Invitees() {
   const [showBcc, setShowBcc] = useState(false);
   const [sort, setSort] = useState({ key: null, dir: 'asc' });
   const [showOutreach, setShowOutreach] = useState(false); // "פניות שבוצעו" collapsed by default
+  // Door mode: hide all dashboards and show only the "נכנסו לאירוע" number.
+  const [doorMode, setDoorMode] = useState(() => {
+    try {
+      return localStorage.getItem('jeen_door_mode') === '1';
+    } catch {
+      return false;
+    }
+  });
+  function toggleDoorMode() {
+    setDoorMode((v) => {
+      const next = !v;
+      try {
+        localStorage.setItem('jeen_door_mode', next ? '1' : '0');
+      } catch {
+        /* ignore */
+      }
+      return next;
+    });
+  }
   const fileRef = useRef();
   const valImportRef = useRef();
   const voiceImportRef = useRef();
@@ -330,9 +349,31 @@ export default function Invitees() {
 
   return (
     <div>
-      <h1>ניהול הזמנות</h1>
+      <div className="page-head">
+        <h1>ניהול הזמנות</h1>
+        <button
+          type="button"
+          className={`btn btn-sm ${doorMode ? 'btn-primary' : 'btn-ghost'}`}
+          onClick={toggleDoorMode}
+          title="הצגת מספר הנכנסים בלבד (ללא שאר הלוחות)"
+        >
+          {doorMode ? '↩ חזרה ללוח המלא' : '🚪 מצב כניסה'}
+        </button>
+      </div>
 
-      {s && (
+      {doorMode && s && (
+        <div className="door-hero">
+          <div className="door-num">{s.arrived_total}</div>
+          <div className="door-lbl">נכנסו לאירוע</div>
+          {s.arrived_guests > 0 && (
+            <div className="door-sub">
+              {s.arrived} משתתפים + {s.arrived_guests} מלווים
+            </div>
+          )}
+        </div>
+      )}
+
+      {!doorMode && s && (
         <div className="counters">
           <div className="counter arrived" title="סך כל מי שנכנס בפועל לאירוע — משתתפים + המלווים שהגיעו איתם">
             <div className="num">{s.arrived_total}</div>
@@ -365,7 +406,7 @@ export default function Invitees() {
         </div>
       )}
 
-      {s && (
+      {!doorMode && s && (
         <div className="outreach-stats validation-stats">
           <div className="outreach-stats-head">
             אימות הגעה
@@ -455,7 +496,7 @@ export default function Invitees() {
         </div>
       )}
 
-      {s && (
+      {!doorMode && s && (
         <div className="outreach-stats">
           <button
             type="button"
@@ -489,6 +530,7 @@ export default function Invitees() {
         </div>
       )}
 
+      {!doorMode && (
       <div className="exclude-bar">
         <span className="exclude-label">אל תכלול בספירה:</span>
         <label className="exclude-opt">
@@ -508,8 +550,9 @@ export default function Invitees() {
           <span>מרצים/ות</span>
         </label>
       </div>
+      )}
 
-      {settings && (
+      {!doorMode && settings && (
         <div className="settings-bar">
           <label className="switch-row">
             <input
@@ -597,7 +640,7 @@ export default function Invitees() {
         </a>
       </div>
 
-      <ByOrgSection orgs={byOrg} />
+      {!doorMode && <ByOrgSection orgs={byOrg} />}
 
       {loading ? (
         <div className="loading">טוען…</div>
