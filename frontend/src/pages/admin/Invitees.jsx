@@ -573,6 +573,13 @@ export default function Invitees() {
         <a className="btn btn-sm btn-primary" href="/api/invitees/export">
           ייצוא XLSX
         </a>
+        <a
+          className="btn btn-sm btn-success"
+          href="/api/invitees/export-approved"
+          title="ייצוא רק של המשתתפים המאושרים (אושרה השתתפות) והמרצים/ות"
+        >
+          ייצוא מאושרים
+        </a>
         <a className="btn btn-sm btn-ghost" href="/api/invitees/survey-export">
           ייצוא סקר
         </a>

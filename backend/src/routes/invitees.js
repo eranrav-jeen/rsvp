@@ -68,37 +68,68 @@ router.get(
   })
 );
 
-// GET /api/invitees/export — download the current list as XLSX
+const STATUS_HE = {
+  not_invited: 'טרם הוזמן',
+  invited: 'הוזמן',
+  pending: 'ממתין לאישור',
+  confirmed: 'אושר',
+  speaker: 'מרצה/ת',
+  maybe: 'אולי',
+  declined: 'לא יגיע',
+  waitlist: 'רשימת המתנה',
+  no_response: 'ללא מענה',
+};
+
+function inviteeExportRow(r) {
+  return {
+    'משרד': r.organization,
+    'שם': r.full_name || '',
+    'תפקיד': r.role || '',
+    'כתובת מייל': r.email || '',
+    'טלפון': r.phone || '',
+    'סטטוס': STATUS_HE[r.status] || r.status,
+    'מלווים': r.plus_ones,
+    'אחראי/ת הזמנה': r.invited_by || '',
+    'הזמנה במייל': r.outreach_email ? 'כן' : '',
+    'הזמנה בוואטסאפ': r.outreach_whatsapp ? 'כן' : '',
+    'הזמנה בטלפון': r.outreach_call ? 'כן' : '',
+    'סדר יום במייל': r.agenda_email ? 'כן' : '',
+    'סדר יום בוואטסאפ': r.agenda_whatsapp ? 'כן' : '',
+    'סדר יום בטלפון': r.agenda_call ? 'כן' : '',
+    'אימות טלפוני': VALIDATION_LABELS[r.validation_status] || '',
+    'מקור': r.source || '',
+    'הערות': r.notes || '',
+  };
+}
+
+function sendInviteeXlsx(res, rows, filename) {
+  const ws = XLSX.utils.json_to_sheet(rows.map(inviteeExportRow));
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'invitees');
+  const buf = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
+  res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+  res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+  res.send(buf);
+}
+
+// GET /api/invitees/export — download the full list as XLSX
 router.get(
   '/export',
   asyncHandler(async (req, res) => {
     const rows = await query('SELECT * FROM invitees ORDER BY organization, id');
-    const data = rows.rows.map((r) => ({
-      'משרד': r.organization,
-      'שם': r.full_name || '',
-      'תפקיד': r.role || '',
-      'כתובת מייל': r.email || '',
-      'טלפון': r.phone || '',
-      'סטטוס': r.status,
-      'מלווים': r.plus_ones,
-      'אחראי/ת הזמנה': r.invited_by || '',
-      'הזמנה במייל': r.outreach_email ? 'כן' : '',
-      'הזמנה בוואטסאפ': r.outreach_whatsapp ? 'כן' : '',
-      'הזמנה בטלפון': r.outreach_call ? 'כן' : '',
-      'סדר יום במייל': r.agenda_email ? 'כן' : '',
-      'סדר יום בוואטסאפ': r.agenda_whatsapp ? 'כן' : '',
-      'סדר יום בטלפון': r.agenda_call ? 'כן' : '',
-      'אימות טלפוני': VALIDATION_LABELS[r.validation_status] || '',
-      'מקור': r.source || '',
-      'הערות': r.notes || '',
-    }));
-    const ws = XLSX.utils.json_to_sheet(data);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'invitees');
-    const buf = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    res.setHeader('Content-Disposition', 'attachment; filename="invitees.xlsx"');
-    res.send(buf);
+    sendInviteeXlsx(res, rows.rows, 'invitees.xlsx');
+  })
+);
+
+// GET /api/invitees/export-approved — only the approved participants
+// (status 'confirmed' = אושר, plus speakers), i.e. everyone attending.
+router.get(
+  '/export-approved',
+  asyncHandler(async (req, res) => {
+    const rows = await query(
+      `SELECT * FROM invitees WHERE status IN ('confirmed', 'speaker') ORDER BY organization, id`
+    );
+    sendInviteeXlsx(res, rows.rows, 'approved-participants.xlsx');
   })
 );
 
