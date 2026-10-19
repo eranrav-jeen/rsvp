@@ -103,3 +103,10 @@ all matched get `agenda_call`. (The voice-invite results file says
 tasks; owners are free text, matched to people in `backend/src/team.js` (a task
 with several owners goes to each). Missing emails: add them in `team.js` or via
 `TEAM_EMAILS="name=email;…"` in `backend/.env`. "לשיבוץ" tasks are not sent.
+
+## Door check-in (event day)
+
+Each invitee row has a "כניסה" button in the פעולות column that toggles
+`arrived_at` (migration 017) via `PATCH /api/invitees/:id` with `{arrived}`.
+The green "נכנסו לאירוע" tile at the top of the invitees dashboard shows the
+head count of checked-in participants (and `arrived_seats` incl. companions).

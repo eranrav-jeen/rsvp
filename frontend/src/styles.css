@@ -693,6 +693,23 @@ button {
 .counter.confirmed {
   border-top-color: #2e8b57;
 }
+/* Door check-in headline tile — stands out at the top of the dashboard. */
+.counter.arrived {
+  background: linear-gradient(180deg, #eafaf0, #d8f3e3);
+  border-top: 3px solid #1f9d57;
+}
+.counter.arrived .num {
+  color: #157a40;
+  font-size: 30px;
+}
+.counter.arrived .lbl {
+  color: #1f6b43;
+}
+/* Per-row check-in toggle. */
+.checkin-btn {
+  min-width: 62px;
+  font-weight: 700;
+}
 .counter.pending {
   border-top-color: var(--color-coral);
 }

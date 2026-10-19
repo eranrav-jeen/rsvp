@@ -377,6 +377,9 @@ router.patch(
                agenda_call = COALESCE($16, agenda_call),
                validation_status = CASE WHEN $17::boolean THEN $18 ELSE validation_status END,
                validation_called_at = CASE WHEN $17::boolean THEN now() ELSE validation_called_at END,
+               arrived_at = CASE WHEN $19::boolean IS TRUE THEN COALESCE(arrived_at, now())
+                                 WHEN $19::boolean IS FALSE THEN NULL
+                                 ELSE arrived_at END,
                updated_at = now()
          WHERE id = $13
          RETURNING *`,
@@ -399,6 +402,7 @@ router.patch(
           typeof body.agenda_call === 'boolean' ? body.agenda_call : null,
           'validation_status' in body, // $17: whether to set validation_status
           'validation_status' in body ? body.validation_status || null : null, // $18
+          typeof body.arrived === 'boolean' ? body.arrived : null, // $19: door check-in
         ]
       );
       return { invitee: updated.rows[0], overCapacity, prevStatus: inv.status };
@@ -920,7 +924,10 @@ async function getSummary({ excludeJeen = false, excludeSpeakers = false } = {})
        -- Everyone who was invited at all: reached on any channel OR already moved
        -- past "not invited" (so confirmed/declined/etc. still count as invited).
        COUNT(*) FILTER (WHERE status <> 'not_invited'
-                           OR outreach_email OR outreach_whatsapp OR outreach_call)::int AS invited_total
+                           OR outreach_email OR outreach_whatsapp OR outreach_call)::int AS invited_total,
+       -- Door check-in: people who physically entered the venue (and their seats).
+       COUNT(*) FILTER (WHERE arrived_at IS NOT NULL)::int AS arrived,
+       COALESCE(SUM(plus_ones + 1) FILTER (WHERE arrived_at IS NOT NULL), 0)::int AS arrived_seats
      FROM invitees ${where}`
   );
   const o = outreach.rows[0] || {
@@ -933,6 +940,8 @@ async function getSummary({ excludeJeen = false, excludeSpeakers = false } = {})
     with_email: 0,
     with_phone: 0,
     invited_total: 0,
+    arrived: 0,
+    arrived_seats: 0,
   };
 
   // Attendance-validation phone calls, counted among the confirmed participants
@@ -1014,6 +1023,8 @@ async function getSummary({ excludeJeen = false, excludeSpeakers = false } = {})
       unsure: v.unsure_names || [],
       pending: v.pending_names || [],
     },
+    arrived: o.arrived,
+    arrived_seats: o.arrived_seats,
     confirmed_seats: confirmedSeats,
     max_attendees: maxAttendees,
   };

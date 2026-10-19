@@ -213,7 +213,8 @@ export default function Invitees() {
 
   async function updateInvitee(id, patch) {
     // Whether this change can move the dashboard numbers.
-    const affectsCounts = 'status' in patch || 'plus_ones' in patch || 'validation_status' in patch;
+    const affectsCounts =
+      'status' in patch || 'plus_ones' in patch || 'validation_status' in patch || 'arrived' in patch;
     try {
       const res = await api.patch(`/api/invitees/${id}`, patch);
       if (res && res.invitee) applyRow(res.invitee);
@@ -329,6 +330,13 @@ export default function Invitees() {
 
       {s && (
         <div className="counters">
+          <div className="counter arrived" title="משתתפים שסומנו ככניסה לאירוע (כפתור 'כניסה' בשורה)">
+            <div className="num">{s.arrived}</div>
+            <div className="lbl">
+              נכנסו לאירוע
+              {s.arrived_seats > s.arrived ? ` · ${s.arrived_seats} עם מלווים` : ''}
+            </div>
+          </div>
           <Counter cls="" num={s.total_invitees} lbl="מספר מוזמנים פוטנציאלי" />
           <Counter cls="" num={s.not_invited} lbl="טרם הוזמנו" />
           <Counter
@@ -881,6 +889,14 @@ function InviteeRow({ inv, onUpdate, onEdit, onDelete, onToast }) {
       </td>
       <td>
         <div className="row-actions">
+          <button
+            type="button"
+            className={`btn btn-sm checkin-btn ${inv.arrived_at ? 'btn-success' : 'btn-ghost'}`}
+            title={inv.arrived_at ? 'בטל/י סימון כניסה' : 'סימון כניסה לאירוע'}
+            onClick={() => onUpdate(inv.id, { arrived: !inv.arrived_at })}
+          >
+            {inv.arrived_at ? '✓ נכנס/ה' : 'כניסה'}
+          </button>
           {inv.status === 'pending' && (
             <>
               <button
