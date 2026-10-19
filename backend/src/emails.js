@@ -658,3 +658,70 @@ export function taskReminder({ name, tasks }) {
       `\n\n${SITE_URL}/admin/tasks`,
   };
 }
+
+// Arrival instructions for approved participants (sent the day before).
+const VENUE_ADDRESS = 'מגדל עזריאלי שרונה, דרך מנחם בגין 121, תל אביב';
+const WAZE_URL = `https://waze.com/ul?q=${encodeURIComponent('מגדל עזריאלי שרונה, מנחם בגין 121, תל אביב')}&navigate=yes`;
+const TRANSIT_URL = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
+  'Azrieli Sarona Tower, Menachem Begin Rd 121, Tel Aviv'
+)}&travelmode=transit`;
+
+export function arrivalInstructions({ name }) {
+  const greet = hello(name);
+  const when = whenPhrase(daysToEventIL());
+  const section = (title, inner) => `<tr><td style="padding:6px 0 12px;">
+      <div style="font-weight:800;color:${BRAND.maroon};font-size:16px;margin:0 2px 6px;">${title}</div>
+      <div style="background:${BRAND.cream};border-radius:12px;padding:12px 14px;font-size:15px;line-height:1.7;color:${BRAND.text};">${inner}</div>
+    </td></tr>`;
+  const idBox = `<tr><td style="padding:4px 0 14px;">
+      <div style="background:#fff4e5;border:2px solid ${BRAND.amber};border-radius:12px;padding:14px 16px;">
+        <div style="font-weight:800;font-size:17px;color:${BRAND.maroon};margin-bottom:4px;">🪪 חשוב: יש להביא תעודת זהות</div>
+        <div style="font-size:15px;line-height:1.7;color:${BRAND.text};">
+          בכניסה למגדל מציגים תעודת זהות ומקבלים כרטיס עם קוד QR לכניסה לאזור המעליות.
+          בלי תעודה מזהה לא ניתן יהיה לעלות לקומה 34.
+        </div>
+      </div>
+    </td></tr>`;
+  return {
+    kind: 'arrival',
+    subject: `הוראות הגעה לכנס ${when} · ${EVENT.title}`,
+    html: layout({
+      heading: 'הוראות הגעה 📍',
+      bodyHtml:
+        p(greet) +
+        p(`מחכים לראותך ${when} בכנס <b>${esc(EVENT.title)}</b>. ההתכנסות והכיבוד מ-09:00, ופותחים ב-10:00.`) +
+        idBox +
+        section(
+          '📍 כתובת',
+          `<b>${esc(VENUE_ADDRESS)}</b><br>משרדי Jeen.ai, קומה 34`
+        ) +
+        section(
+          '🚗 ברכב',
+          `יש חניה בתשלום לאורחים במגדל עזריאלי שרונה.<br>
+           <a href="${WAZE_URL}" target="_blank" style="color:${BRAND.coral};font-weight:700;">ניווט ב-Waze ←</a>`
+        ) +
+        section(
+          '🚆 בתחבורה ציבורית',
+          `כל אמצעי התחבורה הציבורית מגיעים לבניין:
+           <ul style="margin:6px 0 4px;padding-inline-start:20px;">
+             <li><b>רכבת קלה:</b> הקו האדום, תחנת יהודית</li>
+             <li><b>רכבת ישראל:</b> תחנת תל אביב – השלום</li>
+             <li><b>שאטלים:</b> משפירים, מראשון לציון ומשפיים</li>
+             <li><b>אוטובוסים:</b> קווים רבים עוצרים בדרך בגין ובקפלן, ליד המגדל</li>
+           </ul>
+           <a href="${TRANSIT_URL}" target="_blank" style="color:${BRAND.coral};font-weight:700;">מסלול מותאם מהמיקום שלך (Google Maps) ←</a>`
+        ),
+      ctas: [
+        { href: WAZE_URL, label: 'ניווט ב-Waze' },
+        { href: TRANSIT_URL, label: 'מסלול בתחבורה ציבורית' },
+      ],
+    }),
+    text:
+      `${greet}\n\nמחכים לראותך ${when} בכנס ${EVENT.title}. התכנסות מ-09:00, פתיחה ב-10:00.\n\n` +
+      `חשוב: יש להביא תעודת זהות. בכניסה למגדל מציגים תעודה ומקבלים כרטיס QR לכניסה לאזור המעליות.\n\n` +
+      `כתובת: ${VENUE_ADDRESS}, משרדי Jeen.ai, קומה 34\n\n` +
+      `ברכב: יש חניה בתשלום לאורחים במגדל. Waze: ${WAZE_URL}\n\n` +
+      `תחבורה ציבורית: רכבת קלה (הקו האדום, תחנת יהודית), רכבת ישראל (תל אביב – השלום), ` +
+      `שאטלים משפירים, מראשון לציון ומשפיים, ואוטובוסים רבים בדרך בגין ובקפלן.\nמסלול: ${TRANSIT_URL}${textFooter()}`,
+  };
+}

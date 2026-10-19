@@ -61,6 +61,12 @@ one button to the registration form (normal approval flow), plus the agenda.
 Tracked by `last_call_sent_at`. Both emails phrase the timing relative to the
 send day ("בעוד 5 ימים", "מחר", …).
 
+`--audience=arrival` sends the arrival instructions (bring ID for the QR
+elevator ticket, address/floor, paid guest parking + Waze, light rail / train /
+shuttles / buses + Google Maps transit link) to `confirmed` + `speaker`
+participants who didn't cancel on a validation call, excluding Jeen staff.
+Tracked by `arrival_sent_at` (migration 016).
+
 ## Cue cards (admin "כרטיסיות הנחיה")
 
 `/admin/cue-cards` — stage cue cards for the event MC (`deck = 'mc'`) and the

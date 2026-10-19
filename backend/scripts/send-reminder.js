@@ -13,12 +13,16 @@
 // invited but not registered (status invited / no_response) or who answered
 // "maybe", tracked by last_call_sent_at. Same --dry-run / --to= modes.
 //
+// --audience=arrival sends the arrival instructions (ID for the QR elevator
+// ticket, parking, transit) to approved participants and speakers who haven't
+// cancelled, excluding Jeen staff; tracked by arrival_sent_at.
+//
 // A test copy uses the invitee whose email matches --to (so its buttons work and
 // record that person's answer); otherwise the buttons point to a sample link.
 
 import { pool, query } from '../src/db.js';
 import { sendMail } from '../src/mailer.js';
-import { attendanceReminder, lastCallInvite } from '../src/emails.js';
+import { attendanceReminder, lastCallInvite, arrivalInstructions } from '../src/emails.js';
 import { getAgenda } from '../src/agenda.js';
 import { makeReplyToken } from '../src/replyToken.js';
 import { SITE_URL } from '../src/event.js';
@@ -29,13 +33,25 @@ const toArg = args.find((a) => a.startsWith('--to='));
 const testTo = toArg ? toArg.slice('--to='.length).trim() : '';
 const audArg = args.find((a) => a.startsWith('--audience='));
 const audience = audArg ? audArg.slice('--audience='.length) : 'reminder';
-if (!['reminder', 'last-call'].includes(audience)) {
-  console.error(`[reminder] unknown --audience=${audience} (use reminder | last-call)`);
+if (!['reminder', 'last-call', 'arrival'].includes(audience)) {
+  console.error(`[reminder] unknown --audience=${audience} (use reminder | last-call | arrival)`);
   process.exit(1);
 }
 const lastCall = audience === 'last-call';
-const SENT_COL = lastCall ? 'last_call_sent_at' : 'reminder_sent_at';
-const STATUSES = lastCall ? ['invited', 'no_response', 'maybe'] : ['confirmed'];
+const arrival = audience === 'arrival';
+const SENT_COL = { reminder: 'reminder_sent_at', 'last-call': 'last_call_sent_at', arrival: 'arrival_sent_at' }[audience];
+const STATUSES = { reminder: ['confirmed'], 'last-call': ['invited', 'no_response', 'maybe'], arrival: ['confirmed', 'speaker'] }[audience];
+const SKIP_JEEN = lastCall || arrival;
+
+function buildMessage(person, schedule) {
+  if (lastCall) return lastCallInvite({ name: person.full_name, status: person.status || 'invited', schedule });
+  if (arrival) return arrivalInstructions({ name: person.full_name });
+  return attendanceReminder({
+    name: person.full_name,
+    replyUrl: person.id ? replyUrlFor(person.id) : `${SITE_URL}/reply/sample`,
+    schedule,
+  });
+}
 const PAUSE_MS = 1500; // between sends, to stay well under mailbox rate limits
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -48,13 +64,7 @@ async function main() {
     const match = (
       await query('SELECT id, full_name, status FROM invitees WHERE LOWER(email) = LOWER($1) ORDER BY id LIMIT 1', [testTo])
     ).rows[0];
-    const msg = lastCall
-      ? lastCallInvite({ name: match ? match.full_name : '', status: 'invited', schedule })
-      : attendanceReminder({
-          name: match ? match.full_name : '',
-          replyUrl: match ? replyUrlFor(match.id) : `${SITE_URL}/reply/sample`,
-          schedule,
-        });
+    const msg = buildMessage(match ? { ...match, status: 'invited' } : { full_name: '' }, schedule);
     const res = await sendMail({ to: testTo, subject: `[בדיקה] ${msg.subject}`, html: msg.html, text: msg.text, kind: `${msg.kind}_test` });
     console.log(`[reminder] test → ${testTo}${match ? ` (invitee #${match.id})` : ' (sample links)'}: ${JSON.stringify(res)}`);
     return;
@@ -66,12 +76,14 @@ async function main() {
          FROM invitees
         WHERE status = ANY($1::text[])
           AND NULLIF(TRIM(email), '') IS NOT NULL
-          -- Jeen staff get the confirmed reminder too; the last call skips them.
+          -- Jeen staff get the confirmed reminder too; last call / arrival skip them.
           AND ($2::boolean IS FALSE OR (LOWER(email) NOT LIKE '%@jeen.ai'
                                         AND LOWER(COALESCE(organization, '')) <> 'jeen'))
+          -- Arrival instructions: not to people who cancelled on a validation call.
+          AND ($3::boolean IS FALSE OR validation_status IS DISTINCT FROM 'declined')
           AND ${SENT_COL} IS NULL
         ORDER BY id`,
-      [STATUSES, lastCall]
+      [STATUSES, SKIP_JEEN, arrival]
     )
   ).rows;
 
@@ -84,9 +96,7 @@ async function main() {
   let sent = 0;
   let failed = 0;
   for (const r of rows) {
-    const msg = lastCall
-      ? lastCallInvite({ name: r.full_name, status: r.status, schedule })
-      : attendanceReminder({ name: r.full_name, replyUrl: replyUrlFor(r.id), schedule });
+    const msg = buildMessage(r, schedule);
     const res = await sendMail({ to: r.email, subject: msg.subject, html: msg.html, text: msg.text, kind: msg.kind, inviteeId: r.id });
     if (res.sent) {
       await query(`UPDATE invitees SET ${SENT_COL} = now() WHERE id = $1`, [r.id]);
