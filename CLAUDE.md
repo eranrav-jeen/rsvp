@@ -113,3 +113,8 @@ When checked in it shows a "+N מלווים" input bound to `arrived_guests`
 `plus_ones`; summary falls back to `plus_ones` when unset). The green
 "נכנסו לאירוע" tile shows `arrived_total` (named participants + companions who
 entered), with `arrived` and `arrived_guests` in the sub-label.
+
+A "🚪 מצב כניסה" toggle (persisted in `localStorage` as `jeen_door_mode`) hides
+every dashboard and the management chrome — leaving a big "נכנסו לאירוע" hero
+number, the search + status filter, and a slimmed table (ארגון · שם · תפקיד ·
+טלפון · כניסה only). "↩ חזרה ללוח המלא" restores the full view.

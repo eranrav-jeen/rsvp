@@ -586,58 +586,62 @@ export default function Invitees() {
             </option>
           ))}
         </select>
-        <span className="spacer" />
-        <button className="btn btn-sm btn-success" onClick={() => setEditInvitee({})}>
-          + הוספת מוזמן
-        </button>
-        <button
-          className="btn btn-sm btn-ghost"
-          onClick={() => setShowMaillist(true)}
-          title={MAILLIST_IMPORT_HELP}
-        >
-          ייבוא מרשימת תפוצה
-        </button>
-        <button
-          className="btn btn-sm btn-ghost"
-          onClick={() => setShowVcard(true)}
-          title={VCARD_IMPORT_HELP}
-        >
-          ייבוא איש קשר (WhatsApp)
-        </button>
-        <button
-          className="btn btn-sm btn-ghost"
-          onClick={() => fileRef.current?.click()}
-          title={FILE_IMPORT_HELP}
-        >
-          ייבוא CSV/XLSX
-        </button>
-        <input
-          ref={fileRef}
-          type="file"
-          accept=".csv,.xlsx,.xls"
-          style={{ display: 'none' }}
-          onChange={handleImport}
-        />
-        <button
-          className="btn btn-sm btn-ghost"
-          onClick={openBcc}
-          title="העתקת כל כתובות המייל ברשימה הנוכחית, מופרדות בפסיקים, להדבקה בשדה Bcc"
-        >
-          מיילים ל-Bcc
-        </button>
-        <a className="btn btn-sm btn-primary" href="/api/invitees/export">
-          ייצוא XLSX
-        </a>
-        <a
-          className="btn btn-sm btn-success"
-          href="/api/invitees/export-approved"
-          title="ייצוא רק של המשתתפים המאושרים (אושרה השתתפות) והמרצים/ות"
-        >
-          ייצוא מאושרים
-        </a>
-        <a className="btn btn-sm btn-ghost" href="/api/invitees/survey-export">
-          ייצוא סקר
-        </a>
+        {!doorMode && (
+          <>
+            <span className="spacer" />
+            <button className="btn btn-sm btn-success" onClick={() => setEditInvitee({})}>
+              + הוספת מוזמן
+            </button>
+            <button
+              className="btn btn-sm btn-ghost"
+              onClick={() => setShowMaillist(true)}
+              title={MAILLIST_IMPORT_HELP}
+            >
+              ייבוא מרשימת תפוצה
+            </button>
+            <button
+              className="btn btn-sm btn-ghost"
+              onClick={() => setShowVcard(true)}
+              title={VCARD_IMPORT_HELP}
+            >
+              ייבוא איש קשר (WhatsApp)
+            </button>
+            <button
+              className="btn btn-sm btn-ghost"
+              onClick={() => fileRef.current?.click()}
+              title={FILE_IMPORT_HELP}
+            >
+              ייבוא CSV/XLSX
+            </button>
+            <input
+              ref={fileRef}
+              type="file"
+              accept=".csv,.xlsx,.xls"
+              style={{ display: 'none' }}
+              onChange={handleImport}
+            />
+            <button
+              className="btn btn-sm btn-ghost"
+              onClick={openBcc}
+              title="העתקת כל כתובות המייל ברשימה הנוכחית, מופרדות בפסיקים, להדבקה בשדה Bcc"
+            >
+              מיילים ל-Bcc
+            </button>
+            <a className="btn btn-sm btn-primary" href="/api/invitees/export">
+              ייצוא XLSX
+            </a>
+            <a
+              className="btn btn-sm btn-success"
+              href="/api/invitees/export-approved"
+              title="ייצוא רק של המשתתפים המאושרים (אושרה השתתפות) והמרצים/ות"
+            >
+              ייצוא מאושרים
+            </a>
+            <a className="btn btn-sm btn-ghost" href="/api/invitees/survey-export">
+              ייצוא סקר
+            </a>
+          </>
+        )}
       </div>
 
       {!doorMode && <ByOrgSection orgs={byOrg} />}
@@ -652,13 +656,13 @@ export default function Invitees() {
                 <Th label="ארגון" sortKey="organization" sort={sort} onSort={toggleSort} />
                 <Th label="שם" sortKey="full_name" sort={sort} onSort={toggleSort} />
                 <Th label="תפקיד" sortKey="role" sort={sort} onSort={toggleSort} />
-                <Th label="מייל" sortKey="email" sort={sort} onSort={toggleSort} />
+                {!doorMode && <Th label="מייל" sortKey="email" sort={sort} onSort={toggleSort} />}
                 <Th label="טלפון" sortKey="phone" sort={sort} onSort={toggleSort} />
-                <Th label="סטטוס" sortKey="status" sort={sort} onSort={toggleSort} />
-                <Th label="אחראי/ת הזמנה" sortKey="invited_by" sort={sort} onSort={toggleSort} />
-                <Th label="פניות" sortKey="outreach" sort={sort} onSort={toggleSort} />
-                <Th label="מקור" sortKey="source" sort={sort} onSort={toggleSort} />
-                <Th label="פעולות" sortKey="actions" sort={sort} onSort={toggleSort} />
+                {!doorMode && <Th label="סטטוס" sortKey="status" sort={sort} onSort={toggleSort} />}
+                {!doorMode && <Th label="אחראי/ת הזמנה" sortKey="invited_by" sort={sort} onSort={toggleSort} />}
+                {!doorMode && <Th label="פניות" sortKey="outreach" sort={sort} onSort={toggleSort} />}
+                {!doorMode && <Th label="מקור" sortKey="source" sort={sort} onSort={toggleSort} />}
+                <Th label={doorMode ? 'כניסה' : 'פעולות'} sortKey="actions" sort={sort} onSort={toggleSort} />
               </tr>
             </thead>
             <tbody>
@@ -666,6 +670,7 @@ export default function Invitees() {
                 <InviteeRow
                   key={inv.id}
                   inv={inv}
+                  doorMode={doorMode}
                   onUpdate={updateInvitee}
                   onEdit={(row) => setEditInvitee(row)}
                   onDelete={deleteInvitee}
@@ -674,7 +679,7 @@ export default function Invitees() {
               ))}
               {data.invitees.length === 0 && (
                 <tr>
-                  <td colSpan={10} className="center muted" style={{ padding: 30 }}>
+                  <td colSpan={doorMode ? 5 : 10} className="center muted" style={{ padding: 30 }}>
                     לא נמצאו מוזמנים
                   </td>
                 </tr>
@@ -756,7 +761,7 @@ function CopyBtn({ value, label, onToast }) {
   );
 }
 
-function InviteeRow({ inv, onUpdate, onEdit, onDelete, onToast }) {
+function InviteeRow({ inv, onUpdate, onEdit, onDelete, onToast, doorMode }) {
   const [phone, setPhone] = useState(inv.phone || '');
 
   // Change status from the dropdown. Moving someone to "אושר"/"לא יגיע" offers to
@@ -789,16 +794,18 @@ function InviteeRow({ inv, onUpdate, onEdit, onDelete, onToast }) {
       <td className="col-role" title={inv.role || ''}>
         {inv.role || <span className="muted">—</span>}
       </td>
-      <td className="col-email" dir="ltr" style={{ textAlign: 'left' }} title={inv.email || ''}>
-        {inv.email ? (
-          <span className="copy-cell">
-            <CopyBtn value={inv.email} label="המייל" onToast={onToast} />
-            <span className="copy-cell-text">{inv.email}</span>
-          </span>
-        ) : (
-          <span className="flag">⚑ חסר מייל</span>
-        )}
-      </td>
+      {!doorMode && (
+        <td className="col-email" dir="ltr" style={{ textAlign: 'left' }} title={inv.email || ''}>
+          {inv.email ? (
+            <span className="copy-cell">
+              <CopyBtn value={inv.email} label="המייל" onToast={onToast} />
+              <span className="copy-cell-text">{inv.email}</span>
+            </span>
+          ) : (
+            <span className="flag">⚑ חסר מייל</span>
+          )}
+        </td>
+      )}
       <td dir="ltr" style={{ textAlign: 'left' }}>
         <div className="phone-edit">
           <input
@@ -829,6 +836,8 @@ function InviteeRow({ inv, onUpdate, onEdit, onDelete, onToast }) {
           )}
         </div>
       </td>
+      {!doorMode && (
+        <>
       <td>
         <select value={inv.status} onChange={(e) => changeStatus(e.target.value)}>
           {STATUS_OPTIONS.map((o) => (
@@ -934,6 +943,8 @@ function InviteeRow({ inv, onUpdate, onEdit, onDelete, onToast }) {
       <td>
         <span className="muted" style={{ fontSize: 12 }}>{inv.source}</span>
       </td>
+        </>
+      )}
       <td>
         <div className="row-actions">
           {inv.arrived_at ? (
@@ -972,7 +983,7 @@ function InviteeRow({ inv, onUpdate, onEdit, onDelete, onToast }) {
               כניסה
             </button>
           )}
-          {inv.status === 'pending' && (
+          {!doorMode && inv.status === 'pending' && (
             <>
               <button
                 className="btn btn-sm btn-primary"
@@ -994,7 +1005,7 @@ function InviteeRow({ inv, onUpdate, onEdit, onDelete, onToast }) {
               </button>
             </>
           )}
-          {(inv.email || '').includes('@') && (
+          {!doorMode && (inv.email || '').includes('@') && (
             <a
               className="row-reminder"
               href={reminderMailto(inv)}
@@ -1004,18 +1015,22 @@ function InviteeRow({ inv, onUpdate, onEdit, onDelete, onToast }) {
               ✉
             </a>
           )}
-          <button className="btn btn-sm btn-ghost" onClick={() => onEdit(inv)}>
-            עריכה
-          </button>
-          <button
-            type="button"
-            className="row-del"
-            title="מחיקת המוזמן/ת"
-            aria-label="מחיקה"
-            onClick={() => onDelete(inv)}
-          >
-            🗑
-          </button>
+          {!doorMode && (
+            <button className="btn btn-sm btn-ghost" onClick={() => onEdit(inv)}>
+              עריכה
+            </button>
+          )}
+          {!doorMode && (
+            <button
+              type="button"
+              className="row-del"
+              title="מחיקת המוזמן/ת"
+              aria-label="מחיקה"
+              onClick={() => onDelete(inv)}
+            >
+              🗑
+            </button>
+          )}
         </div>
       </td>
     </tr>
