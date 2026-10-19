@@ -400,6 +400,25 @@ export function dailyDigest({ dateLabel, daysToEvent, stats, recommendations, ch
   };
 }
 
+// Sent to the organizing team when the live door count crosses a milestone.
+export function arrivalAlert({ threshold, total, arrived, guests }) {
+  const breakdown = guests > 0 ? `${arrived} משתתפים + ${guests} מלווים` : `${arrived} משתתפים`;
+  return {
+    kind: 'arrival_alert',
+    subject: `🎉 ${total} נכנסו לאירוע · עברנו את רף ${threshold}`,
+    html: layout({
+      heading: `🎉 ${total} נכנסו לאירוע`,
+      accent: '#1f9d57',
+      bodyHtml:
+        p(`עברנו הרגע את רף <b>${threshold}</b> הנכנסים לאירוע.`) +
+        p(`כרגע בפנים: <b>${total}</b> איש (${breakdown}).`) +
+        p('זהו עדכון אוטומטי לפי סימוני הכניסה בלוח הבקרה.'),
+      ctas: [{ href: `${SITE_URL}/admin/invitees`, label: 'פתיחת לוח הבקרה' }],
+    }),
+    text: `${total} נכנסו לאירוע — עברנו את רף ${threshold}.\nכרגע בפנים: ${total} (${breakdown}).\nלוח הבקרה: ${SITE_URL}/admin/invitees${textFooter()}`,
+  };
+}
+
 // The organizing team (daily digest + reply notices). DIGEST_RECIPIENTS overrides.
 export function teamRecipients() {
   return process.env.DIGEST_RECIPIENTS || 'meital@jeen.ai, matan@jeen.ai, inbar@jeen.ai, eran@jeen.ai';

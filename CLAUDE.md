@@ -114,6 +114,13 @@ When checked in it shows a "+N מלווים" input bound to `arrived_guests`
 "נכנסו לאירוע" tile shows `arrived_total` (named participants + companions who
 entered), with `arrived` and `arrived_guests` in the sub-label.
 
+Milestone emails: when the live entered count (`arrived_total`) crosses
+**75 / 95 / 105 / 115 / 125**, the organizing team (`teamRecipients()`) gets a
+one-time email (`arrivalAlert()`, kind `arrival_alert`). `checkArrivalThresholds()`
+runs after every check-in change (PATCH `{arrived|arrived_guests}`) and walk-in
+create; the `arrival_alerts` table (migration 019) makes each threshold send
+exactly once, ever — it does not re-fire if the count dips and rises again.
+
 A "🚪 מצב כניסה" toggle (persisted in `localStorage` as `jeen_door_mode`) hides
 every dashboard and most management chrome — leaving a big "נכנסו לאירוע" hero
 number, the search + status filter, the "+ משתתף/ת חדש/ה" button, and a slimmed

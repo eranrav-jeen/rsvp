@@ -6,7 +6,7 @@ import { query, withTransaction } from '../db.js';
 import { lockAndCount, decideStatus } from '../capacity.js';
 import { asyncHandler } from '../middleware.js';
 import { sendMail } from '../mailer.js';
-import { participationApproved, participationDeclined } from '../emails.js';
+import { participationApproved, participationDeclined, arrivalAlert, teamRecipients } from '../emails.js';
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
@@ -289,9 +289,44 @@ router.post(
         arrived === true ? new Date() : null,
       ]
     );
+    if (arrived === true) checkArrivalThresholds(); // walk-in may cross a milestone
     res.status(201).json({ invitee: result.rows[0] });
   })
 );
+
+// Door-count milestones that email the organizing team (once each, ever).
+const ARRIVAL_THRESHOLDS = [75, 95, 105, 115, 125];
+
+// Recompute the live entered count (named participants + companions who came)
+// and email the team for any milestone newly crossed. Fire-and-forget; the
+// arrival_alerts table makes each threshold send exactly once.
+async function checkArrivalThresholds() {
+  try {
+    const row = (
+      await query(
+        `SELECT COUNT(*) FILTER (WHERE arrived_at IS NOT NULL)::int AS arrived,
+                COALESCE(SUM(COALESCE(arrived_guests, plus_ones)) FILTER (WHERE arrived_at IS NOT NULL), 0)::int AS guests
+           FROM invitees`
+      )
+    ).rows[0];
+    const total = row.arrived + row.guests;
+    for (const t of ARRIVAL_THRESHOLDS) {
+      if (total < t) continue;
+      const ins = await query(
+        'INSERT INTO arrival_alerts (threshold) VALUES ($1) ON CONFLICT (threshold) DO NOTHING RETURNING threshold',
+        [t]
+      );
+      if (ins.rowCount > 0) {
+        const msg = arrivalAlert({ threshold: t, total, arrived: row.arrived, guests: row.guests });
+        sendMail({ to: teamRecipients(), subject: msg.subject, html: msg.html, text: msg.text, kind: msg.kind }).catch(
+          (e) => console.error('[arrival-alert] email error:', e.message)
+        );
+      }
+    }
+  } catch (e) {
+    console.error('[arrival-alert] check error:', e.message);
+  }
+}
 
 // Send an approval/decline email when an admin moves an invitee into a new
 // status. Only fires on a genuine transition, and only to invitees with an
@@ -430,6 +465,8 @@ router.patch(
     // abroad — is silent and never sends the rejection notice.
     // Fire-and-forget: never blocks or fails the admin action.
     if (body.notify === true) maybeSendStatusEmail(result.prevStatus, result.invitee);
+    // Live door count may have risen — email the team on any new milestone.
+    if ('arrived' in body || 'arrived_guests' in body) checkArrivalThresholds();
 
     res.json({ invitee: result.invitee, overCapacity: result.overCapacity });
   })
