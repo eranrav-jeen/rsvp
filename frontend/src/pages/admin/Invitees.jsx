@@ -586,12 +586,16 @@ export default function Invitees() {
             </option>
           ))}
         </select>
+        <span className="spacer" />
+        <button
+          className="btn btn-sm btn-success"
+          onClick={() => setEditInvitee({})}
+          title={doorMode ? 'הוספת משתתף/ת שהגיע/ה ואינו/ה ברשימה — ייכנס/תיכנס אוטומטית' : undefined}
+        >
+          {doorMode ? '+ משתתף/ת חדש/ה' : '+ הוספת מוזמן'}
+        </button>
         {!doorMode && (
           <>
-            <span className="spacer" />
-            <button className="btn btn-sm btn-success" onClick={() => setEditInvitee({})}>
-              + הוספת מוזמן
-            </button>
             <button
               className="btn btn-sm btn-ghost"
               onClick={() => setShowMaillist(true)}
@@ -692,6 +696,7 @@ export default function Invitees() {
       {editInvitee && (
         <InviteeModal
           invitee={editInvitee}
+          doorMode={doorMode}
           onClose={() => setEditInvitee(null)}
           onSaved={(msg) => {
             setEditInvitee(null);
@@ -1037,15 +1042,17 @@ function InviteeRow({ inv, onUpdate, onEdit, onDelete, onToast, doorMode }) {
   );
 }
 
-function InviteeModal({ invitee, onClose, onSaved }) {
+function InviteeModal({ invitee, onClose, onSaved, doorMode }) {
   const isNew = !invitee || !invitee.id;
+  // A walk-in added at the door: default to confirmed and mark arrived on save.
+  const walkIn = isNew && doorMode;
   const [form, setForm] = useState({
     organization: invitee?.organization || '',
     full_name: invitee?.full_name || '',
     role: invitee?.role || '',
     email: invitee?.email || '',
     phone: invitee?.phone || '',
-    status: invitee?.status || 'not_invited',
+    status: invitee?.status || (walkIn ? 'confirmed' : 'not_invited'),
     plus_ones: invitee?.plus_ones ?? 0,
     invited_by: invitee?.invited_by || '',
     notes: invitee?.notes || '',
@@ -1060,11 +1067,12 @@ function InviteeModal({ invitee, onClose, onSaved }) {
       return;
     }
     const payload = { ...form, plus_ones: Number(form.plus_ones) || 0 };
+    if (walkIn) payload.arrived = true; // count the walk-in as entered immediately
     setBusy(true);
     try {
       if (isNew) {
         await api.post('/api/invitees', payload);
-        onSaved('מוזמן נוסף');
+        onSaved(walkIn ? 'משתתף/ת נוסף/ה וסומן/ה ככניסה' : 'מוזמן נוסף');
       } else {
         try {
           await api.patch(`/api/invitees/${invitee.id}`, payload);
@@ -1090,7 +1098,12 @@ function InviteeModal({ invitee, onClose, onSaved }) {
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <h3>{isNew ? 'הוספת מוזמן' : 'עריכת מוזמן'}</h3>
+        <h3>{walkIn ? 'הוספת משתתף/ת בכניסה' : isNew ? 'הוספת מוזמן' : 'עריכת מוזמן'}</h3>
+        {walkIn && (
+          <p className="muted" style={{ fontSize: 13, marginTop: 0 }}>
+            המשתתף/ת ייווסף/תיווסף כ"אושר" ויסומן/תסומן ככניסה לאירוע מיידית.
+          </p>
+        )}
         {err && <div className="form-error">{err}</div>}
         <div className="field">
           <label>ארגון *</label>

@@ -115,6 +115,9 @@ When checked in it shows a "+N מלווים" input bound to `arrived_guests`
 entered), with `arrived` and `arrived_guests` in the sub-label.
 
 A "🚪 מצב כניסה" toggle (persisted in `localStorage` as `jeen_door_mode`) hides
-every dashboard and the management chrome — leaving a big "נכנסו לאירוע" hero
-number, the search + status filter, and a slimmed table (ארגון · שם · תפקיד ·
-טלפון · כניסה only). "↩ חזרה ללוח המלא" restores the full view.
+every dashboard and most management chrome — leaving a big "נכנסו לאירוע" hero
+number, the search + status filter, the "+ משתתף/ת חדש/ה" button, and a slimmed
+table (ארגון · שם · תפקיד · טלפון · כניסה only). "↩ חזרה ללוח המלא" restores the
+full view. Adding an invitee in door mode is a walk-in: the modal defaults to
+`confirmed` and posts `arrived:true` (POST `/api/invitees` sets `arrived_at`),
+so they count immediately.

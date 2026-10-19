@@ -267,15 +267,15 @@ router.get(
 router.post(
   '/',
   asyncHandler(async (req, res) => {
-    const { organization, full_name, role, email, phone, status, plus_ones, notes, invited_by } =
+    const { organization, full_name, role, email, phone, status, plus_ones, notes, invited_by, arrived } =
       req.body || {};
     if (!organization || !String(organization).trim()) {
       return res.status(400).json({ error: 'organization is required' });
     }
     const st = VALID_STATUSES.includes(status) ? status : 'not_invited';
     const result = await query(
-      `INSERT INTO invitees (organization, full_name, role, email, phone, status, plus_ones, notes, invited_by, source)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,'manual') RETURNING *`,
+      `INSERT INTO invitees (organization, full_name, role, email, phone, status, plus_ones, notes, invited_by, source, arrived_at)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,'manual',$10) RETURNING *`,
       [
         String(organization).trim(),
         full_name || null,
@@ -286,6 +286,7 @@ router.post(
         Number.parseInt(plus_ones, 10) || 0,
         notes || null,
         invited_by || null,
+        arrived === true ? new Date() : null,
       ]
     );
     res.status(201).json({ invitee: result.rows[0] });
