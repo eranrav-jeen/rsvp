@@ -751,3 +751,29 @@ export function arrivalInstructions({ name }) {
       `שאטלים משפירים, מראשון לציון ומשפיים, ואוטובוסים רבים בדרך בגין ובקפלן.\nמסלול: ${TRANSIT_URL}${textFooter()}`,
   };
 }
+
+// Post-event thank-you + personal link to the feedback survey (attendees only).
+export function postEventSurvey({ name, surveyUrl }) {
+  const greet = hello(name);
+  const btn = `<tr><td style="padding:8px 0 14px;">
+      <a href="${surveyUrl}" target="_blank"
+         style="display:block;background:${BRAND.coral};color:#fff;text-decoration:none;font-weight:800;
+                font-size:18px;padding:14px 16px;border-radius:12px;text-align:center;">למילוי הסקר (2 דקות) ←</a>
+    </td></tr>`;
+  return {
+    kind: 'post_survey',
+    subject: `תודה שהגעת! סקר קצר בעקבות ${EVENT.title}`,
+    html: layout({
+      heading: 'תודה שהגעת! 🙏',
+      bodyHtml:
+        p(greet) +
+        p(`תודה רבה שהשתתפת במיטאפ <b>${esc(EVENT.title)}</b>. היה לנו חשוב לשמוע ולהכיר, ואנחנו מקווים שיצאת עם רעיונות ותובנות להמשך.`) +
+        p('כדי שנוכל להמשיך וללוות אתכם בצורה הכי מדויקת, נשמח אם תקדישו כשתי דקות לשבע שאלות קצרות על השימוש ב-AI בארגון שלכם ועל הצעד הבא:') +
+        btn +
+        p('<span style="font-size:13px;color:#777;">הקישור אישי. אפשר לחזור אליו ולעדכן את התשובות בכל עת.</span>'),
+    }),
+    text:
+      `${greet}\n\nתודה רבה שהשתתפת במיטאפ ${EVENT.title}. נשמח אם תקדישו כשתי דקות לסקר קצר:\n${surveyUrl}\n\n` +
+      `הקישור אישי, ואפשר לחזור אליו ולעדכן את התשובות.${textFooter()}`,
+  };
+}

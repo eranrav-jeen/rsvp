@@ -36,3 +36,20 @@ export function checkSignedToken(purpose, token) {
   const got = Buffer.from(String(token || ''));
   return expected.length === got.length && crypto.timingSafeEqual(expected, got);
 }
+
+// Per-invitee links for other purposes (e.g. the post-event survey):
+// "<id>.<hmac(scope:id)>".
+export function makeScopedToken(scope, id) {
+  const sig = crypto.createHmac('sha256', secret()).update(`${scope}:${id}`).digest('base64url').slice(0, 22);
+  return `${id}.${sig}`;
+}
+
+export function verifyScopedToken(scope, token) {
+  const m = /^(\d+)\.([A-Za-z0-9_-]+)$/.exec(String(token || ''));
+  if (!m) return null;
+  const id = Number.parseInt(m[1], 10);
+  const expected = Buffer.from(makeScopedToken(scope, id).split('.')[1]);
+  const got = Buffer.from(m[2]);
+  if (expected.length !== got.length || !crypto.timingSafeEqual(expected, got)) return null;
+  return id;
+}

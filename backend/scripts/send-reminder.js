@@ -17,14 +17,18 @@
 // ticket, parking, transit) to approved participants and speakers who haven't
 // cancelled, excluding Jeen staff; tracked by arrival_sent_at.
 //
+// --audience=feedback sends the post-event thank-you + survey link to everyone
+// who was checked in at the door (arrived_at set), excluding Jeen staff;
+// tracked by post_survey_sent_at.
+//
 // A test copy uses the invitee whose email matches --to (so its buttons work and
 // record that person's answer); otherwise the buttons point to a sample link.
 
 import { pool, query } from '../src/db.js';
 import { sendMail } from '../src/mailer.js';
-import { attendanceReminder, lastCallInvite, arrivalInstructions } from '../src/emails.js';
+import { attendanceReminder, lastCallInvite, arrivalInstructions, postEventSurvey } from '../src/emails.js';
 import { getAgenda } from '../src/agenda.js';
-import { makeReplyToken } from '../src/replyToken.js';
+import { makeReplyToken, makeScopedToken } from '../src/replyToken.js';
 import { SITE_URL } from '../src/event.js';
 
 const args = process.argv.slice(2);
@@ -33,19 +37,37 @@ const toArg = args.find((a) => a.startsWith('--to='));
 const testTo = toArg ? toArg.slice('--to='.length).trim() : '';
 const audArg = args.find((a) => a.startsWith('--audience='));
 const audience = audArg ? audArg.slice('--audience='.length) : 'reminder';
-if (!['reminder', 'last-call', 'arrival'].includes(audience)) {
-  console.error(`[reminder] unknown --audience=${audience} (use reminder | last-call | arrival)`);
+if (!['reminder', 'last-call', 'arrival', 'feedback'].includes(audience)) {
+  console.error(`[reminder] unknown --audience=${audience} (use reminder | last-call | arrival | feedback)`);
   process.exit(1);
 }
 const lastCall = audience === 'last-call';
 const arrival = audience === 'arrival';
-const SENT_COL = { reminder: 'reminder_sent_at', 'last-call': 'last_call_sent_at', arrival: 'arrival_sent_at' }[audience];
-const STATUSES = { reminder: ['confirmed'], 'last-call': ['invited', 'no_response', 'maybe'], arrival: ['confirmed', 'speaker'] }[audience];
-const SKIP_JEEN = lastCall || arrival;
+const feedback = audience === 'feedback';
+const SENT_COL = {
+  reminder: 'reminder_sent_at',
+  'last-call': 'last_call_sent_at',
+  arrival: 'arrival_sent_at',
+  feedback: 'post_survey_sent_at',
+}[audience];
+// Feedback goes by door check-in (arrived_at), whatever the registration status.
+const STATUSES = {
+  reminder: ['confirmed'],
+  'last-call': ['invited', 'no_response', 'maybe'],
+  arrival: ['confirmed', 'speaker'],
+  feedback: ['not_invited', 'invited', 'pending', 'confirmed', 'speaker', 'maybe', 'declined', 'waitlist', 'no_response'],
+}[audience];
+const SKIP_JEEN = lastCall || arrival || feedback;
 
 function buildMessage(person, schedule) {
   if (lastCall) return lastCallInvite({ name: person.full_name, status: person.status || 'invited', schedule });
   if (arrival) return arrivalInstructions({ name: person.full_name });
+  if (feedback) {
+    return postEventSurvey({
+      name: person.full_name,
+      surveyUrl: person.id ? `${SITE_URL}/feedback/${makeScopedToken('feedback', person.id)}` : `${SITE_URL}/feedback/sample`,
+    });
+  }
   return attendanceReminder({
     name: person.full_name,
     replyUrl: person.id ? replyUrlFor(person.id) : `${SITE_URL}/reply/sample`,
@@ -81,9 +103,11 @@ async function main() {
                                         AND LOWER(COALESCE(organization, '')) <> 'jeen'))
           -- Arrival instructions: not to people who cancelled on a validation call.
           AND ($3::boolean IS FALSE OR validation_status IS DISTINCT FROM 'declined')
+          -- Feedback survey: only people checked in at the door.
+          AND ($4::boolean IS FALSE OR arrived_at IS NOT NULL)
           AND ${SENT_COL} IS NULL
         ORDER BY id`,
-      [STATUSES, SKIP_JEEN, arrival]
+      [STATUSES, SKIP_JEEN, arrival, feedback]
     )
   ).rows;
 

@@ -2,6 +2,7 @@ import express from 'express';
 import multer from 'multer';
 import * as XLSX from 'xlsx';
 import { buildCallListXlsx } from '../callListXlsx.js';
+import { getFeedbackSurvey } from '../feedbackSurvey.js';
 import { query, withTransaction } from '../db.js';
 import { lockAndCount, decideStatus } from '../capacity.js';
 import { asyncHandler } from '../middleware.js';
@@ -199,6 +200,72 @@ router.get(
       { header: 'תפקיד', key: 'role', width: 34 },
       { header: 'ארגון', key: 'organization', width: 28 },
     ]);
+  })
+);
+
+// GET /api/invitees/post-survey — post-event survey: counts + all responses.
+router.get(
+  '/post-survey',
+  asyncHandler(async (req, res) => {
+    const counts = (
+      await query(
+        `SELECT COUNT(*) FILTER (WHERE post_survey_sent_at IS NOT NULL)::int AS sent,
+                COUNT(*) FILTER (WHERE arrived_at IS NOT NULL)::int AS arrived
+           FROM invitees`
+      )
+    ).rows[0];
+    const responses = (
+      await query(
+        `SELECT r.answers, r.submitted_at, i.full_name, i.organization, i.role
+           FROM post_survey_responses r JOIN invitees i ON i.id = r.invitee_id
+          ORDER BY r.submitted_at DESC`
+      )
+    ).rows;
+    res.json({ ...counts, responded: responses.length, survey: getFeedbackSurvey(), responses });
+  })
+);
+
+// GET /api/invitees/post-survey-export — post-event survey responses as xlsx.
+router.get(
+  '/post-survey-export',
+  asyncHandler(async (req, res) => {
+    const survey = getFeedbackSurvey();
+    const rows = (
+      await query(
+        `SELECT r.answers, r.submitted_at, i.full_name, i.organization, i.role, i.email, i.phone
+           FROM post_survey_responses r JOIN invitees i ON i.id = r.invitee_id
+          ORDER BY r.submitted_at DESC`
+      )
+    ).rows;
+    const data = rows.map((r) => {
+      const a = r.answers || {};
+      const out = {
+        'תאריך': r.submitted_at ? new Date(r.submitted_at).toLocaleString('he-IL', { timeZone: 'Asia/Jerusalem' }) : '',
+        'שם': r.full_name || '',
+        'ארגון': r.organization || '',
+        'תפקיד': r.role || '',
+        'מייל': r.email || '',
+        'טלפון': r.phone || '',
+      };
+      for (const q of survey.questions) {
+        const v = a[q.key];
+        out[q.short] = Array.isArray(v) ? v.join(', ') : v || '';
+        if (q.other) out[`${q.short} — אחר`] = a[`${q.key}_other`] || '';
+      }
+      return out;
+    });
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'סקר משוב');
+    wb.Workbook = { Views: [{ RTL: true }] };
+    const buf = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
+    const day = new Date().toISOString().slice(0, 10);
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="feedback-${day}.xlsx"; filename*=UTF-8''${encodeURIComponent(`סקר-משוב-${day}.xlsx`)}`
+    );
+    res.send(buf);
   })
 );
 

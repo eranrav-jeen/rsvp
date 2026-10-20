@@ -5,6 +5,7 @@ import RsvpForm from './pages/RsvpForm.jsx';
 import Agenda from './pages/Agenda.jsx';
 import Reply from './pages/Reply.jsx';
 import CueShare from './pages/CueShare.jsx';
+import Feedback from './pages/Feedback.jsx';
 import Login from './pages/Login.jsx';
 import AdminLayout from './pages/admin/AdminLayout.jsx';
 import Invitees from './pages/admin/Invitees.jsx';
@@ -43,6 +44,7 @@ export default function App() {
       <Route path="/agenda" element={<Agenda />} />
       <Route path="/reply/:token" element={<Reply />} />
       <Route path="/cue/:deck/:token" element={<CueShare />} />
+      <Route path="/feedback/:token" element={<Feedback />} />
 
       {/* Admin login */}
       <Route

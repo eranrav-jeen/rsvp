@@ -2090,3 +2090,17 @@ table.grid tr.row-approved td.col-org {
   .sr-bar-row { grid-template-columns: 1fr; gap: 3px; }
   .sr-bar-val { text-align: right; }
 }
+
+/* Post-event feedback survey (/feedback/:token). */
+.fb-intro { margin: 0 0 14px; line-height: 1.6; }
+.fb-q { margin-bottom: 16px; }
+.fb-text, .fb-other {
+  width: 100%; font: inherit; font-size: 15px; border: 1.5px solid #e3d5c8; border-radius: 8px;
+  padding: 8px 10px; background: #fff; margin-top: 4px;
+}
+.fb-text:focus, .fb-other:focus { outline: none; border-color: var(--color-coral); }
+.fb-disabled { opacity: .45; }
+
+.sr-tabs { margin: 0 0 14px; }
+.sr-texts { margin: 0; padding-inline-start: 18px; line-height: 1.7; font-size: 14px; }
+.sr-others { margin: -6px 0 14px; }

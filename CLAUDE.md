@@ -128,3 +128,14 @@ table (ארגון · שם · תפקיד · טלפון · כניסה only). "↩ 
 full view. Adding an invitee in door mode is a walk-in: the modal defaults to
 `confirmed` and posts `arrived:true` (POST `/api/invitees` sets `arrived_at`),
 so they count immediately.
+
+## Post-event feedback survey
+
+Questions live in `frontend/src/feedbackSurvey.json` (shared with the backend via
+`backend/src/feedbackSurvey.js`). `node scripts/send-reminder.js
+--audience=feedback [--dry-run | --to=<addr>]` emails a thank-you + personal link
+(`/feedback/<token>`, signed with `makeScopedToken('feedback', id)`) to everyone
+checked in at the door (`arrived_at`), excluding Jeen staff; tracked by
+`post_survey_sent_at`. Answers: `post_survey_responses` (one per invitee,
+re-submitting updates). Results: admin "תוצאות הסקר" → "סקר משוב אחרי הכנס" tab,
+export `GET /api/invitees/post-survey-export`.

@@ -13,6 +13,7 @@ import { requireAdmin } from './middleware.js';
 import authRouter from './routes/auth.js';
 import rsvpRouter from './routes/rsvp.js';
 import replyRouter from './routes/reply.js';
+import feedbackRouter from './routes/feedback.js';
 import validationRouter from './routes/validation.js';
 import inviteesRouter from './routes/invitees.js';
 import tasksRouter from './routes/tasks.js';
@@ -83,6 +84,8 @@ app.use('/api/auth', authRouter);
 app.use('/api/rsvp', rsvpRouter);
 // Public: answers to the reminder email (signed per-invitee token in the URL).
 app.use('/api/reply', replyRouter);
+// Public: post-event survey (signed per-invitee link).
+app.use('/api/feedback', feedbackRouter);
 // Public: read-only cue cards behind a signed share link.
 app.use('/api/cue-share', cueShareRouter);
 
