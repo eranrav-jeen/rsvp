@@ -760,6 +760,20 @@ export function postEventSurvey({ name, surveyUrl }) {
          style="display:block;background:${BRAND.coral};color:#fff;text-decoration:none;font-weight:800;
                 font-size:18px;padding:14px 16px;border-radius:12px;text-align:center;">למילוי הסקר (2 דקות) ←</a>
     </td></tr>`;
+  // Call to action: get in touch with Jeen to hear about our offerings.
+  const contact = `<tr><td style="padding:6px 0 4px;">
+      <div style="border:1px solid #f0e2ec;border-radius:12px;padding:14px 16px;background:#faf6f9;">
+        <div style="font-weight:800;color:${BRAND.maroon};font-size:16px;margin-bottom:4px;">רוצים לשמוע עוד? דברו איתנו</div>
+        <div style="font-size:15px;color:${BRAND.text};line-height:1.7;">
+          נשמח לספר לכם על הפתרונות שלנו וללוות אתכם בצעד הבא. מוזמנים ליצור קשר:
+        </div>
+        <div style="margin-top:10px;font-size:15px;line-height:1.9;">
+          <b>תומר דולב</b> · Jeen.ai<br>
+          📞 <a href="tel:+972543177297" style="color:${BRAND.maroon};text-decoration:none;font-weight:700;">054-317-7297</a><br>
+          ✉️ <a href="mailto:tomer@jeen.ai" style="color:${BRAND.maroon};text-decoration:none;font-weight:700;">tomer@jeen.ai</a>
+        </div>
+      </div>
+    </td></tr>`;
   return {
     kind: 'post_survey',
     subject: `תודה שהגעת! סקר קצר בעקבות ${EVENT.title}`,
@@ -770,10 +784,13 @@ export function postEventSurvey({ name, surveyUrl }) {
         p(`תודה רבה שהשתתפת במיטאפ <b>${esc(EVENT.title)}</b>. היה לנו חשוב לשמוע ולהכיר, ואנחנו מקווים שיצאת עם רעיונות ותובנות להמשך.`) +
         p('כדי שנוכל להמשיך וללוות אתכם בצורה הכי מדויקת, נשמח אם תקדישו כשתי דקות לשבע שאלות קצרות על השימוש ב-AI בארגון שלכם ועל הצעד הבא:') +
         btn +
-        p('<span style="font-size:13px;color:#777;">הקישור אישי. אפשר לחזור אליו ולעדכן את התשובות בכל עת.</span>'),
+        p('<span style="font-size:13px;color:#777;">הקישור אישי. אפשר לחזור אליו ולעדכן את התשובות בכל עת.</span>') +
+        contact,
     }),
     text:
       `${greet}\n\nתודה רבה שהשתתפת במיטאפ ${EVENT.title}. נשמח אם תקדישו כשתי דקות לסקר קצר:\n${surveyUrl}\n\n` +
-      `הקישור אישי, ואפשר לחזור אליו ולעדכן את התשובות.${textFooter()}`,
+      `הקישור אישי, ואפשר לחזור אליו ולעדכן את התשובות.\n\n` +
+      `רוצים לשמוע עוד על הפתרונות שלנו וללוות אתכם בצעד הבא? מוזמנים ליצור קשר:\n` +
+      `תומר דולב · Jeen.ai · 054-317-7297 · tomer@jeen.ai${textFooter()}`,
   };
 }
