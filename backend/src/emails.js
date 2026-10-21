@@ -12,6 +12,10 @@ const BRAND = {
   text: '#2b2b2b',
 };
 
+// Email font stack: Rubik where the client supports web fonts (Apple Mail, iOS),
+// Calibri on Windows/Outlook, then safe fallbacks.
+const FONT = "'Rubik', Calibri, 'Segoe UI', Arial, sans-serif";
+
 function firstName(name) {
   const n = (name || '').trim();
   return n ? n.split(/\s+/)[0] : '';
@@ -50,23 +54,30 @@ function layout({ heading, accent, bodyHtml, ctas }) {
 
   return `<!doctype html>
 <html dir="rtl" lang="he">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:${BRAND.cream};">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${BRAND.cream};padding:24px 12px;">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <style>
+    body, table, td, div, p, h1, h2, a, span, strong { font-family:${FONT} !important; }
+  </style>
+</head>
+<body style="margin:0;padding:0;background:${BRAND.cream};font-family:${FONT};">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${BRAND.cream};padding:24px 12px;font-family:${FONT};">
     <tr><td align="center">
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
              style="max-width:560px;background:#fff;border-radius:16px;overflow:hidden;
-                    font-family:Arial,'Helvetica Neue',Helvetica,sans-serif;direction:rtl;text-align:right;">
+                    font-family:${FONT};direction:rtl;text-align:right;">
         <tr>
-          <td style="background:${BRAND.maroon};color:${BRAND.cream};padding:26px 28px;text-align:center;">
+          <td style="background:${BRAND.maroon};color:${BRAND.cream};padding:26px 28px;text-align:center;font-family:${FONT};">
             <div style="font-size:22px;font-weight:800;letter-spacing:.5px;color:#fff;">Jeen.ai</div>
             <div style="font-size:20px;font-weight:800;margin-top:10px;color:#fff;">${EVENT.title}</div>
             <div style="font-size:16px;font-weight:700;margin-top:2px;color:${BRAND.amber};">${EVENT.subtitle}</div>
           </td>
         </tr>
         <tr>
-          <td style="padding:26px 28px;color:${BRAND.text};font-size:16px;line-height:1.6;">
-            <h1 style="margin:0 0 12px;font-size:22px;color:${accent || BRAND.maroon};">${heading}</h1>
+          <td style="padding:26px 28px;color:${BRAND.text};font-size:16px;line-height:1.6;font-family:${FONT};">
+            <h1 style="margin:0 0 12px;font-size:22px;color:${accent || BRAND.maroon};font-family:${FONT};">${heading}</h1>
             <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
               ${bodyHtml}
               ${ctaHtml}
@@ -78,7 +89,7 @@ function layout({ heading, accent, bodyHtml, ctas }) {
           </td>
         </tr>
         <tr>
-          <td style="background:${BRAND.cream};padding:16px 28px;color:#7a7a7a;font-size:12px;text-align:center;">
+          <td style="background:${BRAND.cream};padding:16px 28px;color:#7a7a7a;font-size:12px;text-align:center;font-family:${FONT};">
             הודעה זו נשלחה אוטומטית ממערכת ההרשמה לכנס של Jeen.ai.
           </td>
         </tr>
