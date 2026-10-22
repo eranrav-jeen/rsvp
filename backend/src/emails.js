@@ -805,3 +805,26 @@ export function postEventSurvey({ name, surveyUrl }) {
       `תומר דולב · Jeen.ai · 054-317-7297 · tomer@jeen.ai${textFooter()}`,
   };
 }
+
+// Team notice: a participant asked (in the feedback survey) to be contacted.
+export function meetingRequestNotice({ full_name, organization, role, email, phone, answers }) {
+  const who = `${full_name || '—'}${organization ? ` · ${organization}` : ''}`;
+  const contact = [role, email, phone].filter(Boolean).join(' · ');
+  const a = answers || {};
+  const line = (label, v) => (v ? `<div><b>${label}:</b> ${esc(Array.isArray(v) ? v.join(', ') : v)}</div>` : '');
+  return {
+    kind: 'meeting_request',
+    subject: `בקשה לפגישה מסקר המשוב: ${full_name || '—'}${organization ? ` (${organization})` : ''}`,
+    html: layout({
+      heading: '📅 בקשה לפגישת המשך',
+      bodyHtml:
+        p(`<b>${esc(who)}</b>${contact ? `<br><span style="color:#666;font-size:14px;">${esc(contact)}</span>` : ''}`) +
+        p('סימן/ה בסקר המשוב שהוא/היא מעוניין/ת בפגישה של 30 דקות. הבטחנו ליצור קשר בימים הקרובים.') +
+        p(
+          `<div style="font-size:14px;line-height:1.7;">${line('שלב', a.q1)}${line('שימושים', a.q2)}${line('תהליך לשיפור', a.q3)}${line('חסמים', a.q4)}${line('סביבה', a.q5)}${line('הצעד הבא', a.q7)}</div>`
+        ),
+      ctas: [{ href: `${SITE_URL}/admin/survey`, label: 'תוצאות הסקר' }],
+    }),
+    text: `בקשה לפגישת המשך מסקר המשוב\n${who}\n${contact}\nהבטחנו ליצור קשר בימים הקרובים.`,
+  };
+}

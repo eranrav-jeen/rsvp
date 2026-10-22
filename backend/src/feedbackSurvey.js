@@ -35,5 +35,7 @@ export function cleanAnswers(raw) {
     }
     if (!(q.key in answers)) missing.push(q.key);
   }
+  // "Interested in a 30-min meeting?" toggle (yes / no).
+  if (survey.meeting && ['yes', 'no'].includes(src.meeting)) answers.meeting = src.meeting;
   return { answers, missing };
 }

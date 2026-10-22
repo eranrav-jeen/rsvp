@@ -139,3 +139,7 @@ checked in at the door (`arrived_at`), excluding Jeen staff; tracked by
 `post_survey_sent_at`. Answers: `post_survey_responses` (one per invitee,
 re-submitting updates). Results: admin "תוצאות הסקר" → "סקר משוב אחרי הכנס" tab,
 export `GET /api/invitees/post-survey-export`.
+The form ends with a "meeting" toggle (`survey.meeting` in the JSON:
+מעוניין/ת בפגישה / לא כרגע, stored as `answers.meeting = yes|no`). Choosing yes
+shows "ניצור איתך קשר בימים הקרובים" and emails the team (`meetingRequestNotice`,
+kind `meeting_request`) once per person; the results tab lists who's interested.

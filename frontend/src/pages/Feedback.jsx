@@ -68,7 +68,10 @@ export default function Feedback() {
     content = (
       <div className="reply-thanks">
         <h2>תודה רבה! 🙏</h2>
-        <p>התשובות נשמרו. ניצור קשר בהתאם לצעד הבא שבחרתם.</p>
+        <p>
+          התשובות נשמרו.
+          {answers.meeting === 'yes' ? ` ${SURVEY.meeting.yesMessage}` : ''}
+        </p>
         <button type="button" className="btn btn-ghost" onClick={() => setSaved(false)}>
           עדכון התשובות
         </button>
@@ -78,7 +81,7 @@ export default function Feedback() {
     content = (
       <form onSubmit={submit} noValidate>
         <p className="fb-intro">
-          {firstName ? `${firstName}, ` : ''}תודה שהגעת! שבע שאלות קצרות, כשתי דקות. התשובות ישמשו אותנו בלבד ולא
+          {firstName ? `${firstName}, ` : ''}תודה שהגעת! כמה שאלות קצרות, כשתי דקות. התשובות ישמשו אותנו בלבד ולא
           יפורסמו ברמת ארגון.
         </p>
         {SURVEY.questions.map((q, i) => (
@@ -127,15 +130,30 @@ export default function Feedback() {
             )}
           </div>
         ))}
-        <div className="fb-cta">
-          <div className="fb-cta-title">💬 רוצים להעמיק באחד הנושאים?</div>
-          <div>
-            נשמח להיפגש לשיחה של 30 דקות ולחשוב יחד על הצעד הבא בארגון שלכם.{' '}
-            <a href="https://jeen.ai/contact" target="_blank" rel="noreferrer">
-              לתיאום פגישה לחצו כאן ←
-            </a>
+        {SURVEY.meeting && (
+          <div className="fb-cta">
+            <div className="fb-cta-title">💬 {SURVEY.meeting.title}</div>
+            <div className="attend-toggle fb-toggle">
+              <button
+                type="button"
+                className={answers.meeting === 'yes' ? 'active-yes' : ''}
+                aria-pressed={answers.meeting === 'yes'}
+                onClick={() => setSingle('meeting', 'yes')}
+              >
+                {SURVEY.meeting.yes}
+              </button>
+              <button
+                type="button"
+                className={answers.meeting === 'no' ? 'active-no' : ''}
+                aria-pressed={answers.meeting === 'no'}
+                onClick={() => setSingle('meeting', 'no')}
+              >
+                {SURVEY.meeting.no}
+              </button>
+            </div>
+            {answers.meeting === 'yes' && <div className="fb-cta-ok">✅ {SURVEY.meeting.yesMessage}</div>}
           </div>
-        </div>
+        )}
         {error && <div className="form-error">{error}</div>}
         <button type="submit" className="btn btn-primary reply-submit" disabled={saving}>
           {saving ? 'שומר…' : 'שליחה'}

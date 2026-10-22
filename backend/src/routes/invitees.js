@@ -252,6 +252,7 @@ router.get(
         out[q.short] = Array.isArray(v) ? v.join(', ') : v || '';
         if (q.other) out[`${q.short} — אחר`] = a[`${q.key}_other`] || '';
       }
+      if (survey.meeting) out[survey.meeting.short] = a.meeting === 'yes' ? 'כן' : a.meeting === 'no' ? 'לא' : '';
       return out;
     });
     const ws = XLSX.utils.json_to_sheet(data);

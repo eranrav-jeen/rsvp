@@ -112,6 +112,27 @@ function PostSurveyResults() {
         </div>
       </div>
       {responses.length === 0 && <div className="muted" style={{ padding: 20 }}>עדיין אין תשובות לסקר המשוב.</div>}
+      {survey.meeting && responses.length > 0 && (() => {
+        const wants = responses.filter((r) => r.answers?.meeting === 'yes');
+        return (
+          <div className="sr-q sr-meeting">
+            <div className="sr-q-title">📅 מעוניינים בפגישת המשך: {wants.length}</div>
+            <div className="sr-q-sub">
+              {responses.filter((r) => r.answers?.meeting === 'no').length} סימנו ״לא כרגע״. הבטחנו ליצור קשר עם המעוניינים בימים הקרובים.
+            </div>
+            {wants.length > 0 && (
+              <ul className="sr-texts">
+                {wants.map((r, j) => (
+                  <li key={j}>
+                    <b>{r.full_name || '—'}</b> · {r.organization || '—'}
+                    {r.role ? ` · ${r.role}` : ''}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        );
+      })()}
       {responses.length > 0 &&
         survey.questions.map((q, i) => {
           if (q.type === 'text') {
