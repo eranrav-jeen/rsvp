@@ -936,7 +936,9 @@ export function missedEvent({ name, variant, surveyUrl, stats }) {
 
   return {
     kind: 'missed',
-    subject: `לא הגעתם? 4 דברים שכדאי לדעת מ״${EVENT.title}״`,
+    // Force RTL base direction (leading RLM) and isolate the Latin "AI" with RLMs
+    // so the subject doesn't flip in clients that render subjects left-to-right.
+    subject: `‏לא הגעתם? 4 דברים שכדאי לדעת מ״${EVENT.title.replace('AI', '‏AI‏')}״`,
     html: layout({
       postEvent: true,
       heading: 'אז מה היה לנו במיטאפ? 💡',
