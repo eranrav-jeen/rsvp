@@ -852,7 +852,7 @@ export function missedEvent({ name, variant, surveyUrl, stats }) {
   const title = `<b>${esc(EVENT.title)}</b>`;
   const opener =
     variant === 'noshow'
-      ? `התגעגענו אליך במיטאפ ${title} ב-20.10, אבל חשוב לנו שתהיו בעניינים. אז הנה התקציר 👇`
+      ? `חסרת לנו במיטאפ ${title} ב-20.10, אבל חשוב לנו שתהיו בעניינים. אז הנה התקציר 👇`
       : `לא נפגשנו הפעם במיטאפ ${title} ב-20.10, אבל חשוב לנו שתהיו בעניינים. אז הנה התקציר 👇`;
 
   // Short, scannable takeaways: a headline + one sentence each.
@@ -935,7 +935,7 @@ export function missedEvent({ name, variant, surveyUrl, stats }) {
     kind: 'missed',
     subject:
       variant === 'noshow'
-        ? `התגעגענו! הנה מה שהיה במיטאפ ״${EVENT.title}״`
+        ? `חסרת לנו! הנה מה שהיה במיטאפ ״${EVENT.title}״`
         : `מה היה במיטאפ ״${EVENT.title}״, ומה הלאה`,
     html: layout({
       postEvent: true,
