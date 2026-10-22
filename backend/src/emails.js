@@ -768,16 +768,9 @@ export function arrivalInstructions({ name }) {
   };
 }
 
-// Post-event thank-you + personal link to the feedback survey (attendees only).
-export function postEventSurvey({ name, surveyUrl }) {
-  const greet = hello(name);
-  const btn = `<tr><td style="padding:8px 0 14px;">
-      <a href="${surveyUrl}" target="_blank"
-         style="display:block;background:${BRAND.coral};color:#fff;text-decoration:none;font-weight:800;
-                font-size:18px;padding:14px 16px;border-radius:12px;text-align:center;">למילוי הסקר (2 דקות) ←</a>
-    </td></tr>`;
-  // Call to action: get in touch with Jeen to hear about our offerings.
-  const contact = `<tr><td style="padding:6px 0 4px;">
+// Call to action: get in touch with Jeen to hear about our offerings.
+function contactCta() {
+  return `<tr><td style="padding:6px 0 4px;">
       <div style="border:1px solid #f0e2ec;border-radius:12px;padding:14px 16px;background:#faf6f9;">
         <div style="font-weight:800;color:${BRAND.maroon};font-size:16px;margin-bottom:4px;">רוצים לשמוע עוד? דברו איתנו</div>
         <div style="font-size:15px;color:${BRAND.text};line-height:1.7;">
@@ -790,6 +783,21 @@ export function postEventSurvey({ name, surveyUrl }) {
         </div>
       </div>
     </td></tr>`;
+}
+
+const CONTACT_TEXT =
+  'רוצים לשמוע עוד על הפתרונות שלנו וללוות אתכם בצעד הבא? מוזמנים ליצור קשר:\n' +
+  'תומר דולב · Jeen.ai · 054-317-7297 · tomer@jeen.ai';
+
+// Post-event thank-you + personal link to the feedback survey (attendees only).
+export function postEventSurvey({ name, surveyUrl }) {
+  const greet = hello(name);
+  const btn = `<tr><td style="padding:8px 0 14px;">
+      <a href="${surveyUrl}" target="_blank"
+         style="display:block;background:${BRAND.coral};color:#fff;text-decoration:none;font-weight:800;
+                font-size:18px;padding:14px 16px;border-radius:12px;text-align:center;">למילוי הסקר (2 דקות) ←</a>
+    </td></tr>`;
+  const contact = contactCta();
   return {
     kind: 'post_survey',
     subject: `תודה שהגעת! סקר קצר בעקבות ${EVENT.title}`,
@@ -841,64 +849,87 @@ export function missedEvent({ name, variant, surveyUrl, stats }) {
   const greet = hello(name);
   const st = stats || {};
   const sv = st.survey || {};
-  const people = st.totalRounded ? `יותר מ-${st.totalRounded} משתתפים` : 'עשרות משתתפים';
-  const orgs = st.orgs ? `מ-${st.orgs} ארגונים, רובם משרדי ממשלה וגופים ציבוריים` : 'ממשרדי הממשלה והמגזר הציבורי';
+  const title = `<b>${esc(EVENT.title)}</b>`;
   const opener =
     variant === 'noshow'
-      ? `חבל שלא הצלחת להגיע למיטאפ <b>${esc(EVENT.title)}</b> ב-20.10. התגעגענו! ריכזנו בשבילך את עיקרי הדברים.`
-      : `ב-20.10 קיימנו את המיטאפ <b>${esc(EVENT.title)}</b>, ורצינו לשתף אותך במה שהיה.`;
+      ? `התגעגענו אליך במיטאפ ${title} ב-20.10, אבל חשוב לנו שתהיו בעניינים. אז הנה התקציר 👇`
+      : `לא נפגשנו הפעם במיטאפ ${title} ב-20.10, אבל חשוב לנו שתהיו בעניינים. אז הנה התקציר 👇`;
 
+  // Short, scannable takeaways: a headline + one sentence each.
   const insights = [
     {
+      icon: '🏥',
+      head: 'AI כבר עובד בשטח, ובהיקפים גדולים',
       who: 'קובי כץ, משנה למנכ״ל מכבי שירותי בריאות',
-      t: 'במכבי עשרות סוכני AI כבר עובדים בשטח: מסוכן ״מה מגיע לי״ שעונה על כ-1.2 מיליון פניות זכאות בשנה, דרך מענה לפניות הציבור ועד בקרת חיובי בתי חולים שחוסכת מיליונים. רבים מהם נולדו מעובדים שזיהו צורך, וחלחלו לארגון דרך רשת של מובילי ושגרירי AI וקטלוג סוכנים אחד.',
+      t: 'עשרות סוכני AI פועלים במכבי, ביניהם ״מה מגיע לי״ שעונה על כ-1.2 מיליון פניות זכאות בשנה. רבים מהם נולדו מעובדים שזיהו צורך.',
     },
     {
-      who: 'מירב פרץ בילינסקי, סמנכ״לית דאטה ובינה מלאכותית, מערך הדיגיטל הלאומי',
-      t: 'הטכנולוגיה כבר אינה האתגר המרכזי, ההטמעה והאימוץ הרחב הם. אסטרטגיית הדאטה וה-AI הממשלתית מכוונת לשירות פרואקטיבי ומותאם אישית, ולמדיניות שמבוססת על דאטה בזמן אמת, בדרך ל-2027.',
+      icon: '🏛️',
+      head: 'האתגר כבר לא בטכנולוגיה, אלא בהטמעה',
+      who: 'מירב פרץ בילינסקי, מערך הדיגיטל הלאומי',
+      t: 'אסטרטגיית ה-AI הממשלתית מכוונת לשירות פרואקטיבי ומותאם אישית ולמדיניות מבוססת דאטה, בדרך ל-2027.',
     },
     {
+      icon: '🛡️',
+      head: '״AI יורש משימות, לא אחריות״',
       who: 'מוטי קריספיל, Jeen.ai',
-      t: 'ה-AI מתפשט בארגון מהר יותר מהיכולת לראות ולנהל אותו. מי שרוצה להאציל ל-AI יותר צריך משילות שמאפשרת, לא רק מגינה: ״AI יורש משימות, לא אחריות״, ו״מדיניות היא לא בקרה״.',
+      t: 'ה-AI מתפשט בארגון מהר יותר מהיכולת לנהל אותו. כדי להאציל לו יותר, צריך משילות שמאפשרת ולא רק מגינה.',
     },
     {
-      who: 'הפאנל: מ-AI ניסיוני לארגון מבוסס AI',
-      t: 'מנהלי טכנולוגיה מהמגזר הציבורי דנו באיך עוברים מפיילוטים להטמעה ארגונית: איפה AI כבר משנה את העבודה, איפה ההחלטה חייבת להישאר אצל אדם, ומה הייתם עושים ב-90 הימים הראשונים אילו קיבלתם מחר תקציב להטמעת AI.',
+      icon: '🎤',
+      head: 'מפיילוט להטמעה ארגונית',
+      who: 'הפאנל: מנהלי טכנולוגיה מהמגזר הציבורי',
+      t: 'איפה AI כבר משנה את העבודה, איפה ההחלטה חייבת להישאר אצל אדם, ומה עושים ב-90 הימים הראשונים.',
     },
   ];
 
+  // Big-number tiles (attendance + pre-survey).
+  const tile = (num, label) =>
+    `<td width="33%" valign="top" style="padding:4px;">
+      <div style="background:#fff4e5;border:1.5px solid ${BRAND.amber};border-radius:12px;padding:12px 8px;text-align:center;">
+        <div style="font-size:28px;font-weight:800;color:${BRAND.coral};line-height:1.1;">${num}</div>
+        <div style="font-size:14px;color:${BRAND.text};line-height:1.45;margin-top:4px;">${label}</div>
+      </div>
+    </td>`;
+  const tilesRow = (cells) =>
+    `<tr><td style="padding:0 0 14px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>${cells.join('')}</tr></table></td></tr>`;
+  const sectionTitle = (t) =>
+    `<tr><td style="padding:10px 0 8px;font-weight:800;color:${BRAND.maroon};font-size:18px;">${t}</td></tr>`;
+
+  const crowd = [];
+  if (st.totalRounded) crowd.push([`<span style="font-size:17px;">למעלה מ-</span>${st.totalRounded}`, 'משתתפים']);
+  if (st.orgs) crowd.push([st.orgs, 'ארגונים, רובם משרדי ממשלה וגופים ציבוריים']);
   const facts = [];
   if (sv.n >= 10) {
-    facts.push(`רק <b>${sv.orgWide}%</b> מהמשיבים דיווחו על שימוש חוצה-ארגון ב-AI, ו-<b>${sv.early}%</b> עדיין בשלב ההתנסות או לפניו.`);
-    if (sv.productivity) facts.push(`<b>${sv.productivity}%</b> כבר רואים שיפור בפרודוקטיביות בזכות AI.`);
-    if (sv.budgetUp10) facts.push(`<b>${sv.budgetUp10}%</b> מצפים שתקציב ה-IT יגדל ביותר מ-10% בגלל הוצאות על AI.`);
+    facts.push([`${sv.orgWide}%`, 'דיווחו על שימוש ב-AI בכל הארגון']);
+    if (sv.productivity) facts.push([`${sv.productivity}%`, 'כבר רואים שיפור בפרודוקטיביות']);
+    if (sv.budgetUp10) facts.push([`${sv.budgetUp10}%`, 'צופים גידול של 10%+ בתקציב ה-IT בגלל AI']);
   }
 
   const insightsHtml = insights
     .map(
-      (x, i) => `<tr><td style="padding:10px 14px;${i ? 'border-top:1px solid #f1e6dc;' : ''}">
-        <div style="font-weight:800;color:${BRAND.maroon};font-size:14px;margin-bottom:3px;">${esc(x.who)}</div>
-        <div style="font-size:14.5px;line-height:1.65;color:${BRAND.text};">${esc(x.t)}</div>
+      (x) => `<tr><td style="padding:0 0 10px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+               style="background:${BRAND.cream};border-radius:12px;border-right:4px solid ${BRAND.coral};">
+          <tr><td style="padding:12px 14px;">
+            <div style="font-weight:800;color:${BRAND.maroon};font-size:17px;line-height:1.4;">${x.icon} ${esc(x.head)}</div>
+            <div style="font-size:13px;color:#7a6a72;margin:2px 0 6px;">${esc(x.who)}</div>
+            <div style="font-size:15.5px;line-height:1.7;color:${BRAND.text};">${esc(x.t)}</div>
+          </td></tr>
+        </table>
       </td></tr>`
     )
     .join('');
 
-  const factsHtml = facts.length
-    ? `<tr><td style="padding:6px 0 12px;">
-        <div style="font-weight:800;color:${BRAND.maroon};font-size:16px;margin:0 2px 6px;">📊 מהסקר המקדים (${sv.n} משיבים)</div>
-        <div style="background:#fff4e5;border:1.5px solid ${BRAND.amber};border-radius:12px;padding:10px 14px;">
-          <ul style="margin:0;padding-inline-start:18px;font-size:14.5px;line-height:1.75;color:${BRAND.text};">
-            ${facts.map((f) => `<li>${f}</li>`).join('')}
-          </ul>
-        </div>
-      </td></tr>`
-    : '';
-
-  const btn = `<tr><td style="padding:8px 0 10px;">
+  const btn = `<tr><td style="padding:4px 0 10px;">
       <a href="${surveyUrl}" target="_blank"
          style="display:block;background:${BRAND.coral};color:#fff;text-decoration:none;font-weight:800;
                 font-size:18px;padding:14px 16px;border-radius:12px;text-align:center;">2 דקות שיעזרו לנו לתכנן את המפגש הבא ←</a>
     </td></tr>`;
+
+  const big = (html) => `<tr><td style="padding:0 0 14px;font-size:16px;line-height:1.75;">${html}</td></tr>`;
+  const people = st.totalRounded ? `למעלה מ-${st.totalRounded} משתתפים` : 'עשרות משתתפים';
+  const orgs = st.orgs ? ` מ-${st.orgs} ארגונים` : '';
 
   return {
     kind: 'missed',
@@ -908,25 +939,24 @@ export function missedEvent({ name, variant, surveyUrl, stats }) {
         : `מה היה במיטאפ ״${EVENT.title}״, ומה הלאה`,
     html: layout({
       postEvent: true,
-      heading: variant === 'noshow' ? 'התגעגענו! 👋' : 'מה היה במיטאפ 🎤',
+      heading: variant === 'noshow' ? 'התקציר מהמיטאפ 👋' : 'מה היה במיטאפ 🎤',
       bodyHtml:
-        p(greet) +
-        p(opener) +
-        p(`<b>${people}</b> ${orgs}, הגיעו לבוקר של שיחה פתוחה על איך עוברים מהבטחה ליישום AI בסקייל.`) +
-        `<tr><td style="padding:6px 0 12px;">
-          <div style="font-weight:800;color:${BRAND.maroon};font-size:16px;margin:0 2px 6px;">💡 עיקרי הדברים</div>
-          <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
-                 style="background:${BRAND.cream};border-radius:12px;">${insightsHtml}</table>
-        </td></tr>` +
-        factsHtml +
-        p('אנחנו כבר מתכננים את המפגשים הבאים של הקהילה, ורוצים שיתאימו בדיוק למה שמעסיק אתכם. נשמח אם תקדישו שתי דקות לכמה שאלות קצרות:') +
+        big(greet) +
+        big(opener) +
+        (crowd.length ? tilesRow(crowd.map(([n, l]) => tile(n, l))) : '') +
+        sectionTitle('💡 4 דברים שכדאי לדעת') +
+        insightsHtml +
+        (facts.length ? sectionTitle(`📊 מהסקר המקדים (${sv.n} משיבים)`) + tilesRow(facts.map(([n, l]) => tile(n, l))) : '') +
+        big('אנחנו כבר מתכננים את המפגשים הבאים של הקהילה, ורוצים שיתאימו בדיוק למה שמעסיק אתכם. נשמח לכמה תשובות קצרות:') +
         btn +
-        p('<span style="font-size:13px;color:#777;">הקישור אישי. אפשר לחזור אליו ולעדכן את התשובות בכל עת.</span>'),
+        p('<span style="font-size:13px;color:#777;">הקישור אישי. אפשר לחזור אליו ולעדכן את התשובות בכל עת.</span>') +
+        contactCta(),
     }),
     text:
-      `${greet}\n\n${opener.replace(/<[^>]+>/g, '')}\n\n${people} ${orgs}, הגיעו למיטאפ.\n\nעיקרי הדברים:\n` +
-      insights.map((x) => `- ${x.who}: ${x.t}`).join('\n') +
-      (facts.length ? `\n\nמהסקר המקדים (${sv.n} משיבים):\n` + facts.map((f) => `- ${f.replace(/<[^>]+>/g, '')}`).join('\n') : '') +
-      `\n\nנשמח לשתי דקות שיעזרו לנו לתכנן את המפגש הבא:\n${surveyUrl}\n\n— צוות Jeen.ai`,
+      `${greet}\n\n${opener.replace(/<[^>]+>/g, '')}\n\n${people}${orgs}, רובם משרדי ממשלה וגופים ציבוריים.\n\n` +
+      `4 דברים שכדאי לדעת:\n` +
+      insights.map((x) => `- ${x.head} (${x.who}): ${x.t}`).join('\n') +
+      (facts.length ? `\n\nמהסקר המקדים (${sv.n} משיבים):\n` + facts.map(([n, l]) => `- ${n} ${l}`).join('\n') : '') +
+      `\n\nנשמח לשתי דקות שיעזרו לנו לתכנן את המפגש הבא:\n${surveyUrl}\n\n${CONTACT_TEXT}\n\n— צוות Jeen.ai`,
   };
 }
