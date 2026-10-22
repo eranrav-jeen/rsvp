@@ -212,13 +212,15 @@ router.get(
     const counts = (
       await query(
         `SELECT COUNT(*) FILTER (WHERE post_survey_sent_at IS NOT NULL)::int AS sent,
-                COUNT(*) FILTER (WHERE arrived_at IS NOT NULL)::int AS arrived
+                COUNT(*) FILTER (WHERE arrived_at IS NOT NULL)::int AS arrived,
+                COUNT(*) FILTER (WHERE missed_sent_at IS NOT NULL)::int AS missed_sent
            FROM invitees`
       )
     ).rows[0];
     const responses = (
       await query(
-        `SELECT r.answers, r.submitted_at, i.full_name, i.organization, i.role
+        `SELECT r.answers, r.submitted_at, i.full_name, i.organization, i.role,
+                (i.arrived_at IS NOT NULL) AS attended
            FROM post_survey_responses r JOIN invitees i ON i.id = r.invitee_id
           ORDER BY r.submitted_at DESC`
       )
@@ -252,7 +254,8 @@ router.get(
     const survey = getFeedbackSurvey();
     const rows = (
       await query(
-        `SELECT r.answers, r.submitted_at, i.full_name, i.organization, i.role, i.email, i.phone
+        `SELECT r.answers, r.submitted_at, i.full_name, i.organization, i.role, i.email, i.phone,
+                (i.arrived_at IS NOT NULL) AS attended
            FROM post_survey_responses r JOIN invitees i ON i.id = r.invitee_id
           ORDER BY r.submitted_at DESC`
       )
@@ -266,6 +269,7 @@ router.get(
         'תפקיד': r.role || '',
         'מייל': r.email || '',
         'טלפון': r.phone || '',
+        'השתתף/ה בכנס': r.attended ? 'כן' : 'לא',
       };
       for (const q of survey.questions) {
         const v = a[q.key];

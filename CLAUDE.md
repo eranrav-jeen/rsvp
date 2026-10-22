@@ -155,3 +155,17 @@ organizers (form answer yes, not a self-cancel; + how many got the rejection
 email, by org, with names), cancelled after approval (validation `declined`),
 said no in the form, other. Below: discussion topics with free-text notes, auto-saved per
 topic to `retro_notes` (migration 021, `PUT /api/retro/notes/:key`).
+
+## "What you missed" email (non-attendees)
+
+`node scripts/send-reminder.js --audience=missed [--dry-run | --to=<addr>]` emails
+people who didn't come (no `arrived_at`), excluding Jeen staff and requests the
+organizers rejected: approved no-shows (confirmed / speaker) get the "התגעגענו"
+version; invited / no_response / maybe / declined (self-cancelled or said no)
+get the "מה היה" version. Content (`missedEvent()` in `backend/src/emails.js`):
+four takeaways from the talks and panel (hard-coded), live attendance figures
+and pre-survey numbers from `backend/src/eventStats.js` (survey block only with
+≥10 answers), and a personal link to the same feedback survey
+(`/feedback/<token>`). For non-attendees the survey page shows a different intro
+and q7 wording (`titleAbsent`); results are marked attended / not attended.
+Tracked by `missed_sent_at` (migration 022).

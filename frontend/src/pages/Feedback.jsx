@@ -57,7 +57,12 @@ export default function Feedback() {
     }
   }
 
-  const firstName = info?.name ? info.name.trim().split(/\s+/)[0] : '';
+  const words = (info?.name || '').trim().split(/\s+/).filter(Boolean);
+  // Skip a leading title (ד״ר / פרופ׳ / עו״ד / Dr. …) so the greeting uses the first name.
+  while (words.length > 1 && /^(ד["״׳']?ר|דר["״׳'.]?|פרופ["״׳'.]?|עו["״׳']?ד|רו["״׳']?ח|מר|גב['׳.]?|dr\.?|prof\.?)$/i.test(words[0])) {
+    words.shift();
+  }
+  const firstName = words[0] || '';
 
   let content;
   if (loadError) {
@@ -81,13 +86,16 @@ export default function Feedback() {
     content = (
       <form onSubmit={submit} noValidate>
         <p className="fb-intro">
-          {firstName ? `${firstName}, ` : ''}תודה שהגעת! כמה שאלות קצרות, כשתי דקות. התשובות ישמשו אותנו בלבד ולא
-          יפורסמו ברמת ארגון.
+          {firstName ? `${firstName}, ` : ''}
+          {info.attended
+            ? 'תודה שהגעת! '
+            : 'חבל שלא נפגשנו הפעם. נשמח לשמוע מה מעסיק אתכם כדי לבנות את המפגשים הבאים של הקהילה. '}
+          כמה שאלות קצרות, כשתי דקות. התשובות ישמשו אותנו בלבד ולא יפורסמו ברמת ארגון.
         </p>
         {SURVEY.questions.map((q, i) => (
           <div className="survey-q fb-q" key={q.key}>
             <div className="survey-q-title">
-              {i + 1}. {q.title}
+              {i + 1}. {(!info.attended && q.titleAbsent) || q.title}
               {q.type === 'text' && <span className="muted"> (רשות)</span>}
             </div>
             {q.type === 'text' ? (

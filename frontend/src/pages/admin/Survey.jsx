@@ -86,7 +86,10 @@ function PostSurveyResults() {
   return (
     <>
       <div className="sr-top">
-        <span className="muted">נשלח למי שנכנס לאירוע (סומן בכניסה), עם קישור אישי.</span>
+        <span className="muted">
+          נשלח למי שנכנס לאירוע (סומן בכניסה), עם קישור אישי.
+          {data.missed_sent > 0 && ' וגם במייל ״מה פספסת״ למי שלא הגיע.'}
+        </span>
         <a className="btn btn-sm btn-ghost" href="/api/invitees/post-survey-export">
           ⬇ ייצוא לאקסל
         </a>
@@ -95,6 +98,11 @@ function PostSurveyResults() {
         <div className="sr-total">
           <div className="sr-total-num">{data.responded}</div>
           <div className="sr-total-lbl">השיבו על סקר המשוב</div>
+          {data.missed_sent > 0 && (
+            <div className="sr-total-lbl">
+              {responses.filter((r) => r.attended).length} השתתפו · {responses.filter((r) => !r.attended).length} לא הגיעו
+            </div>
+          )}
         </div>
         <div className="sr-att">
           <div className="sr-att-tile">
@@ -105,8 +113,17 @@ function PostSurveyResults() {
             <span className="sr-att-num">{data.sent}</span>
             <span className="sr-att-lbl">קיבלו את הסקר</span>
           </div>
+          {data.missed_sent > 0 && (
+            <div className="sr-att-tile">
+              <span className="sr-att-num">{data.missed_sent}</span>
+              <span className="sr-att-lbl">קיבלו ״מה פספסת״</span>
+            </div>
+          )}
           <div className="sr-att-tile sr-att-yes">
-            <span className="sr-att-num">{data.sent ? Math.round((data.responded / data.sent) * 100) : 0}%</span>
+            <span className="sr-att-num">{data.sent + (data.missed_sent || 0)
+                ? Math.round((data.responded / (data.sent + (data.missed_sent || 0))) * 100)
+                : 0}
+              %</span>
             <span className="sr-att-lbl">שיעור מענה</span>
           </div>
         </div>
@@ -127,6 +144,7 @@ function PostSurveyResults() {
                   <li key={j}>
                     <b>{r.full_name || '—'}</b> · {r.organization || '—'}
                     {r.role ? ` · ${r.role}` : ''}
+                    {r.attended === false && <span className="muted"> (לא הגיע/ה)</span>}
                   </li>
                 ))}
               </ul>

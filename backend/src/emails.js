@@ -16,9 +16,13 @@ const BRAND = {
 // Calibri on Windows/Outlook, then safe fallbacks.
 const FONT = "'Rubik', Calibri, 'Segoe UI', Arial, sans-serif";
 
+// Leading titles are skipped ("ד״ר רונית לוי" → "רונית"); same list as the call-list export.
+const NAME_TITLE = /^(ד["״׳']?ר|דר["״׳'.]?|פרופ["״׳'.]?|פרופסור|עו["״׳']?ד|רו["״׳']?ח|מר|גב['׳.]?|גברת|אל["״׳']?ם|סא["״׳']?ל|תא["״׳']?ל|רס["״׳']?ן|ניצ["״׳']?ם|dr\.?|prof\.?|mr\.?|mrs\.?|ms\.?)$/i;
+
 function firstName(name) {
-  const n = (name || '').trim();
-  return n ? n.split(/\s+/)[0] : '';
+  const words = (name || '').trim().split(/\s+/).filter(Boolean);
+  while (words.length > 1 && NAME_TITLE.test(words[0])) words.shift();
+  return words[0] || '';
 }
 
 function hello(name) {
@@ -46,7 +50,8 @@ function button(cta, i) {
 }
 
 // `ctas` is an array of { href, label }. The first renders filled, the rest outlined.
-function layout({ heading, accent, bodyHtml, ctas }) {
+// postEvent: no when/where block (the event is over).
+function layout({ heading, accent, bodyHtml, ctas, postEvent }) {
   const ctaHtml =
     ctas && ctas.length
       ? `<tr><td style="padding:8px 0 4px;">${ctas.map(button).join('')}</td></tr>`
@@ -82,10 +87,10 @@ function layout({ heading, accent, bodyHtml, ctas }) {
               ${bodyHtml}
               ${ctaHtml}
             </table>
-            <div style="margin-top:22px;padding-top:16px;border-top:1px solid #eee;color:#555;font-size:14px;line-height:1.7;">
+            ${postEvent ? '' : `<div style="margin-top:22px;padding-top:16px;border-top:1px solid #eee;color:#555;font-size:14px;line-height:1.7;">
               <div><strong>מתי:</strong> ${EVENT.dateLabel}</div>
               <div><strong>איפה:</strong> ${EVENT.place}</div>
-            </div>
+            </div>`}
           </td>
         </tr>
         <tr>
@@ -826,5 +831,102 @@ export function meetingRequestNotice({ full_name, organization, role, email, pho
       ctas: [{ href: `${SITE_URL}/admin/survey`, label: 'תוצאות הסקר' }],
     }),
     text: `בקשה לפגישת המשך מסקר המשוב\n${who}\n${contact}\nהבטחנו ליצור קשר בימים הקרובים.`,
+  };
+}
+
+// "What you missed" — to people who didn't attend: what happened, key takeaways,
+// pre-survey insights, and a link to the feedback survey for planning the next
+// community events. variant: 'noshow' (approved, didn't come) | 'invited'.
+export function missedEvent({ name, variant, surveyUrl, stats }) {
+  const greet = hello(name);
+  const st = stats || {};
+  const sv = st.survey || {};
+  const people = st.totalRounded ? `יותר מ-${st.totalRounded} משתתפים` : 'עשרות משתתפים';
+  const orgs = st.orgs ? `מ-${st.orgs} ארגונים, רובם משרדי ממשלה וגופים ציבוריים` : 'ממשרדי הממשלה והמגזר הציבורי';
+  const opener =
+    variant === 'noshow'
+      ? `חבל שלא הצלחת להגיע למיטאפ <b>${esc(EVENT.title)}</b> ב-20.10. התגעגענו! ריכזנו בשבילך את עיקרי הדברים.`
+      : `ב-20.10 קיימנו את המיטאפ <b>${esc(EVENT.title)}</b>, ורצינו לשתף אותך במה שהיה.`;
+
+  const insights = [
+    {
+      who: 'קובי כץ, משנה למנכ״ל מכבי שירותי בריאות',
+      t: 'במכבי עשרות סוכני AI כבר עובדים בשטח: מסוכן ״מה מגיע לי״ שעונה על כ-1.2 מיליון פניות זכאות בשנה, דרך מענה לפניות הציבור ועד בקרת חיובי בתי חולים שחוסכת מיליונים. רבים מהם נולדו מעובדים שזיהו צורך, וחלחלו לארגון דרך רשת של מובילי ושגרירי AI וקטלוג סוכנים אחד.',
+    },
+    {
+      who: 'מירב פרץ בילינסקי, סמנכ״לית דאטה ובינה מלאכותית, מערך הדיגיטל הלאומי',
+      t: 'הטכנולוגיה כבר אינה האתגר המרכזי, ההטמעה והאימוץ הרחב הם. אסטרטגיית הדאטה וה-AI הממשלתית מכוונת לשירות פרואקטיבי ומותאם אישית, ולמדיניות שמבוססת על דאטה בזמן אמת, בדרך ל-2027.',
+    },
+    {
+      who: 'מוטי קריספיל, Jeen.ai',
+      t: 'ה-AI מתפשט בארגון מהר יותר מהיכולת לראות ולנהל אותו. מי שרוצה להאציל ל-AI יותר צריך משילות שמאפשרת, לא רק מגינה: ״AI יורש משימות, לא אחריות״, ו״מדיניות היא לא בקרה״.',
+    },
+    {
+      who: 'הפאנל: מ-AI ניסיוני לארגון מבוסס AI',
+      t: 'מנהלי טכנולוגיה מהמגזר הציבורי דנו באיך עוברים מפיילוטים להטמעה ארגונית: איפה AI כבר משנה את העבודה, איפה ההחלטה חייבת להישאר אצל אדם, ומה הייתם עושים ב-90 הימים הראשונים אילו קיבלתם מחר תקציב להטמעת AI.',
+    },
+  ];
+
+  const facts = [];
+  if (sv.n >= 10) {
+    facts.push(`רק <b>${sv.orgWide}%</b> מהמשיבים דיווחו על שימוש חוצה-ארגון ב-AI, ו-<b>${sv.early}%</b> עדיין בשלב ההתנסות או לפניו.`);
+    if (sv.productivity) facts.push(`<b>${sv.productivity}%</b> כבר רואים שיפור בפרודוקטיביות בזכות AI.`);
+    if (sv.budgetUp10) facts.push(`<b>${sv.budgetUp10}%</b> מצפים שתקציב ה-IT יגדל ביותר מ-10% בגלל הוצאות על AI.`);
+  }
+
+  const insightsHtml = insights
+    .map(
+      (x, i) => `<tr><td style="padding:10px 14px;${i ? 'border-top:1px solid #f1e6dc;' : ''}">
+        <div style="font-weight:800;color:${BRAND.maroon};font-size:14px;margin-bottom:3px;">${esc(x.who)}</div>
+        <div style="font-size:14.5px;line-height:1.65;color:${BRAND.text};">${esc(x.t)}</div>
+      </td></tr>`
+    )
+    .join('');
+
+  const factsHtml = facts.length
+    ? `<tr><td style="padding:6px 0 12px;">
+        <div style="font-weight:800;color:${BRAND.maroon};font-size:16px;margin:0 2px 6px;">📊 מהסקר המקדים (${sv.n} משיבים)</div>
+        <div style="background:#fff4e5;border:1.5px solid ${BRAND.amber};border-radius:12px;padding:10px 14px;">
+          <ul style="margin:0;padding-inline-start:18px;font-size:14.5px;line-height:1.75;color:${BRAND.text};">
+            ${facts.map((f) => `<li>${f}</li>`).join('')}
+          </ul>
+        </div>
+      </td></tr>`
+    : '';
+
+  const btn = `<tr><td style="padding:8px 0 10px;">
+      <a href="${surveyUrl}" target="_blank"
+         style="display:block;background:${BRAND.coral};color:#fff;text-decoration:none;font-weight:800;
+                font-size:18px;padding:14px 16px;border-radius:12px;text-align:center;">2 דקות שיעזרו לנו לתכנן את המפגש הבא ←</a>
+    </td></tr>`;
+
+  return {
+    kind: 'missed',
+    subject:
+      variant === 'noshow'
+        ? `התגעגענו! הנה מה שהיה במיטאפ ״${EVENT.title}״`
+        : `מה היה במיטאפ ״${EVENT.title}״, ומה הלאה`,
+    html: layout({
+      postEvent: true,
+      heading: variant === 'noshow' ? 'התגעגענו! 👋' : 'מה היה במיטאפ 🎤',
+      bodyHtml:
+        p(greet) +
+        p(opener) +
+        p(`<b>${people}</b> ${orgs}, הגיעו לבוקר של שיחה פתוחה על איך עוברים מהבטחה ליישום AI בסקייל.`) +
+        `<tr><td style="padding:6px 0 12px;">
+          <div style="font-weight:800;color:${BRAND.maroon};font-size:16px;margin:0 2px 6px;">💡 עיקרי הדברים</div>
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+                 style="background:${BRAND.cream};border-radius:12px;">${insightsHtml}</table>
+        </td></tr>` +
+        factsHtml +
+        p('אנחנו כבר מתכננים את המפגשים הבאים של הקהילה, ורוצים שיתאימו בדיוק למה שמעסיק אתכם. נשמח אם תקדישו שתי דקות לכמה שאלות קצרות:') +
+        btn +
+        p('<span style="font-size:13px;color:#777;">הקישור אישי. אפשר לחזור אליו ולעדכן את התשובות בכל עת.</span>'),
+    }),
+    text:
+      `${greet}\n\n${opener.replace(/<[^>]+>/g, '')}\n\n${people} ${orgs}, הגיעו למיטאפ.\n\nעיקרי הדברים:\n` +
+      insights.map((x) => `- ${x.who}: ${x.t}`).join('\n') +
+      (facts.length ? `\n\nמהסקר המקדים (${sv.n} משיבים):\n` + facts.map((f) => `- ${f.replace(/<[^>]+>/g, '')}`).join('\n') : '') +
+      `\n\nנשמח לשתי דקות שיעזרו לנו לתכנן את המפגש הבא:\n${surveyUrl}\n\n— צוות Jeen.ai`,
   };
 }

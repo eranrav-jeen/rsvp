@@ -17,14 +17,14 @@ router.get(
     if (!id) return res.status(404).json({ error: 'invalid link' });
     const row = (
       await query(
-        `SELECT i.full_name, r.answers FROM invitees i
+        `SELECT i.full_name, i.arrived_at, r.answers FROM invitees i
            LEFT JOIN post_survey_responses r ON r.invitee_id = i.id
           WHERE i.id = $1`,
         [id]
       )
     ).rows[0];
     if (!row) return res.status(404).json({ error: 'invalid link' });
-    res.json({ name: row.full_name || '', answers: row.answers || null });
+    res.json({ name: row.full_name || '', attended: !!row.arrived_at, answers: row.answers || null });
   })
 );
 
