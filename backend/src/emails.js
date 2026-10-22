@@ -936,11 +936,8 @@ export function missedEvent({ name, variant, surveyUrl, stats }) {
 
   return {
     kind: 'missed',
-    // RTL-safe subject: spell out the number (no weak digit), no quotes around
-    // the title, and the Latin "AI" sits mid-phrase followed by Hebrew — so the
-    // line stays right-to-left even in clients that default subjects to LTR. A
-    // leading RLM + RLMs around "AI" add belt-and-suspenders.
-    subject: `‏לא הגעתם? ארבעה דברים שכדאי לדעת מהמיטאפ ${EVENT.title.replace('AI', '‏AI‏')}`,
+    // Fully RTL subject — no digits, quotes, or Latin — so it never flips.
+    subject: 'לא הגעתם? ארבעה דברים שכדאי לדעת מהמיטאפ שלנו',
     html: layout({
       postEvent: true,
       heading: 'אז מה היה לנו במיטאפ? 💡',
@@ -948,7 +945,7 @@ export function missedEvent({ name, variant, surveyUrl, stats }) {
         big(greet) +
         big(opener) +
         (crowd.length ? tilesRow(crowd.map(([n, l]) => tile(n, l))) : '') +
-        sectionTitle('💡 4 דברים שכדאי לדעת') +
+        sectionTitle('💡 ארבעה דברים שכדאי לדעת') +
         insightsHtml +
         (facts.length
           ? sectionTitle(`📊 מהסקר המקדים (${sv.n} משיבים)`) +
@@ -962,7 +959,7 @@ export function missedEvent({ name, variant, surveyUrl, stats }) {
     }),
     text:
       `${greet}\n\n${opener.replace(/<br>/g, '\n').replace(/<[^>]+>/g, '')}\n\n${people}${orgs}, רובם משרדי ממשלה וגופים ציבוריים.\n\n` +
-      `4 דברים שכדאי לדעת:\n` +
+      `ארבעה דברים שכדאי לדעת:\n` +
       insights.map((x) => `- ${x.head} (${x.who}): ${x.t}`).join('\n') +
       (facts.length
         ? `\n\nמהסקר המקדים (${sv.n} משיבים):\n` +
