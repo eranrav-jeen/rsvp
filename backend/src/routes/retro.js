@@ -18,7 +18,7 @@ router.get(
         `SELECT
            COUNT(*)::int AS list_total,
            COUNT(*) FILTER (WHERE status <> 'not_invited' AND NOT (${WALK_IN}))::int AS invited,
-           COUNT(*) FILTER (WHERE status IN ('confirmed', 'speaker'))::int AS approved,
+           COUNT(*) FILTER (WHERE status IN ('confirmed', 'speaker') AND NOT (${WALK_IN}))::int AS approved,
            COUNT(*) FILTER (WHERE status = 'speaker')::int AS speakers,
            COUNT(*) FILTER (WHERE status = 'declined')::int AS declined,
            COUNT(*) FILTER (WHERE status = 'waitlist')::int AS waitlist,
@@ -27,7 +27,7 @@ router.get(
            COALESCE(SUM(COALESCE(arrived_guests, plus_ones)) FILTER (WHERE arrived_at IS NOT NULL), 0)::int AS guests,
            COUNT(*) FILTER (WHERE ${WALK_IN})::int AS walk_ins,
            COUNT(*) FILTER (WHERE status IN ('confirmed', 'speaker') AND arrived_at IS NOT NULL AND NOT (${WALK_IN}))::int AS approved_arrived,
-           COUNT(*) FILTER (WHERE status IN ('confirmed', 'speaker') AND arrived_at IS NULL)::int AS no_shows,
+           COUNT(*) FILTER (WHERE status IN ('confirmed', 'speaker') AND arrived_at IS NULL)::int AS no_shows, -- walk-ins always arrived
            COUNT(DISTINCT LOWER(TRIM(organization))) FILTER (WHERE arrived_at IS NOT NULL)::int AS orgs_arrived,
            COUNT(*) FILTER (WHERE outreach_email OR agenda_email)::int AS by_email,
            COUNT(*) FILTER (WHERE outreach_whatsapp OR agenda_whatsapp)::int AS by_whatsapp,
@@ -99,11 +99,23 @@ router.get(
       .sort((a, b) => b.n - a.n)
       .slice(0, 8);
 
+    // Arrived without being approved in advance and not added at the door:
+    // their registration status when checked in (pending / invited / maybe …).
+    const unapproved = (
+      await query(
+        `SELECT status, COUNT(*)::int AS n FROM invitees
+          WHERE arrived_at IS NOT NULL AND status NOT IN ('confirmed', 'speaker')
+            AND NOT (${WALK_IN}) AND ${NOT_JEEN}
+          GROUP BY status ORDER BY n DESC`
+      )
+    ).rows;
+
     const notes = (await query('SELECT key, body, updated_at FROM retro_notes')).rows;
     res.json({
       stats: { ...f, registered, ...survey, emails: Object.fromEntries(emails.map((e) => [e.kind, e.n])) },
       topOrgs,
       declined: { ...declined, rejectedOrgs },
+      unapproved,
       notes,
     });
   })

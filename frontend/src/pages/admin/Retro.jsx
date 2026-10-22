@@ -20,6 +20,16 @@ const TOPICS = [
 
 const pct = (a, b) => (b ? `${Math.round((a / b) * 100)}%` : '—');
 
+const STATUS_LABEL = {
+  not_invited: 'טרם הוזמנו',
+  invited: 'הוזמנו',
+  pending: 'ממתינים לאישור',
+  maybe: 'אולי',
+  declined: 'לא מגיעים',
+  waitlist: 'רשימת המתנה',
+  no_response: 'ללא מענה',
+};
+
 function Stat({ num, lbl, sub, strong }) {
   return (
     <div className={`rt-stat ${strong ? 'strong' : ''}`}>
@@ -113,6 +123,8 @@ export default function Retro() {
   const notes = Object.fromEntries(data.notes.map((n) => [n.key, n]));
   const total = s.arrived + s.guests;
   const e = s.emails || {};
+  // Checked in but neither approved in advance nor added at the door.
+  const otherArrived = Math.max(0, s.arrived - s.approved_arrived - s.walk_ins);
   const d = data.declined || { rejected: [], rejectedOrgs: [], total: 0, cancelled: 0, said_no: 0, other: 0, notified: 0 };
 
   return (
@@ -122,9 +134,18 @@ export default function Retro() {
 
       <div className="rt-hero">
         <Stat strong num={total} lbl="נכחו באירוע" sub={`${s.arrived} משתתפים + ${s.guests} מלווים`} />
+        <Stat
+          num={s.arrived}
+          lbl="משתתפים שנכנסו"
+          sub={`${s.approved_arrived} מאושרים + ${s.walk_ins} נוספו בכניסה + ${otherArrived} מהרשימה ללא אישור`}
+        />
         <Stat num={pct(s.approved_arrived, s.approved)} lbl="שיעור הגעה" sub={`${s.approved_arrived} מתוך ${s.approved} מאושרים`} />
-        <Stat num={s.no_shows} lbl="מאושרים שלא הגיעו" />
-        <Stat num={s.walk_ins} lbl="הצטרפו בכניסה" />
+        <Stat num={s.no_shows} lbl="מאושרים שלא הגיעו" sub={`${s.approved} מאושרים − ${s.approved_arrived} שהגיעו`} />
+        <Stat
+          num={s.walk_ins + otherArrived}
+          lbl="הגיעו בלי אישור מראש"
+          sub={`${s.walk_ins} נוספו בכניסה${(data.unapproved || []).map((u) => ` · ${u.n} ${STATUS_LABEL[u.status] || u.status}`).join('')}`}
+        />
         <Stat num={s.orgs_arrived} lbl="ארגונים שהגיעו" />
       </div>
 
