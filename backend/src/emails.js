@@ -936,9 +936,11 @@ export function missedEvent({ name, variant, surveyUrl, stats }) {
 
   return {
     kind: 'missed',
-    // Force RTL base direction (leading RLM) and isolate the Latin "AI" with RLMs
-    // so the subject doesn't flip in clients that render subjects left-to-right.
-    subject: `‏לא הגעתם? 4 דברים שכדאי לדעת מ״${EVENT.title.replace('AI', '‏AI‏')}״`,
+    // RTL-safe subject: spell out the number (no weak digit), no quotes around
+    // the title, and the Latin "AI" sits mid-phrase followed by Hebrew — so the
+    // line stays right-to-left even in clients that default subjects to LTR. A
+    // leading RLM + RLMs around "AI" add belt-and-suspenders.
+    subject: `‏לא הגעתם? ארבעה דברים שכדאי לדעת מהמיטאפ ${EVENT.title.replace('AI', '‏AI‏')}`,
     html: layout({
       postEvent: true,
       heading: 'אז מה היה לנו במיטאפ? 💡',
