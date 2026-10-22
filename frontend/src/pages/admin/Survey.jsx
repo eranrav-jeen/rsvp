@@ -111,6 +111,7 @@ function PostSurveyResults() {
           </div>
         </div>
       </div>
+      {data.noEmail?.length > 0 && <NoEmailWhatsApp people={data.noEmail} />}
       {responses.length === 0 && <div className="muted" style={{ padding: 20 }}>עדיין אין תשובות לסקר המשוב.</div>}
       {survey.meeting && responses.length > 0 && (() => {
         const wants = responses.filter((r) => r.answers?.meeting === 'yes');
@@ -178,6 +179,77 @@ function PostSurveyResults() {
           );
         })}
     </>
+  );
+}
+
+// WhatsApp message with the person's first name and personal survey link.
+function waMessage(p) {
+  const words = String(p.full_name || '').trim().split(/\s+/).filter(Boolean);
+  // Skip a leading title (ד״ר / פרופ׳ / עו״ד / Dr. …) so the greeting uses the first name.
+  while (words.length > 1 && /^(ד["״׳']?ר|דר["״׳'.]?|פרופ["״׳'.]?|עו["״׳']?ד|רו["״׳']?ח|מר|גב['׳.]?|dr\.?|prof\.?)$/i.test(words[0])) {
+    words.shift();
+  }
+  const first = words[0] || '';
+  return (
+    `היי${first ? ` ${first}` : ''}, תודה רבה שהגעת למיטאפ "ככה עושים AI בממשלה" ב-Jeen.ai! 🙏\n` +
+    'נשמח אם תקדיש/י כשתי דקות לסקר משוב קצר. התשובות יעזרו לנו להמשיך וללוות את הקהילה בצורה מדויקת:\n' +
+    `${p.link}\nתודה! צוות Jeen.ai`
+  );
+}
+
+function waUrl(p) {
+  const digits = String(p.phone || '').replace(/\D/g, '');
+  if (digits.length < 9) return null;
+  const intl = digits.startsWith('972') ? digits : digits.replace(/^0/, '972');
+  return `https://wa.me/${intl}?text=${encodeURIComponent(waMessage(p))}`;
+}
+
+// Attendees without an email: send them the survey over WhatsApp instead.
+function NoEmailWhatsApp({ people }) {
+  const [copied, setCopied] = useState(null);
+  async function copy(p) {
+    try {
+      await navigator.clipboard.writeText(waMessage(p));
+      setCopied(p.id);
+      setTimeout(() => setCopied(null), 1800);
+    } catch {
+      window.prompt('העתיקו את ההודעה:', waMessage(p));
+    }
+  }
+  return (
+    <div className="sr-q sr-wa">
+      <div className="sr-q-title">📱 נכנסו לאירוע בלי כתובת מייל: {people.length}</div>
+      <div className="sr-q-sub">
+        הם לא קיבלו את הסקר במייל. ״WhatsApp״ פותח שיחה עם ההודעה והקישור האישי שלהם כבר כתובים, ונשאר רק ללחוץ שליחה.
+      </div>
+      <table className="sr-wa-table">
+        <tbody>
+          {people.map((p) => {
+            const url = waUrl(p);
+            return (
+              <tr key={p.id}>
+                <td>
+                  <b>{p.full_name || '—'}</b>
+                  <span className="muted"> · {p.organization || '—'}</span>
+                </td>
+                <td className="muted" style={{ direction: 'ltr', textAlign: 'right' }}>{p.phone || 'אין טלפון'}</td>
+                <td>{p.responded ? <span className="sr-wa-done">✓ ענה/תה</span> : ''}</td>
+                <td className="sr-wa-actions">
+                  {url && (
+                    <a className="btn btn-sm btn-primary" href={url} target="_blank" rel="noreferrer">
+                      WhatsApp
+                    </a>
+                  )}
+                  <button className="btn btn-sm btn-ghost" onClick={() => copy(p)}>
+                    {copied === p.id ? 'הועתק ✓' : 'העתקת הודעה'}
+                  </button>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
   );
 }
 

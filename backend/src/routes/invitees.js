@@ -3,6 +3,8 @@ import multer from 'multer';
 import * as XLSX from 'xlsx';
 import { buildCallListXlsx } from '../callListXlsx.js';
 import { getFeedbackSurvey } from '../feedbackSurvey.js';
+import { makeScopedToken } from '../replyToken.js';
+import { SITE_URL } from '../event.js';
 import { query, withTransaction } from '../db.js';
 import { lockAndCount, decideStatus } from '../capacity.js';
 import { asyncHandler } from '../middleware.js';
@@ -221,7 +223,25 @@ router.get(
           ORDER BY r.submitted_at DESC`
       )
     ).rows;
-    res.json({ ...counts, responded: responses.length, survey: getFeedbackSurvey(), responses });
+    // Attendees without an email can't get the survey by mail: give the admin
+    // their personal link + phone so it can be sent over WhatsApp.
+    const noEmail = (
+      await query(
+        `SELECT i.id, i.full_name, i.organization, i.phone,
+                (r.invitee_id IS NOT NULL) AS responded
+           FROM invitees i LEFT JOIN post_survey_responses r ON r.invitee_id = i.id
+          WHERE i.arrived_at IS NOT NULL AND NULLIF(TRIM(i.email), '') IS NULL
+          ORDER BY i.full_name NULLS LAST, i.id`
+      )
+    ).rows.map((r) => ({
+      id: r.id,
+      full_name: r.full_name,
+      organization: r.organization,
+      phone: r.phone,
+      responded: r.responded,
+      link: `${SITE_URL}/feedback/${makeScopedToken('feedback', r.id)}`,
+    }));
+    res.json({ ...counts, responded: responses.length, survey: getFeedbackSurvey(), responses, noEmail });
   })
 );
 

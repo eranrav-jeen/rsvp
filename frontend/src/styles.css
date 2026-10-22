@@ -2113,3 +2113,9 @@ table.grid tr.row-approved td.col-org {
 .fb-toggle { margin-top: 10px; }
 .fb-toggle button { padding: 10px; font-size: 15px; }
 .fb-cta-ok { margin-top: 10px; font-weight: 700; color: #1f7a4d; }
+
+.sr-wa-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.sr-wa-table td { padding: 7px 6px; border-top: 1px solid #f1e6dc; vertical-align: middle; }
+.sr-wa-actions { white-space: nowrap; text-align: left; }
+.sr-wa-actions .btn { margin-inline-start: 6px; }
+.sr-wa-done { color: #1f7a4d; font-weight: 700; font-size: 13px; }
