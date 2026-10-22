@@ -150,5 +150,8 @@ kind `meeting_request`) once per person; the results tab lists who's interested.
 stats excluding Jeen staff — attendance (participants + companions), show-up rate
 among approved, no-shows, walk-ins (created and checked in within 2 minutes),
 registration funnel, outreach and email counts, feedback-survey numbers, top
-organizations. Below: discussion topics with free-text notes, auto-saved per
+organizations, and a "לא הגיעו" breakdown of status `declined`: rejected by the
+organizers (form answer yes, not a self-cancel; + how many got the rejection
+email, by org, with names), cancelled after approval (validation `declined`),
+said no in the form, other. Below: discussion topics with free-text notes, auto-saved per
 topic to `retro_notes` (migration 021, `PUT /api/retro/notes/:key`).

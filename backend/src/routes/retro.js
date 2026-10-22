@@ -64,10 +64,46 @@ router.get(
           GROUP BY LOWER(TRIM(organization)) ORDER BY n DESC, 1 LIMIT 10`
       )
     ).rows;
+    // Everyone who ended up "not coming", by cause. "Rejected" = asked to come
+    // via the form (attendance yes) and was declined by the organizers, not a
+    // self-cancellation (validation answer 'declined' by email / phone).
+    const declinedRows = (
+      await query(
+        `SELECT i.id, i.full_name, i.organization, i.role, i.validation_status,
+                EXISTS (SELECT 1 FROM rsvp_submissions s WHERE s.invitee_id = i.id AND s.attendance = 'yes') AS asked_yes,
+                (SELECT s.attendance FROM rsvp_submissions s WHERE s.invitee_id = i.id
+                  ORDER BY s.submitted_at DESC LIMIT 1) AS last_answer,
+                EXISTS (SELECT 1 FROM email_log e WHERE e.invitee_id = i.id AND e.kind = 'declined' AND e.status = 'sent') AS notified
+           FROM invitees i
+          WHERE i.status = 'declined' AND ${NOT_JEEN.replace(/email|organization/g, (m) => `i.${m}`)}
+          ORDER BY i.organization, i.full_name`
+      )
+    ).rows;
+    const declined = { total: declinedRows.length, rejected: [], cancelled: 0, said_no: 0, other: 0, notified: 0 };
+    for (const r of declinedRows) {
+      if (r.validation_status === 'declined') declined.cancelled += 1;
+      else if (r.asked_yes && r.last_answer === 'yes') {
+        declined.rejected.push({ full_name: r.full_name, organization: r.organization, role: r.role });
+        if (r.notified) declined.notified += 1;
+      } else if (r.last_answer === 'no') declined.said_no += 1;
+      else declined.other += 1;
+    }
+    const rejectedOrgs = Object.entries(
+      declined.rejected.reduce((acc, r) => {
+        const k = r.organization || '—';
+        acc[k] = (acc[k] || 0) + 1;
+        return acc;
+      }, {})
+    )
+      .map(([organization, n]) => ({ organization, n }))
+      .sort((a, b) => b.n - a.n)
+      .slice(0, 8);
+
     const notes = (await query('SELECT key, body, updated_at FROM retro_notes')).rows;
     res.json({
       stats: { ...f, registered, ...survey, emails: Object.fromEntries(emails.map((e) => [e.kind, e.n])) },
       topOrgs,
+      declined: { ...declined, rejectedOrgs },
       notes,
     });
   })

@@ -2156,3 +2156,9 @@ table.grid tr.row-approved td.col-org {
   border: 1.5px solid #e3d5c8; border-radius: 8px; padding: 8px 10px; background: #fffdfb; min-height: 96px;
 }
 .rt-topic textarea:focus { outline: none; border-color: var(--color-coral); background: #fff; }
+
+.rt-table tr.hl-bad td { background: #fdf0ee; }
+.rt-sub-list { font-size: 13.5px; color: #6b5b64; margin-top: 8px; line-height: 1.6; }
+.rt-details { margin-top: 8px; font-size: 14px; }
+.rt-details summary { cursor: pointer; color: var(--color-coral); font-weight: 700; }
+.rt-details ul { margin-top: 6px; }

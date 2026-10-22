@@ -113,6 +113,7 @@ export default function Retro() {
   const notes = Object.fromEntries(data.notes.map((n) => [n.key, n]));
   const total = s.arrived + s.guests;
   const e = s.emails || {};
+  const d = data.declined || { rejected: [], rejectedOrgs: [], total: 0, cancelled: 0, said_no: 0, other: 0, notified: 0 };
 
   return (
     <div className="retro">
@@ -167,6 +168,42 @@ export default function Retro() {
             </tbody>
           </table>
           <a className="rt-link" href="/admin/survey">לתוצאות המלאות ←</a>
+        </section>
+
+        <section className="rt-card">
+          <h2>לא הגיעו: נדחו, ביטלו וסירבו</h2>
+          <table className="rt-table">
+            <tbody>
+              <tr className="hl-bad">
+                <td>בקשות הרשמה שנדחו ע״י המארגנים</td>
+                <td>{d.rejected.length}</td>
+                <td>{pct(d.rejected.length, s.registered)}</td>
+              </tr>
+              <tr><td>מתוכם קיבלו מייל דחייה</td><td>{d.notified}</td><td /></tr>
+              <tr><td>ביטלו אחרי שאושרו (מייל / טלפון)</td><td>{d.cancelled}</td><td /></tr>
+              <tr><td>סימנו בטופס שלא יגיעו</td><td>{d.said_no}</td><td /></tr>
+              <tr><td>אחר (סירוב בהזמנה הקולית / עדכון ידני)</td><td>{d.other}</td><td /></tr>
+              <tr><td><b>סה״כ בסטטוס ״לא מגיע/ה״</b></td><td>{d.total}</td><td /></tr>
+            </tbody>
+          </table>
+          {d.rejectedOrgs.length > 0 && (
+            <div className="rt-sub-list">
+              <b>הבקשות שנדחו לפי ארגון:</b>{' '}
+              {d.rejectedOrgs.map((o) => `${o.organization} (${o.n})`).join(' · ')}
+            </div>
+          )}
+          {d.rejected.length > 0 && (
+            <details className="rt-details">
+              <summary>שמות ({d.rejected.length})</summary>
+              <ul className="rt-orgs">
+                {d.rejected.map((r, i) => (
+                  <li key={i}>
+                    {r.full_name || '—'} <span className="muted">· {r.organization || '—'}{r.role ? ` · ${r.role}` : ''}</span>
+                  </li>
+                ))}
+              </ul>
+            </details>
+          )}
         </section>
 
         <section className="rt-card">
