@@ -33,6 +33,9 @@ export default function AdminLayout({ onLogout }) {
           <NavLink to="/admin/survey" className={({ isActive }) => (isActive ? 'active' : '')}>
             תוצאות הסקר
           </NavLink>
+          <NavLink to="/admin/retro" className={({ isActive }) => (isActive ? 'active' : '')}>
+            סיכום ותחקיר
+          </NavLink>
           <NavLink to="/admin/registration" className={({ isActive }) => (isActive ? 'active' : '')}>
             טופס הרשמה
           </NavLink>

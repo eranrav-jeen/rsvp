@@ -15,6 +15,7 @@ import Marketing from './pages/admin/Marketing.jsx';
 import AdminAgenda from './pages/admin/Agenda.jsx';
 import AdminRegistration from './pages/admin/Registration.jsx';
 import CueCards from './pages/admin/CueCards.jsx';
+import Retro from './pages/admin/Retro.jsx';
 
 function useAuth() {
   const [state, setState] = useState({ loading: true, isAdmin: false });
@@ -68,6 +69,7 @@ export default function App() {
         <Route path="registration" element={<AdminRegistration />} />
         <Route path="tasks" element={<Tasks />} />
         <Route path="survey" element={<Survey />} />
+        <Route path="retro" element={<Retro />} />
         <Route path="cue-cards" element={<CueCards />} />
         <Route path="agenda" element={<AdminAgenda />} />
         <Route path="marketing" element={<Marketing />} />

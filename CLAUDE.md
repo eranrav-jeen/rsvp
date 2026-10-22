@@ -143,3 +143,12 @@ The form ends with a "meeting" toggle (`survey.meeting` in the JSON:
 מעוניין/ת בפגישה / לא כרגע, stored as `answers.meeting = yes|no`). Choosing yes
 shows "ניצור איתך קשר בימים הקרובים" and emails the team (`meetingRequestNotice`,
 kind `meeting_request`) once per person; the results tab lists who's interested.
+
+## Post-event reflection (admin "סיכום ותחקיר")
+
+`/admin/retro` (`frontend/src/pages/admin/Retro.jsx`, `GET /api/retro`): summary
+stats excluding Jeen staff — attendance (participants + companions), show-up rate
+among approved, no-shows, walk-ins (created and checked in within 2 minutes),
+registration funnel, outreach and email counts, feedback-survey numbers, top
+organizations. Below: discussion topics with free-text notes, auto-saved per
+topic to `retro_notes` (migration 021, `PUT /api/retro/notes/:key`).

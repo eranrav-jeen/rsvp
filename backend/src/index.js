@@ -17,6 +17,7 @@ import feedbackRouter from './routes/feedback.js';
 import validationRouter from './routes/validation.js';
 import inviteesRouter from './routes/invitees.js';
 import tasksRouter from './routes/tasks.js';
+import retroRouter from './routes/retro.js';
 import cueCardsRouter, { cueShareRouter } from './routes/cueCards.js';
 import marketingRouter from './routes/marketing.js';
 import eventSettingsRouter from './routes/eventSettings.js';
@@ -96,6 +97,7 @@ app.use('/api/validation', validationRouter);
 // Admin-only routes
 app.use('/api/invitees', requireAdmin, inviteesRouter);
 app.use('/api/tasks', requireAdmin, tasksRouter);
+app.use('/api/retro', requireAdmin, retroRouter);
 app.use('/api/cue-cards', requireAdmin, cueCardsRouter);
 app.use('/api/marketing', requireAdmin, marketingRouter);
 app.use('/api/event-settings', requireAdmin, eventSettingsRouter);
