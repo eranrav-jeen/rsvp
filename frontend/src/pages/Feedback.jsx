@@ -127,6 +127,15 @@ export default function Feedback() {
             )}
           </div>
         ))}
+        <div className="fb-cta">
+          <div className="fb-cta-title">💬 רוצים להעמיק באחד הנושאים?</div>
+          <div>
+            נשמח להיפגש לשיחה של 30 דקות ולחשוב יחד על הצעד הבא בארגון שלכם.{' '}
+            <a href="https://jeen.ai/contact" target="_blank" rel="noreferrer">
+              לתיאום פגישה לחצו כאן ←
+            </a>
+          </div>
+        </div>
         {error && <div className="form-error">{error}</div>}
         <button type="submit" className="btn btn-primary reply-submit" disabled={saving}>
           {saving ? 'שומר…' : 'שליחה'}

@@ -2104,3 +2104,10 @@ table.grid tr.row-approved td.col-org {
 .sr-tabs { margin: 0 0 14px; }
 .sr-texts { margin: 0; padding-inline-start: 18px; line-height: 1.7; font-size: 14px; }
 .sr-others { margin: -6px 0 14px; }
+
+.fb-cta {
+  margin: 4px 0 14px; padding: 12px 14px; border-radius: 10px;
+  background: #fffaf2; border: 1.5px dashed var(--color-amber); line-height: 1.6; font-size: 15px;
+}
+.fb-cta-title { font-weight: 800; color: var(--color-maroon); margin-bottom: 2px; }
+.fb-cta a { color: var(--color-coral); font-weight: 700; }
