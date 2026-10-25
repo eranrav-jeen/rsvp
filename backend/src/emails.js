@@ -845,6 +845,35 @@ export function meetingRequestNotice({ full_name, organization, role, email, pho
 // "What you missed" — to people who didn't attend: what happened, key takeaways,
 // pre-survey insights, and a link to the feedback survey for planning the next
 // community events. variant: 'noshow' (approved, didn't come) | 'invited'.
+// A survey percentage in words ("יותר ממחצית", "כשליש" …); falls back to "N%"
+// where no fraction reads naturally.
+function shareInWords(pct) {
+  if (pct >= 95) return 'כמעט כולם';
+  if (pct >= 80) return 'הרוב המכריע';
+  if (pct >= 70) return 'כשלושה רבעים';
+  if (pct >= 61) return 'כשני שלישים';
+  if (pct >= 51) return 'יותר ממחצית';
+  if (pct === 50) return 'מחצית';
+  if (pct >= 46) return 'כמחצית';
+  if (pct >= 30 && pct <= 39) return 'כשליש';
+  if (pct >= 22 && pct <= 29) return 'כרבע';
+  if (pct >= 17 && pct <= 21) return 'כחמישית';
+  return `${pct}%`;
+}
+
+// The sentence under the survey tiles, built from the live numbers. The
+// "gap" wording only when organization-wide use clearly trails the benefit.
+function surveyGapSentence(sv) {
+  if (!sv.productivity) return '';
+  const a = shareInWords(sv.productivity);
+  const b = shareInWords(sv.orgWide || 0);
+  if (sv.productivity - (sv.orgWide || 0) >= 10) {
+    return `${a} כבר רואים תועלת, אבל רק ${b} הטמיעו AI ברמת הארגון כולו. זה בדיוק הפער שעליו דיברנו במיטאפ.`;
+  }
+  const and = /^\d/.test(b) ? `ו-${b}` : `ו${b}`;
+  return `${a} כבר רואים תועלת, ${and} כבר הטמיעו AI ברמת הארגון כולו.`;
+}
+
 export function missedEvent({ name, variant, surveyUrl, stats }) {
   const greet = hello(name);
   const st = stats || {};
@@ -931,6 +960,7 @@ export function missedEvent({ name, variant, surveyUrl, stats }) {
     </td></tr>`;
 
   const big = (html) => `<tr><td style="padding:0 0 14px;font-size:16px;line-height:1.75;">${html}</td></tr>`;
+  const gapSentence = surveyGapSentence(sv);
   const people = st.totalRounded ? `למעלה מ-${st.totalRounded} משתתפים` : 'עשרות משתתפים';
   const orgs = st.orgs ? ` מ-${st.orgs} ארגונים` : '';
 
@@ -950,7 +980,7 @@ export function missedEvent({ name, variant, surveyUrl, stats }) {
         (facts.length
           ? sectionTitle(`📊 מהסקר המקדים (${sv.n} משיבים)`) +
             tilesRow(facts.map(([n, l]) => tile(n, l))) +
-            big('יותר ממחצית כבר רואים תועלת, אבל רק כשליש הטמיעו AI ברמת הארגון כולו. זה בדיוק הפער שעליו דיברנו במיטאפ.')
+            (gapSentence ? big(gapSentence) : '')
           : '') +
         big('אנחנו כבר מתכננים את המפגשים הבאים של הקהילה, ורוצים שיעסקו בדיוק במה שמעסיק אתכם.') +
         btn +
@@ -964,7 +994,7 @@ export function missedEvent({ name, variant, surveyUrl, stats }) {
       (facts.length
         ? `\n\nמהסקר המקדים (${sv.n} משיבים):\n` +
           facts.map(([n, l]) => `- ${n} ${l}`).join('\n') +
-          `\nיותר ממחצית כבר רואים תועלת, אבל רק כשליש הטמיעו AI ברמת הארגון כולו.`
+          (gapSentence ? `\n${gapSentence}` : '')
         : '') +
       `\n\nאנחנו כבר מתכננים את המפגשים הבאים של הקהילה. ספרו לנו מה מעניין אתכם (2 דקות):\n${surveyUrl}\n\n${CONTACT_TEXT}\n\n— צוות Jeen.ai`,
   };
