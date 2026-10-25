@@ -42,6 +42,10 @@ import { SITE_URL } from '../src/event.js';
 const args = process.argv.slice(2);
 const dryRun = args.includes('--dry-run');
 const noTestPrefix = args.includes('--no-test-prefix'); // test copy with the real subject
+// Test copy as if the recipient had this status (e.g. --as=confirmed for the
+// 'missed' no-show version); default invited.
+const asArg = args.find((a) => a.startsWith('--as='));
+const testStatus = asArg ? asArg.slice('--as='.length).trim() : 'invited';
 const toArg = args.find((a) => a.startsWith('--to='));
 const testTo = toArg ? toArg.slice('--to='.length).trim() : '';
 const audArg = args.find((a) => a.startsWith('--audience='));
@@ -108,7 +112,7 @@ async function main() {
     const match = (
       await query('SELECT id, full_name, status FROM invitees WHERE LOWER(email) = LOWER($1) ORDER BY id LIMIT 1', [testTo])
     ).rows[0];
-    const msg = buildMessage(match ? { ...match, status: 'invited' } : { full_name: '' }, schedule);
+    const msg = buildMessage(match ? { ...match, status: testStatus } : { full_name: '', status: testStatus }, schedule);
     const res = await sendMail({ to: testTo, subject: noTestPrefix ? msg.subject : `[בדיקה] ${msg.subject}`, html: msg.html, text: msg.text, kind: `${msg.kind}_test` });
     console.log(`[reminder] test → ${testTo}${match ? ` (invitee #${match.id})` : ' (sample links)'}: ${JSON.stringify(res)}`);
     return;
