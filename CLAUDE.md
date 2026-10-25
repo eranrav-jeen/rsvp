@@ -159,7 +159,7 @@ topic to `retro_notes` (migration 021, `PUT /api/retro/notes/:key`).
 ## "What you missed" email (non-attendees)
 
 `node scripts/send-reminder.js --audience=missed [--dry-run | --to=<addr>]` emails
-people who didn't come (no `arrived_at`), excluding Jeen staff and requests the
+people who didn't come (no `arrived_at`), Jeen staff included, excluding requests the
 organizers rejected: approved no-shows (confirmed / speaker) get the "חסרת לנו"
 version; invited / no_response / maybe / declined (self-cancelled or said no)
 get the "מה היה" version. Content (`missedEvent()` in `backend/src/emails.js`):

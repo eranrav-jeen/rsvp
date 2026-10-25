@@ -70,7 +70,7 @@ const STATUSES = {
   feedback: ['not_invited', 'invited', 'pending', 'confirmed', 'speaker', 'maybe', 'declined', 'waitlist', 'no_response'],
   missed: ['confirmed', 'speaker', 'invited', 'no_response', 'maybe', 'declined'],
 }[audience];
-const SKIP_JEEN = lastCall || arrival || feedback || missed;
+const SKIP_JEEN = lastCall || arrival || feedback; // "missed" includes Jeen staff who didn't attend
 
 function buildMessage(person, schedule) {
   if (lastCall) return lastCallInvite({ name: person.full_name, status: person.status || 'invited', schedule });
