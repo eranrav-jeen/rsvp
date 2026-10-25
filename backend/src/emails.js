@@ -928,9 +928,6 @@ export function missedEvent({ name, variant, surveyUrl, stats }) {
   const sectionTitle = (t) =>
     `<tr><td style="padding:10px 0 8px;font-weight:800;color:${BRAND.maroon};font-size:18px;">${t}</td></tr>`;
 
-  const crowd = [];
-  if (st.totalRounded) crowd.push([`<span style="font-size:17px;">למעלה מ-</span>${st.totalRounded}`, 'משתתפים']);
-  if (st.orgs) crowd.push([st.orgs, 'ארגונים, רובם משרדי ממשלה וגופים ציבוריים']);
   const facts = [];
   if (sv.n >= 10) {
     facts.push([`${sv.orgWide}%`, 'דיווחו על שימוש ב-AI בכל הארגון']);
@@ -959,6 +956,22 @@ export function missedEvent({ name, variant, surveyUrl, stats }) {
                 font-size:18px;padding:14px 16px;border-radius:12px;text-align:center;">ספרו לנו מה מעניין אתכם (2 דקות) ←</a>
     </td></tr>`;
 
+  // Early, lighter CTA (same personal link) so readers who stop at the
+  // recap still see the survey; the full button stays at the end.
+  const earlyCta = `<tr><td style="padding:2px 0 16px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+             style="background:#fff4e5;border:1.5px solid ${BRAND.amber};border-radius:12px;">
+        <tr><td style="padding:12px 14px;text-align:center;">
+          <div style="font-size:15.5px;line-height:1.6;color:${BRAND.text};margin-bottom:10px;">
+            יש לכם 2 דקות? עזרו לנו לבנות את המפגש הבא סביב מה שמעניין אתכם.
+          </div>
+          <a href="${surveyUrl}" target="_blank"
+             style="display:inline-block;background:#fff;color:${BRAND.coral};border:2px solid ${BRAND.coral};
+                    text-decoration:none;font-weight:800;font-size:16px;padding:9px 18px;border-radius:10px;">ספרו לנו ←</a>
+        </td></tr>
+      </table>
+    </td></tr>`;
+
   const big = (html) => `<tr><td style="padding:0 0 14px;font-size:16px;line-height:1.75;">${html}</td></tr>`;
   const gapSentence = surveyGapSentence(sv);
   const people = st.totalRounded ? `למעלה מ-${st.totalRounded} משתתפים` : 'עשרות משתתפים';
@@ -974,7 +987,8 @@ export function missedEvent({ name, variant, surveyUrl, stats }) {
       bodyHtml:
         big(greet) +
         big(opener) +
-        (crowd.length ? tilesRow(crowd.map(([n, l]) => tile(n, l))) : '') +
+        big(`<b>${people}</b>${orgs}, רובם משרדי ממשלה וגופים ציבוריים, הגיעו למיטאפ.`) +
+        earlyCta +
         sectionTitle('💡 ארבעה דברים שכדאי לדעת') +
         insightsHtml +
         (facts.length
@@ -988,7 +1002,8 @@ export function missedEvent({ name, variant, surveyUrl, stats }) {
         contactCta(),
     }),
     text:
-      `${greet}\n\n${opener.replace(/<br>/g, '\n').replace(/<[^>]+>/g, '')}\n\n${people}${orgs}, רובם משרדי ממשלה וגופים ציבוריים.\n\n` +
+      `${greet}\n\n${opener.replace(/<br>/g, '\n').replace(/<[^>]+>/g, '')}\n\n${people}${orgs}, רובם משרדי ממשלה וגופים ציבוריים, הגיעו למיטאפ.\n\n` +
+      `יש לכם 2 דקות? עזרו לנו לבנות את המפגש הבא סביב מה שמעניין אתכם:\n${surveyUrl}\n\n` +
       `ארבעה דברים שכדאי לדעת:\n` +
       insights.map((x) => `- ${x.head} (${x.who}): ${x.t}`).join('\n') +
       (facts.length
