@@ -2100,6 +2100,9 @@ table.grid tr.row-approved td.col-org {
 }
 .fb-text:focus, .fb-other:focus { outline: none; border-color: var(--color-coral); }
 .fb-disabled { opacity: .45; }
+.fb-contact { margin: 0 0 18px; padding: 12px 14px; background: #faf6f0; border: 1px solid #efe2d6; border-radius: 10px; }
+.fb-contact .fb-text { margin-top: 8px; }
+.fb-contact .fb-text:first-of-type { margin-top: 4px; }
 
 .sr-tabs { margin: 0 0 14px; }
 .sr-texts { margin: 0; padding-inline-start: 18px; line-height: 1.7; font-size: 14px; }

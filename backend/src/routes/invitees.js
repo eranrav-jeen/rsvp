@@ -219,10 +219,16 @@ router.get(
     ).rows[0];
     const responses = (
       await query(
-        `SELECT r.answers, r.submitted_at, i.full_name, i.organization, i.role,
-                (i.arrived_at IS NOT NULL) AS attended
-           FROM post_survey_responses r JOIN invitees i ON i.id = r.invitee_id
-          ORDER BY r.submitted_at DESC`
+        `SELECT answers, submitted_at, full_name, organization, role, attended, community FROM (
+            SELECT r.answers, r.submitted_at, i.full_name, i.organization, i.role,
+                   (i.arrived_at IS NOT NULL) AS attended, false AS community
+              FROM post_survey_responses r JOIN invitees i ON i.id = r.invitee_id
+            UNION ALL
+            SELECT c.answers, c.submitted_at, c.name AS full_name, c.organization, NULL AS role,
+                   false AS attended, true AS community
+              FROM community_survey_responses c
+          ) u
+          ORDER BY submitted_at DESC`
       )
     ).rows;
     // Attendees without an email can't get the survey by mail: give the admin
@@ -254,10 +260,16 @@ router.get(
     const survey = getFeedbackSurvey();
     const rows = (
       await query(
-        `SELECT r.answers, r.submitted_at, i.full_name, i.organization, i.role, i.email, i.phone,
-                (i.arrived_at IS NOT NULL) AS attended
-           FROM post_survey_responses r JOIN invitees i ON i.id = r.invitee_id
-          ORDER BY r.submitted_at DESC`
+        `SELECT answers, submitted_at, full_name, organization, role, email, phone, attended, community FROM (
+            SELECT r.answers, r.submitted_at, i.full_name, i.organization, i.role, i.email, i.phone,
+                   (i.arrived_at IS NOT NULL) AS attended, false AS community
+              FROM post_survey_responses r JOIN invitees i ON i.id = r.invitee_id
+            UNION ALL
+            SELECT c.answers, c.submitted_at, c.name AS full_name, c.organization, NULL AS role,
+                   c.email, NULL AS phone, false AS attended, true AS community
+              FROM community_survey_responses c
+          ) u
+          ORDER BY submitted_at DESC`
       )
     ).rows;
     const data = rows.map((r) => {
@@ -269,7 +281,7 @@ router.get(
         'תפקיד': r.role || '',
         'מייל': r.email || '',
         'טלפון': r.phone || '',
-        'השתתף/ה בכנס': r.attended ? 'כן' : 'לא',
+        'מקור': r.community ? 'קהילה (קישור כללי)' : r.attended ? 'משתתף/ת בכנס' : 'מוזמן/ת שלא הגיע/ה',
       };
       for (const q of survey.questions) {
         const v = a[q.key];

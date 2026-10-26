@@ -14,6 +14,8 @@ export default function Feedback() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
+  const [contact, setContact] = useState({ name: '', organization: '', email: '' });
+  const community = token === 'community' || !!info?.community;
 
   useEffect(() => {
     api
@@ -47,7 +49,8 @@ export default function Feedback() {
     setSaving(true);
     setError('');
     try {
-      await api.post(`/api/feedback/${encodeURIComponent(token)}`, { answers });
+      const body = community ? { answers, contact } : { answers };
+      await api.post(`/api/feedback/${encodeURIComponent(token)}`, body);
       setSaved(true);
       window.scrollTo(0, 0);
     } catch {
@@ -77,21 +80,52 @@ export default function Feedback() {
           התשובות נשמרו.
           {answers.meeting === 'yes' ? ` ${SURVEY.meeting.yesMessage}` : ''}
         </p>
-        <button type="button" className="btn btn-ghost" onClick={() => setSaved(false)}>
-          עדכון התשובות
-        </button>
+        {!community && (
+          <button type="button" className="btn btn-ghost" onClick={() => setSaved(false)}>
+            עדכון התשובות
+          </button>
+        )}
       </div>
     );
   } else {
     content = (
       <form onSubmit={submit} noValidate>
         <p className="fb-intro">
-          {firstName ? `${firstName}, ` : ''}
-          {info.attended
-            ? 'תודה שהגעת! '
-            : 'חבל שלא נפגשנו הפעם. נשמח לשמוע מה מעסיק אתכם כדי לבנות את המפגשים הבאים של הקהילה. '}
+          {community
+            ? 'שלום! נשמח לשמוע מה מעסיק אתכם בנושא ה-AI בארגון, כדי לבנות את המפגשים הבאים של הקהילה. '
+            : (firstName ? `${firstName}, ` : '') +
+              (info.attended
+                ? 'תודה שהגעת! '
+                : 'חבל שלא נפגשנו הפעם. נשמח לשמוע מה מעסיק אתכם כדי לבנות את המפגשים הבאים של הקהילה. ')}
           כמה שאלות קצרות, כשתי דקות. התשובות ישמשו אותנו בלבד ולא יפורסמו ברמת ארגון.
         </p>
+        {community && (
+          <div className="fb-contact">
+            <div className="survey-q-title">פרטים ליצירת קשר (לא חובה)</div>
+            <input
+              className="fb-text"
+              type="text"
+              placeholder="שם"
+              value={contact.name}
+              onChange={(e) => setContact((c) => ({ ...c, name: e.target.value }))}
+            />
+            <input
+              className="fb-text"
+              type="text"
+              placeholder="ארגון"
+              value={contact.organization}
+              onChange={(e) => setContact((c) => ({ ...c, organization: e.target.value }))}
+            />
+            <input
+              className="fb-text"
+              type="email"
+              dir="ltr"
+              placeholder="אימייל"
+              value={contact.email}
+              onChange={(e) => setContact((c) => ({ ...c, email: e.target.value }))}
+            />
+          </div>
+        )}
         {SURVEY.questions.map((q, i) => (
           <div className="survey-q fb-q" key={q.key}>
             <div className="survey-q-title">
